@@ -17,9 +17,6 @@ jobs:
         uses: hacs/action@main
         with:
           category: integration
-          # 'brands' requires a logo PR to home-assistant/brands, which is only
-          # needed for the HACS default store, not for custom-repo installs.
-          ignore: brands
 
   hassfest:
     name: hassfest

@@ -5,7 +5,7 @@
 > Generated from `custom_components/ecoflow_iot/devices/power_stations/delta_3_max.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
 
-Legend: **D** = diagnostic entity · **○** = disabled by default.
+Legend: 🔧 = diagnostic entity · 💤 = disabled by default.
 
 ## Sensors
 
@@ -17,17 +17,17 @@ Legend: **D** = diagnostic entity · **○** = disabled by default.
 | AC output power | power | W | `powGetAcOut` |  |
 | Solar / car input power | power | W | `powGetPv` |  |
 | DC 12V output power | power | W | `powGet12v` |  |
-| USB-C 1 output power | power | W | `powGetTypec1` | D ○ |
-| USB-C 2 output power | power | W | `powGetTypec2` | D ○ |
-| USB-C 3 output power | power | W | `powGetTypec3` | D ○ |
-| USB-A 1 output power | power | W | `powGetQcusb1` | D ○ |
-| USB-A 2 output power | power | W | `powGetQcusb2` | D ○ |
+| USB-C 1 output power | power | W | `powGetTypec1` | 🔧 💤 |
+| USB-C 2 output power | power | W | `powGetTypec2` | 🔧 💤 |
+| USB-C 3 output power | power | W | `powGetTypec3` | 🔧 💤 |
+| USB-A 1 output power | power | W | `powGetQcusb1` | 🔧 💤 |
+| USB-A 2 output power | power | W | `powGetQcusb2` | 🔧 💤 |
 | Battery | battery | % | `cmsBattSoc` |  |
-| Time to empty | duration | min | `cmsDsgRemTime` | D |
-| Time to full | duration | min | `cmsChgRemTime` | D |
-| Charge upper limit | battery | % | `cmsMaxChgSoc` | D ○ |
-| Discharge lower limit | battery | % | `cmsMinDsgSoc` | D ○ |
-| Backup reserve level | battery | % | `backupReverseSoc` | D ○ |
+| Time to empty | duration | min | `cmsDsgRemTime` | 🔧 |
+| Time to full | duration | min | `cmsChgRemTime` | 🔧 |
+| Charge upper limit | battery | % | `cmsMaxChgSoc` | 🔧 💤 |
+| Discharge lower limit | battery | % | `cmsMinDsgSoc` | 🔧 💤 |
+| Backup reserve level | battery | % | `backupReverseSoc` | 🔧 💤 |
 
 ## Binary sensors
 
@@ -35,10 +35,10 @@ Legend: **D** = diagnostic entity · **○** = disabled by default.
 |---|---|---|---|
 | AC output | power | `flowInfoAcOut` |  |
 | DC 12V output | power | `flowInfo12v` |  |
-| Energy backup | power | `energyBackupEn` | D |
-| Buzzer | — | `enBeep` | D ○ |
-| X-Boost | — | `xboostEn` | D |
-| Bypass output disabled | — | `bypassOutDisable` | D ○ |
+| Energy backup | power | `energyBackupEn` | 🔧 |
+| Buzzer | — | `enBeep` | 🔧 💤 |
+| X-Boost | — | `xboostEn` | 🔧 |
+| Bypass output disabled | — | `bypassOutDisable` | 🔧 💤 |
 
 ## Switches
 
@@ -63,7 +63,7 @@ Legend: **D** = diagnostic entity · **○** = disabled by default.
 
 | Entity | Options | Quota key | Flags |
 |---|---|---|---|
-| Charge / discharge state | idle, discharging, charging | _derived_ | D ○ |
+| Charge / discharge state | idle, discharging, charging | _derived_ | 🔧 💤 |
 
 ---
 

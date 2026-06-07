@@ -123,9 +123,9 @@ def quota_key(d) -> str:
 def flags(d) -> str:
     parts = []
     if d.entity_category and last_seg(d.entity_category) == "DIAGNOSTIC":
-        parts.append("D")
+        parts.append("🔧")
     if d.entity_registry_enabled_default is False:
-        parts.append("○")
+        parts.append("💤")
     return " ".join(parts)
 
 
@@ -180,7 +180,7 @@ def render_device(cls, category) -> str:
         "> Every device also exposes an always-available **Connection** "
         "diagnostic sensor (MQTT state + data source).",
         "",
-        "Legend: **D** = diagnostic entity · **○** = disabled by default.",
+        "Legend: 🔧 = diagnostic entity · 💤 = disabled by default.",
         "",
     ]
 

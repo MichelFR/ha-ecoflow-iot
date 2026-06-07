@@ -5,7 +5,7 @@
 > Generated from `custom_components/ecoflow_iot/devices/smart_living/wave.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
 
-Legend: **D** = diagnostic entity · **○** = disabled by default.
+Legend: 🔧 = diagnostic entity · 💤 = disabled by default.
 
 ## Sensors
 
@@ -13,27 +13,27 @@ Legend: **D** = diagnostic entity · **○** = disabled by default.
 |---|---|---|---|---|
 | Ambient temperature | temperature | °C | `pd.envTemp` |  |
 | Air outlet temperature | temperature | °C | `pd.coolTemp` |  |
-| Condensation temperature | temperature | °C | `pd.condTemp` | D |
-| Condensation zone return air temperature | temperature | °C | `pd.heatEnv` | D |
-| Evaporation temperature | temperature | °C | `pd.evapTemp` | D |
-| Evaporation zone return air temperature | temperature | °C | `pd.airInTemp` | D |
-| Exhaust temperature | temperature | °C | `pd.motorOutTemp` | D |
-| Set temperature (Celsius) | temperature | °C | `pd.setTempCel` | D |
-| NTC temperature | temperature | °C | `pd.tempNtc` | D ○ |
+| Condensation temperature | temperature | °C | `pd.condTemp` | 🔧 |
+| Condensation zone return air temperature | temperature | °C | `pd.heatEnv` | 🔧 |
+| Evaporation temperature | temperature | °C | `pd.evapTemp` | 🔧 |
+| Evaporation zone return air temperature | temperature | °C | `pd.airInTemp` | 🔧 |
+| Exhaust temperature | temperature | °C | `pd.motorOutTemp` | 🔧 |
+| Set temperature (Celsius) | temperature | °C | `pd.setTempCel` | 🔧 |
+| NTC temperature | temperature | °C | `pd.tempNtc` | 🔧 💤 |
 | AC input power | power | W | `pd.acPwrIn` |  |
 | System power | power | W | `pd.sysPowerWatts` |  |
 | PV input power | power | W | `pd.mpptPwr` |  |
 | Battery output power | power | W | `pd.batPwrOut` |  |
-| AC input voltage | voltage | V | `power.acVoltRms` | D |
-| AC input current | current | A | `power.acCurrRms` | D |
-| AC input frequency | frequency | Hz | `pd.acFreq` | D |
+| AC input voltage | voltage | V | `power.acVoltRms` | 🔧 |
+| AC input current | current | A | `power.acCurrRms` | 🔧 |
+| AC input frequency | frequency | Hz | `pd.acFreq` | 🔧 |
 | Battery | battery | % | `bms.bmsSoc` |  |
-| Battery (PD) | battery | % | `pd.batSoc` | ○ |
-| Battery voltage | voltage | V | `pd.batVolt` | D |
-| BMS voltage | voltage | V | `bms.bmsVol` | D ○ |
-| BMS current | current | A | `bms.bmsCur` | D |
-| Battery time to full | duration | min | `pd.batChgRemain` | D |
-| Battery time to empty | duration | min | `pd.batDsgRemain` | D |
+| Battery (PD) | battery | % | `pd.batSoc` | 💤 |
+| Battery voltage | voltage | V | `pd.batVolt` | 🔧 |
+| BMS voltage | voltage | V | `bms.bmsVol` | 🔧 💤 |
+| BMS current | current | A | `bms.bmsCur` | 🔧 |
+| Battery time to full | duration | min | `pd.batChgRemain` | 🔧 |
+| Battery time to empty | duration | min | `pd.batDsgRemain` | 🔧 |
 | Timer remaining | duration | min | `pd.timeRemain` |  |
 | Water level | — | — | `pd.waterValue` |  |
 
@@ -42,11 +42,11 @@ Legend: **D** = diagnostic entity · **○** = disabled by default.
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
 | Cool/Heat mode available | running | `pd.refEn` |  |
-| Battery hardware present | connectivity | `bms.bmsHwFlag` | D |
-| Battery software present | connectivity | `bms.bmsSwFlag` | D ○ |
-| Battery undervoltage | problem | `pd.bmsUnderVoltage` | D |
-| High pressure protection | safety | `motor.hpProtFlg` | D |
-| Energy-saving shutdown | power_save | `motor.ecoStopFlag` | D |
+| Battery hardware present | connectivity | `bms.bmsHwFlag` | 🔧 |
+| Battery software present | connectivity | `bms.bmsSwFlag` | 🔧 💤 |
+| Battery undervoltage | problem | `pd.bmsUnderVoltage` | 🔧 |
+| High pressure protection | safety | `motor.hpProtFlg` | 🔧 |
+| Energy-saving shutdown | power_save | `motor.ecoStopFlag` | 🔧 |
 
 ## Switches
 

@@ -5,6 +5,11 @@ A clean, production-ready custom integration for EcoFlow devices built on the
 It uses **MQTT for live data and control**, and automatically **falls back to the
 HTTP REST API** when MQTT is unavailable.
 
+It aims for **feature parity with the official EcoFlow developer documentation**
+(<https://developer-eu.ecoflow.com/us/document/introduction>): every supported
+device's documented quota fields and set-commands are mapped to Home Assistant
+entities.
+
 Device definitions are organised into category packages that mirror the EcoFlow
 developer-docs catalog, and resolution is automatic from each device's serial
 number. Adding another device later is a single new module.
@@ -49,13 +54,51 @@ regenerate it after changing entities with `python3 scripts/gen_device_docs.py`.
    **SecretKey** (approval can take a few days).
 2. Your device must be bound to the same EcoFlow account.
 
-## Installation (HACS)
+## Installation
 
-1. HACS → Integrations → ⋮ → **Custom repositories** → add this repo as an *Integration*.
-2. Install **EcoFlow IoT**, then restart Home Assistant.
-3. Settings → Devices & Services → **Add Integration** → *EcoFlow IoT*.
-4. Choose your **Region** (Europe = `api-e.ecoflow.com`, Global/US = `api.ecoflow.com`)
-   and enter your **Access Key** and **Secret Key**.
+### Option A — HACS (recommended)
+
+[![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=MichelFR&repository=ha-ecoflow&category=integration)
+
+1. Click the button above to add this repository to HACS — or add it manually:
+   **HACS → ⋮ (top-right) → Custom repositories**, URL
+   `https://github.com/MichelFR/ha-ecoflow`, category **Integration**.
+2. Search for **EcoFlow IoT** in HACS and click **Download**.
+3. **Restart Home Assistant.**
+
+### Option B — Manual
+
+1. Download the latest [release](https://github.com/MichelFR/ha-ecoflow/releases)
+   (or clone this repo).
+2. Copy the `custom_components/ecoflow_iot` folder into your Home Assistant
+   `config/custom_components/` directory (so you have
+   `config/custom_components/ecoflow_iot/`).
+3. **Restart Home Assistant.**
+
+### Configure
+
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ecoflow_iot)
+
+1. Go to **Settings → Devices & Services → Add Integration**, search for
+   **EcoFlow IoT** (or use the button above).
+2. Choose your **Region** (Europe = `api-e.ecoflow.com`, Global/US =
+   `api.ecoflow.com`) and paste your **Access Key** and **Secret Key**.
+3. That's it — every device bound to your account is discovered automatically and
+   its sensors/controls are created. Live values stream over MQTT within seconds.
+
+### Using it
+
+- **Entities:** each device gets sensors (battery, solar, grid, power flow, energy
+  totals…), controls (switches/numbers/selects for the documented settings) and an
+  always-available **Connection** diagnostic sensor. See
+  [Supported devices](#supported-devices) for the full per-device list.
+- **Energy dashboard:** the cumulative `Wh`/`kWh` sensors (e.g. *Total charged/
+  discharged*, solar production) carry the right `state_class`, so they can be added
+  to Home Assistant's **Energy** dashboard.
+- **Options** (gear icon on the integration): HTTP poll interval, MQTT staleness
+  threshold, and an MQTT on/off toggle.
+- **Re-authentication:** if you rotate your API keys, Home Assistant prompts you to
+  re-enter them — no need to delete the integration.
 
 ## How data flows
 

@@ -5,7 +5,7 @@
 > Generated from `custom_components/ecoflow_iot/devices/smart_living/smart_plug.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
 
-Legend: **D** = diagnostic entity · **○** = disabled by default.
+Legend: 🔧 = diagnostic entity · 💤 = disabled by default.
 
 ## Sensors
 
@@ -14,9 +14,9 @@ Legend: **D** = diagnostic entity · **○** = disabled by default.
 | Power | power | W | `2_1.watts` |  |
 | Current | current | A | `2_1.current` |  |
 | Voltage | voltage | V | `2_1.volt` |  |
-| Temperature | temperature | °C | `2_1.temp` | D |
-| Max current | current | A | `2_1.maxCur` | D ○ |
-| Frequency | frequency | Hz | `2_1.freq` | D ○ |
+| Temperature | temperature | °C | `2_1.temp` | 🔧 |
+| Max current | current | A | `2_1.maxCur` | 🔧 💤 |
+| Frequency | frequency | Hz | `2_1.freq` | 🔧 💤 |
 
 ## Switches
 

@@ -1,0 +1,45 @@
+name: Release
+
+# Auto-release on version bump: whenever the version in
+# custom_components/ecoflow_iot/manifest.json changes on main and no matching
+# tag exists yet, create the tag `v<version>` and a GitHub release (with
+# auto-generated notes). HACS reads the version from the release/manifest.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - custom_components/ecoflow_iot/manifest.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read manifest version
+        id: ver
+        run: |
+          version=$(python3 -c "import json; print(json.load(open('custom_components/ecoflow_iot/manifest.json'))['version'])")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git rev-parse "v$version" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag v$version already exists — skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Will release v$version."
+          fi
+
+      - name: Create release
+        if: steps.ver.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: v${{ steps.ver.outputs.version }}
+          generate_release_notes: true

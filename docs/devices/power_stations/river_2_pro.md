@@ -5,37 +5,37 @@
 > Generated from `custom_components/ecoflow_iot/devices/power_stations/river_2_pro.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
 
-Legend: **D** = diagnostic entity · **○** = disabled by default.
+Legend: 🔧 = diagnostic entity · 💤 = disabled by default.
 
 ## Sensors
 
 | Entity | Device class | Unit | Quota key | Flags |
 |---|---|---|---|---|
 | Battery | battery | % | `pd.soc` |  |
-| Time to full | duration | min | `bms_bmsStatus.remainTime` | D |
-| Time to empty | duration | min | `bms_emsStatus.dsgRemainTime` | D |
+| Time to full | duration | min | `bms_bmsStatus.remainTime` | 🔧 |
+| Time to empty | duration | min | `bms_emsStatus.dsgRemainTime` | 🔧 |
 | Total output power | power | W | `pd.wattsOutSum` |  |
 | DC output power | power | W | `pd.carWatts` |  |
-| USB-A output power | power | W | `pd.usb1Watts` | D ○ |
-| USB-C input power | power | W | `pd.typecChaWatts` | D ○ |
-| USB-C output power | power | W | `pd.typec1Watts` | D ○ |
+| USB-A output power | power | W | `pd.usb1Watts` | 🔧 💤 |
+| USB-C input power | power | W | `pd.typecChaWatts` | 🔧 💤 |
+| USB-C output power | power | W | `pd.typec1Watts` | 🔧 💤 |
 | AC input power | power | W | `inv.inputWatts` |  |
 | AC output power | power | W | `inv.outputWatts` |  |
 | Solar input power | power | W | `mppt.inWatts` |  |
-| AC output voltage | voltage | V | `mppt.cfgAcOutVol` | D ○ |
-| Charge limit (reported) | — | % | `bms_emsStatus.maxChargeSoc` | D ○ |
-| Discharge limit (reported) | — | % | `bms_emsStatus.minDsgSoc` | D ○ |
-| Backup reserve (reported) | — | % | `pd.bpPowerSoc` | D ○ |
-| AC output frequency (raw) | frequency | Hz | `mppt.cfgAcOutFreq` | D ○ |
+| AC output voltage | voltage | V | `mppt.cfgAcOutVol` | 🔧 💤 |
+| Charge limit (reported) | — | % | `bms_emsStatus.maxChargeSoc` | 🔧 💤 |
+| Discharge limit (reported) | — | % | `bms_emsStatus.minDsgSoc` | 🔧 💤 |
+| Backup reserve (reported) | — | % | `pd.bpPowerSoc` | 🔧 💤 |
+| AC output frequency (raw) | frequency | Hz | `mppt.cfgAcOutFreq` | 🔧 💤 |
 
 ## Binary sensors
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
 | 12V DC output | power | `pd.carState` |  |
-| Energy management | running | `pd.watchIsConfig` | D |
+| Energy management | running | `pd.watchIsConfig` | 🔧 |
 | AC output enabled | power | `mppt.cfgAcEnabled` |  |
-| X-Boost | — | `mppt.cfgAcXboost` | D |
+| X-Boost | — | `mppt.cfgAcXboost` | 🔧 |
 
 ## Switches
 

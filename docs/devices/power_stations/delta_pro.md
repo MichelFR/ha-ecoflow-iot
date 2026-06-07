@@ -5,7 +5,7 @@
 > Generated from `custom_components/ecoflow_iot/devices/power_stations/delta_pro.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
 
-Legend: **D** = diagnostic entity · **○** = disabled by default.
+Legend: 🔧 = diagnostic entity · 💤 = disabled by default.
 
 ## Sensors
 
@@ -15,47 +15,47 @@ Legend: **D** = diagnostic entity · **○** = disabled by default.
 | Battery temperature | temperature | °C | `bmsMaster.temp` |  |
 | Battery input power | power | W | `bmsMaster.inputWatts` |  |
 | Battery output power | power | W | `bmsMaster.outputWatts` |  |
-| Battery voltage | voltage | V | `bmsMaster.vol` | D ○ |
-| Battery current | current | A | `bmsMaster.amp` | D ○ |
-| Battery health | — | % | `bmsMaster.soh` | D |
-| Battery design capacity | energy_storage | — | `bmsMaster.designCap` | D ○ |
-| Battery remaining capacity | energy_storage | — | `bmsMaster.remainCap` | D ○ |
-| Battery full capacity | energy_storage | — | `bmsMaster.fullCap` | D ○ |
-| Battery time remaining | duration | min | `bmsMaster.remainTime` | D |
-| Battery max cell voltage | voltage | MILLIVOLT | `bmsMaster.maxCellVol` | D ○ |
-| Battery min cell voltage | voltage | MILLIVOLT | `bmsMaster.minCellVol` | D ○ |
-| Battery max cell temperature | temperature | °C | `bmsMaster.maxCellTemp` | D ○ |
-| Battery min cell temperature | temperature | °C | `bmsMaster.minCellTemp` | D ○ |
-| Battery target charge current | current | mA | `bmsMaster.tagChgAmp` | D ○ |
-| Battery SOC (precise) | battery | % | `bmsMaster.f32ShowSoc` | D ○ |
+| Battery voltage | voltage | V | `bmsMaster.vol` | 🔧 💤 |
+| Battery current | current | A | `bmsMaster.amp` | 🔧 💤 |
+| Battery health | — | % | `bmsMaster.soh` | 🔧 |
+| Battery design capacity | energy_storage | — | `bmsMaster.designCap` | 🔧 💤 |
+| Battery remaining capacity | energy_storage | — | `bmsMaster.remainCap` | 🔧 💤 |
+| Battery full capacity | energy_storage | — | `bmsMaster.fullCap` | 🔧 💤 |
+| Battery time remaining | duration | min | `bmsMaster.remainTime` | 🔧 |
+| Battery max cell voltage | voltage | MILLIVOLT | `bmsMaster.maxCellVol` | 🔧 💤 |
+| Battery min cell voltage | voltage | MILLIVOLT | `bmsMaster.minCellVol` | 🔧 💤 |
+| Battery max cell temperature | temperature | °C | `bmsMaster.maxCellTemp` | 🔧 💤 |
+| Battery min cell temperature | temperature | °C | `bmsMaster.minCellTemp` | 🔧 💤 |
+| Battery target charge current | current | mA | `bmsMaster.tagChgAmp` | 🔧 💤 |
+| Battery SOC (precise) | battery | % | `bmsMaster.f32ShowSoc` | 🔧 💤 |
 | AC charging power | power | W | `inv.inputWatts` |  |
 | AC output power | power | W | `inv.outputWatts` |  |
-| AC output voltage | voltage | V | `inv.invOutVol` | D |
-| AC output current | current | A | `inv.invOutAmp` | D |
-| AC output frequency | frequency | Hz | `inv.invOutFreq` | D |
-| AC input voltage | voltage | V | `inv.acInVol` | D |
-| AC input current | current | A | `inv.acInAmp` | D |
-| AC input frequency | frequency | Hz | `inv.acInFreq` | D |
-| Inverter temperature | temperature | °C | `inv.outTemp` | D |
-| DC adapter input voltage | voltage | V | `inv.dcInVol` | D ○ |
-| DC adapter input current | current | A | `inv.dcInAmp` | D ○ |
-| DC adapter temperature | temperature | °C | `inv.dcInTemp` | D ○ |
-| AC standby time | duration | min | `inv.cfgStandbyMin` | D ○ |
-| AC slow charge power | power | W | `inv.cfgSlowChgWatts` | D ○ |
-| AC fast charge power | power | W | `inv.cfgFastChgWatts` | D ○ |
+| AC output voltage | voltage | V | `inv.invOutVol` | 🔧 |
+| AC output current | current | A | `inv.invOutAmp` | 🔧 |
+| AC output frequency | frequency | Hz | `inv.invOutFreq` | 🔧 |
+| AC input voltage | voltage | V | `inv.acInVol` | 🔧 |
+| AC input current | current | A | `inv.acInAmp` | 🔧 |
+| AC input frequency | frequency | Hz | `inv.acInFreq` | 🔧 |
+| Inverter temperature | temperature | °C | `inv.outTemp` | 🔧 |
+| DC adapter input voltage | voltage | V | `inv.dcInVol` | 🔧 💤 |
+| DC adapter input current | current | A | `inv.dcInAmp` | 🔧 💤 |
+| DC adapter temperature | temperature | °C | `inv.dcInTemp` | 🔧 💤 |
+| AC standby time | duration | min | `inv.cfgStandbyMin` | 🔧 💤 |
+| AC slow charge power | power | W | `inv.cfgSlowChgWatts` | 🔧 💤 |
+| AC fast charge power | power | W | `inv.cfgFastChgWatts` | 🔧 💤 |
 | Solar input power | power | W | `mppt.inWatts` |  |
-| Solar input voltage | voltage | V | `mppt.inVol` | D |
-| Solar input current | current | A | `mppt.inAmp` | D |
-| MPPT output power | power | W | `mppt.outWatts` | D ○ |
-| MPPT temperature | temperature | °C | `mppt.mpptTemp` | D |
+| Solar input voltage | voltage | V | `mppt.inVol` | 🔧 |
+| Solar input current | current | A | `mppt.inAmp` | 🔧 |
+| MPPT output power | power | W | `mppt.outWatts` | 🔧 💤 |
+| MPPT temperature | temperature | °C | `mppt.mpptTemp` | 🔧 |
 | DC 12V output power | power | W | `mppt.dcdc12vWatts` |  |
-| DC 12V output voltage | voltage | V | `mppt.dcdc12vVol` | D ○ |
-| DC 12V output current | current | A | `mppt.dcdc12vAmp` | D ○ |
+| DC 12V output voltage | voltage | V | `mppt.dcdc12vVol` | 🔧 💤 |
+| DC 12V output current | current | A | `mppt.dcdc12vAmp` | 🔧 💤 |
 | Car charger output power | power | W | `mppt.carOutWatts` |  |
-| Car charger temperature | temperature | °C | `mppt.carTemp` | D |
-| DC 24V temperature | temperature | °C | `mppt.dc24vTemp` | D ○ |
-| Car input current limit | current | mA | `mppt.cfgDcChgCurrent` | D ○ |
-| Display SOC | battery | % | `pd.soc` | D ○ |
+| Car charger temperature | temperature | °C | `mppt.carTemp` | 🔧 |
+| DC 24V temperature | temperature | °C | `mppt.dc24vTemp` | 🔧 💤 |
+| Car input current limit | current | mA | `mppt.cfgDcChgCurrent` | 🔧 💤 |
+| Display SOC | battery | % | `pd.soc` | 🔧 💤 |
 | Total output power | power | W | `pd.wattsOutSum` |  |
 | Total input power | power | W | `pd.wattsInSum` |  |
 | Time remaining | duration | min | `pd.remainTime` |  |
@@ -65,39 +65,39 @@ Legend: **D** = diagnostic entity · **○** = disabled by default.
 | USB QC2 output power | power | W | `pd.qcUsb2Watts` |  |
 | USB-C 1 output power | power | W | `pd.typec1Watts` |  |
 | USB-C 2 output power | power | W | `pd.typec2Watts` |  |
-| USB-C 1 temperature | temperature | °C | `pd.typec1Temp` | D ○ |
-| USB-C 2 temperature | temperature | °C | `pd.typec2Temp` | D ○ |
+| USB-C 1 temperature | temperature | °C | `pd.typec1Temp` | 🔧 💤 |
+| USB-C 2 temperature | temperature | °C | `pd.typec2Temp` | 🔧 💤 |
 | CAR output power | power | W | `pd.carWatts` |  |
-| CAR temperature | temperature | °C | `pd.carTemp` | D ○ |
+| CAR temperature | temperature | °C | `pd.carTemp` | 🔧 💤 |
 | Total DC charged | energy | Wh | `pd.chgPowerDc` |  |
 | Total solar charged | energy | Wh | `pd.chgSunPower` |  |
 | Total AC charged | energy | Wh | `pd.chgPowerAc` |  |
 | Total DC discharged | energy | Wh | `pd.dsgPowerDc` |  |
 | Total AC discharged | energy | Wh | `pd.dsgPowerAc` |  |
-| Wi-Fi signal | signal_strength | dBm | `pd.wifiRssi` | D ○ |
-| Screen timeout | duration | s | `pd.lcdOffSec` | D ○ |
-| Device standby time | duration | min | `pd.standByMode` | D ○ |
-| Time to full | duration | min | `ems.chgRemainTime` | D |
-| Time to empty | duration | min | `ems.dsgRemainTime` | D |
-| Charge upper limit | — | % | `ems.maxChargeSoc` | D ○ |
-| Discharge lower limit | — | % | `ems.minDsgSoc` | D ○ |
-| Generator auto-on threshold | — | % | `ems.minOpenOilEbSoc` | D ○ |
-| Generator auto-off threshold | — | % | `ems.maxCloseOilEbSoc` | D ○ |
-| EMS LCD SOC | battery | % | `ems.lcdShowSoc` | D ○ |
+| Wi-Fi signal | signal_strength | dBm | `pd.wifiRssi` | 🔧 💤 |
+| Screen timeout | duration | s | `pd.lcdOffSec` | 🔧 💤 |
+| Device standby time | duration | min | `pd.standByMode` | 🔧 💤 |
+| Time to full | duration | min | `ems.chgRemainTime` | 🔧 |
+| Time to empty | duration | min | `ems.dsgRemainTime` | 🔧 |
+| Charge upper limit | — | % | `ems.maxChargeSoc` | 🔧 💤 |
+| Discharge lower limit | — | % | `ems.minDsgSoc` | 🔧 💤 |
+| Generator auto-on threshold | — | % | `ems.minOpenOilEbSoc` | 🔧 💤 |
+| Generator auto-off threshold | — | % | `ems.maxCloseOilEbSoc` | 🔧 💤 |
+| EMS LCD SOC | battery | % | `ems.lcdShowSoc` | 🔧 💤 |
 
 ## Binary sensors
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
 | AC output enabled | power | `inv.cfgAcEnabled` |  |
-| X-Boost enabled | — | `inv.cfgAcXboost` | D |
+| X-Boost enabled | — | `inv.cfgAcXboost` | 🔧 |
 | Car charger enabled | power | `mppt.carState` |  |
 | DC 24V output enabled | power | `mppt.dc24vState` |  |
 | DC output enabled | power | `pd.dcOutState` |  |
-| UPS mode enabled | — | `ems.openUpsFlag` | D |
-| AC charging paused | — | `inv.chgPauseFlag` | D ○ |
-| PV charging paused | — | `mppt.chgPauseFlag` | D ○ |
-| Bypass AC auto start | — | `inv.acPassbyAutoEn` | D |
+| UPS mode enabled | — | `ems.openUpsFlag` | 🔧 |
+| AC charging paused | — | `inv.chgPauseFlag` | 🔧 💤 |
+| PV charging paused | — | `mppt.chgPauseFlag` | 🔧 💤 |
+| Bypass AC auto start | — | `inv.acPassbyAutoEn` | 🔧 |
 
 ## Switches
 

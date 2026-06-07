@@ -5,64 +5,64 @@
 > Generated from `custom_components/ecoflow_iot/devices/solar_systems/stream.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
 
-Legend: **D** = diagnostic entity · **○** = disabled by default.
+Legend: 🔧 = diagnostic entity · 💤 = disabled by default.
 
 ## Sensors
 
 | Entity | Device class | Unit | Quota key | Flags |
 |---|---|---|---|---|
 | Battery | battery | % | `cmsBattSoc` |  |
-| Battery (BMS) | battery | % | `bmsBattSoc` | ○ |
-| Battery health | — | % | `cmsBattSoh` | D |
-| Battery voltage | voltage | V | `vol` | D |
-| Battery current | current | A | `amp` | D |
+| Battery (BMS) | battery | % | `bmsBattSoc` | 💤 |
+| Battery health | — | % | `cmsBattSoh` | 🔧 |
+| Battery voltage | voltage | V | `vol` | 🔧 |
+| Battery current | current | A | `amp` | 🔧 |
 | Battery temperature | temperature | °C | `temp` |  |
-| Battery capacity | energy_storage | Wh | `cmsBattFullEnergy` | D |
-| Battery cycles | — | — | `cycles` | D |
-| Time to full | duration | min | `cmsChgRemTime` | D |
-| Time to empty | duration | min | `cmsDsgRemTime` | D |
+| Battery capacity | energy_storage | Wh | `cmsBattFullEnergy` | 🔧 |
+| Battery cycles | — | — | `cycles` | 🔧 |
+| Time to full | duration | min | `cmsChgRemTime` | 🔧 |
+| Time to empty | duration | min | `cmsDsgRemTime` | 🔧 |
 | Total charged | energy | Wh | `accuChgEnergy` |  |
 | Total discharged | energy | Wh | `accuDsgEnergy` |  |
 | Battery power | power | W | `powGetBpCms` |  |
 | Load power | power | W | `powGetSysLoad` |  |
-| Load from battery | power | W | `powGetSysLoadFromBp` | ○ |
-| Load from grid | power | W | `powGetSysLoadFromGrid` | ○ |
-| Load from solar | power | W | `powGetSysLoadFromPv` | ○ |
+| Load from battery | power | W | `powGetSysLoadFromBp` | 💤 |
+| Load from grid | power | W | `powGetSysLoadFromGrid` | 💤 |
+| Load from solar | power | W | `powGetSysLoadFromPv` | 💤 |
 | Grid power | power | W | `gridConnectionPower` |  |
-| System grid power | power | W | `sysGridConnectionPower` | ○ |
-| Grid voltage | voltage | V | `gridConnectionVol` | D |
-| Grid frequency | frequency | Hz | `gridConnectionFreq` | D |
-| Inverter temperature | temperature | °C | `invNtcTemp3` | D |
-| Meter phase A power | power | W | `cloudMetter.phaseAPower` | ○ |
+| System grid power | power | W | `sysGridConnectionPower` | 💤 |
+| Grid voltage | voltage | V | `gridConnectionVol` | 🔧 |
+| Grid frequency | frequency | Hz | `gridConnectionFreq` | 🔧 |
+| Inverter temperature | temperature | °C | `invNtcTemp3` | 🔧 |
+| Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 |
 | Solar power | power | W | `powGetPvSum` |  |
 | Solar string 1 power | power | W | _computed_ |  |
-| Solar string 1 voltage | voltage | V | `plugInInfoPvVol` | D ○ |
-| Solar string 1 current | current | A | `plugInInfoPvAmp` | D ○ |
+| Solar string 1 voltage | voltage | V | `plugInInfoPvVol` | 🔧 💤 |
+| Solar string 1 current | current | A | `plugInInfoPvAmp` | 🔧 💤 |
 | Solar string 2 power | power | W | _computed_ |  |
-| Solar string 2 voltage | voltage | V | `plugInInfoPv2Vol` | D ○ |
-| Solar string 2 current | current | A | `plugInInfoPv2Amp` | D ○ |
+| Solar string 2 voltage | voltage | V | `plugInInfoPv2Vol` | 🔧 💤 |
+| Solar string 2 current | current | A | `plugInInfoPv2Amp` | 🔧 💤 |
 | Solar string 3 power | power | W | _computed_ |  |
-| Solar string 3 voltage | voltage | V | `plugInInfoPv3Vol` | D ○ |
-| Solar string 3 current | current | A | `plugInInfoPv3Amp` | D ○ |
+| Solar string 3 voltage | voltage | V | `plugInInfoPv3Vol` | 🔧 💤 |
+| Solar string 3 current | current | A | `plugInInfoPv3Amp` | 🔧 💤 |
 | Solar string 4 power | power | W | _computed_ |  |
-| Solar string 4 voltage | voltage | V | `plugInInfoPv4Vol` | D ○ |
-| Solar string 4 current | current | A | `plugInInfoPv4Amp` | D ○ |
+| Solar string 4 voltage | voltage | V | `plugInInfoPv4Vol` | 🔧 💤 |
+| Solar string 4 current | current | A | `plugInInfoPv4Amp` | 🔧 💤 |
 | AC socket 1 power | power | W | `powGetSchuko1` |  |
 | AC socket 2 power | power | W | `powGetSchuko2` |  |
-| Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | D ○ |
-| Feed-in power limit | power | W | `feedGridModePowLimit` | D |
+| Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | 🔧 💤 |
+| Feed-in power limit | power | W | `feedGridModePowLimit` | 🔧 |
 
 ## Binary sensors
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
-| Battery heater | heat | `bmsBattHeating` | D |
-| Smart meter connected | connectivity | `cloudMetter.hasMeter` | D |
-| Storm guard | — | `stormPatternEnable` | D |
-| Solar string 1 connected | connectivity | `plugInInfoPvFlag` | D ○ |
-| Solar string 2 connected | connectivity | `plugInInfoPv2Flag` | D ○ |
-| Solar string 3 connected | connectivity | `plugInInfoPv3Flag` | D ○ |
-| Solar string 4 connected | connectivity | `plugInInfoPv4Flag` | D ○ |
+| Battery heater | heat | `bmsBattHeating` | 🔧 |
+| Smart meter connected | connectivity | `cloudMetter.hasMeter` | 🔧 |
+| Storm guard | — | `stormPatternEnable` | 🔧 |
+| Solar string 1 connected | connectivity | `plugInInfoPvFlag` | 🔧 💤 |
+| Solar string 2 connected | connectivity | `plugInInfoPv2Flag` | 🔧 💤 |
+| Solar string 3 connected | connectivity | `plugInInfoPv3Flag` | 🔧 💤 |
+| Solar string 4 connected | connectivity | `plugInInfoPv4Flag` | 🔧 💤 |
 
 ## Switches
 
