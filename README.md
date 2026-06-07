@@ -12,19 +12,20 @@ number. Adding another device later is a single new module.
 ## Supported devices
 
 Resolved automatically by serial-number prefix (with quota-based fallback). ~1,190
-entities are mapped across the fleet from the official quota schemas.
+entities are mapped across the fleet from the official quota schemas. Each link below
+lists every sensor / binary sensor / switch / number / select for that device
+(generated from the code — see [`docs/devices/`](docs/devices/README.md)).
 
 | Category | Devices |
 |---|---|
-| **Power Stations** | Delta 2, Delta 2 Max, Delta 3 Max, Delta 3 Max Plus, Delta Pro, Delta Pro 3, Delta Pro Ultra, River 2 Pro |
-| **Solar Systems** | Stream (Ultra / Ultra X / AC / AC Pro / Pro), Stream Microinverter, PowerStream |
-| **Home Battery** | PowerOcean |
-| **Smart Living** | Glacier, Power Kits, Smart Plug, WAVE Air Conditioner |
-| **Whole-Home Backup** | Smart Home Panel, Smart Home Panel 2 |
+| **Power Stations** | [Delta 2](docs/devices/power_stations/delta_2.md) · [Delta 2 Max](docs/devices/power_stations/delta_2_max.md) · [Delta 3 Max](docs/devices/power_stations/delta_3_max.md) · [Delta 3 Max Plus](docs/devices/power_stations/delta_3_max_plus.md) · [Delta Pro](docs/devices/power_stations/delta_pro.md) · [Delta Pro 3](docs/devices/power_stations/delta_pro_3.md) · [Delta Pro Ultra](docs/devices/power_stations/delta_pro_ultra.md) · [River 2 Pro](docs/devices/power_stations/river_2_pro.md) |
+| **Solar Systems** | [Stream](docs/devices/solar_systems/stream.md) (Ultra / Ultra X / AC / AC Pro / Pro) · [Stream Microinverter](docs/devices/solar_systems/stream_microinverter.md) · [PowerStream](docs/devices/solar_systems/power_stream.md) |
+| **Home Battery** | [PowerOcean](docs/devices/home_battery/power_ocean.md) |
+| **Smart Living** | [Glacier](docs/devices/smart_living/glacier.md) · [Power Kits](docs/devices/smart_living/power_kits.md) · [Smart Plug](docs/devices/smart_living/smart_plug.md) · [WAVE](docs/devices/smart_living/wave.md) |
+| **Whole-Home Backup** | [Smart Home Panel](docs/devices/whole_home_backup/smart_home_panel.md) · [Smart Home Panel 2](docs/devices/whole_home_backup/smart_home_panel_2.md) |
 
-Per-device entity tables (the full Stream breakdown) are below; the other devices
-follow the same sensor/binary-sensor/switch/number/select model derived from each
-device's documented quota fields and set-commands.
+The full entity reference index lives in [`docs/devices/README.md`](docs/devices/README.md);
+regenerate it after changing entities with `python3 scripts/gen_device_docs.py`.
 
 ## Features
 
@@ -108,115 +109,18 @@ automatic return to real-time MQTT once connectivity is restored.
 
 ## Entities per device
 
-Every device also gets a **Connection** diagnostic sensor (enum:
-`connected` / `connecting` / `disconnected`) that is always available.
+Every device exposes an always-available **Connection** diagnostic sensor
+(`connected` / `connecting` / `disconnected`, plus data source and last-update).
 
-Legend: **D** = diagnostic entity · **○** = disabled by default (enable in the
-entity settings) · *Quota key* is the underlying API field.
+The complete per-device entity tables (sensors, binary sensors, switches, numbers,
+selects — with device class, unit, underlying quota key and diagnostic/disabled
+flags) are generated from the device definitions and live under
+[`docs/devices/`](docs/devices/README.md). See the per-device links in
+[Supported devices](#supported-devices) above. Regenerate them with:
 
-<details>
-<summary><b>EcoFlow Stream</b> (Ultra / Ultra X / AC / AC Pro / Pro) — full feature set</summary>
-
-#### Sensors
-
-| Entity | Device class | Unit | Quota key | Flags |
-|---|---|---|---|---|
-| Battery | battery | % | `cmsBattSoc` | |
-| Battery (BMS) | battery | % | `bmsBattSoc` | ○ |
-| Battery health | — | % | `cmsBattSoh` | D |
-| Battery voltage | voltage | V | `vol` | D |
-| Battery current | current | A | `amp` | D |
-| Battery temperature | temperature | °C | `temp` | |
-| Battery capacity | energy_storage | Wh | `cmsBattFullEnergy` | D |
-| Battery cycles | — | — | `cycles` | D |
-| Time to full | duration | min | `cmsChgRemTime` | D |
-| Time to empty | duration | min | `cmsDsgRemTime` | D |
-| Total charged | energy | Wh | `accuChgEnergy` | |
-| Total discharged | energy | Wh | `accuDsgEnergy` | |
-| Battery power | power | W | `powGetBpCms` | |
-| Load power | power | W | `powGetSysLoad` | |
-| Load from battery | power | W | `powGetSysLoadFromBp` | ○ |
-| Load from grid | power | W | `powGetSysLoadFromGrid` | ○ |
-| Load from solar | power | W | `powGetSysLoadFromPv` | ○ |
-| Grid power | power | W | `gridConnectionPower` | |
-| System grid power | power | W | `sysGridConnectionPower` | ○ |
-| Grid voltage | voltage | V | `gridConnectionVol` | D |
-| Grid frequency | frequency | Hz | `gridConnectionFreq` | D |
-| Inverter temperature | temperature | °C | `invNtcTemp3` | D |
-| Meter phase A power | power | W | `cloudMetter.phaseAPower` | ○ |
-| Solar power | power | W | `powGetPvSum` | |
-| Solar string _N_ power | power | W | `powGetPv`_N_ (or `plugInInfoPv`_N_`Amp × Vol`) | for _N_ = 1–4 |
-| Solar string _N_ voltage | voltage | V | `plugInInfoPv`_N_`Vol` | D ○, _N_ = 1–4 |
-| Solar string _N_ current | current | A | `plugInInfoPv`_N_`Amp` | D ○, _N_ = 1–4 |
-| AC socket 1 power | power | W | `powGetSchuko1` | |
-| AC socket 2 power | power | W | `powGetSchuko2` | |
-| Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | D ○ |
-| Feed-in power limit | power | W | `feedGridModePowLimit` | D |
-
-#### Binary sensors
-
-| Entity | Device class | Quota key | Flags |
-|---|---|---|---|
-| Battery heater | heat | `bmsBattHeating` | D |
-| Smart meter connected | connectivity | `cloudMetter.hasMeter` | D |
-| Storm guard | — | `stormPatternEnable` | D |
-| Solar string _N_ connected | connectivity | `plugInInfoPv`_N_`Flag` | D ○, _N_ = 1–4 |
-
-#### Switches
-
-| Entity | Quota key | Command |
-|---|---|---|
-| AC socket 1 | `relay2Onoff` | `cfgRelay2Onoff` |
-| AC socket 2 | `relay3Onoff` | `cfgRelay3Onoff` |
-| Self-powered mode | `energyStrategyOperateMode.operateSelfPoweredOpen` | `cfgEnergyStrategyOperateMode` |
-| Grid feed-in | `feedGridMode` | `cfgFeedGridMode` (2 = on, 1 = off) |
-
-#### Numbers
-
-| Entity | Unit | Range | Command |
-|---|---|---|---|
-| Charge limit | % | 50–100 | `cfgMaxChgSoc` (sent with `cfgMinDsgSoc`) |
-| Discharge limit | % | 0–30 | `cfgMinDsgSoc` (sent with `cfgMaxChgSoc`) |
-| Backup reserve | % | 3–95 | `cfgBackupReverseSoc` |
-| Feed-in power limit | W | 0–800 | `cfgFeedGridModePowLimit` |
-
-#### Selects
-
-| Entity | Options | Command |
-|---|---|---|
-| Operating mode | self-powered · scheduled · time-of-use · intelligent | `cfgEnergyStrategyOperateMode.operate*Open` |
-
-</details>
-
-<details>
-<summary><b>EcoFlow Stream Microinverter</b> — grid-tie inverter, 2 PV strings, no battery</summary>
-
-#### Sensors
-
-| Entity | Device class | Unit | Quota key | Flags |
-|---|---|---|---|---|
-| Grid power | power | W | `gridConnectionPower` | |
-| System grid power | power | W | `sysGridConnectionPower` | ○ |
-| Grid voltage | voltage | V | `gridConnectionVol` | D |
-| Grid frequency | frequency | Hz | `gridConnectionFreq` | D |
-| Inverter temperature | temperature | °C | `invNtcTemp3` | D |
-| Meter phase A power | power | W | `cloudMetter.phaseAPower` | ○ |
-| Solar power | power | W | `powGetPvSum` | |
-| Solar string _N_ power | power | W | `powGetPv`_N_ (or `plugInInfoPv`_N_`Amp × Vol`) | for _N_ = 1–2 |
-| Solar string _N_ voltage | voltage | V | `plugInInfoPv`_N_`Vol` | D ○, _N_ = 1–2 |
-| Solar string _N_ current | current | A | `plugInInfoPv`_N_`Amp` | D ○, _N_ = 1–2 |
-| Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | D ○ |
-| Feed-in power limit | power | W | `feedGridModePowLimit` | D |
-
-#### Binary sensors
-
-| Entity | Device class | Quota key | Flags |
-|---|---|---|---|
-| Solar string _N_ connected | connectivity | `plugInInfoPv`_N_`Flag` | D ○, _N_ = 1–2 |
-
-No switches, numbers or selects (no battery / relays to control).
-
-</details>
+```bash
+python3 scripts/gen_device_docs.py
+```
 
 ## Architecture
 

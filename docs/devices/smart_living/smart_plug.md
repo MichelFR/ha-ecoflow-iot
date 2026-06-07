@@ -1,0 +1,35 @@
+# EcoFlow Smart Plug
+
+**Category:** Smart Living · **Auto-detected by SN prefix:** `HW52`
+
+> Generated from `custom_components/ecoflow_iot/devices/smart_living/smart_plug.py` by `scripts/gen_device_docs.py` — do not edit by hand.
+> Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
+
+Legend: **D** = diagnostic entity · **○** = disabled by default.
+
+## Sensors
+
+| Entity | Device class | Unit | Quota key | Flags |
+|---|---|---|---|---|
+| Power | power | W | `2_1.watts` |  |
+| Current | current | A | `2_1.current` |  |
+| Voltage | voltage | V | `2_1.volt` |  |
+| Temperature | temperature | °C | `2_1.temp` | D |
+| Max current | current | A | `2_1.maxCur` | D ○ |
+| Frequency | frequency | Hz | `2_1.freq` | D ○ |
+
+## Switches
+
+| Entity | Quota key | Flags |
+|---|---|---|
+| Relay | `2_1.switchSta` |  |
+
+## Numbers
+
+| Entity | Unit | Range | Quota key | Flags |
+|---|---|---|---|---|
+| Indicator brightness | — | 0–1023 (step 1) | `2_1.brightness` |  |
+
+---
+
+_Entity totals: 8 — 6 sensor, 0 binary_sensor, 1 switch, 1 number, 0 select._
