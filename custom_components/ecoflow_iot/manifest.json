@@ -1,12 +1,12 @@
 {
   "domain": "ecoflow_iot",
   "name": "EcoFlow IoT",
-  "codeowners": [],
+  "codeowners": ["@MichelFR"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/your-org/ha-ecoflow",
+  "documentation": "https://github.com/MichelFR/ha-ecoflow",
   "iot_class": "cloud_push",
-  "issue_tracker": "https://github.com/your-org/ha-ecoflow/issues",
+  "issue_tracker": "https://github.com/MichelFR/ha-ecoflow/issues",
   "loggers": ["paho"],
   "requirements": ["paho-mqtt>=1.6.1"],
   "version": "0.2.0"
