@@ -1,0 +1,13 @@
+{
+  "domain": "ecoflow_iot",
+  "name": "EcoFlow IoT",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/your-org/ha-ecoflow",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/your-org/ha-ecoflow/issues",
+  "loggers": ["paho"],
+  "requirements": ["paho-mqtt>=1.6.1"],
+  "version": "0.1.0"
+}

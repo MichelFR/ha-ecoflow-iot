@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "EcoFlow IoT",
+        "description": "Enter the Access Key and Secret Key from the EcoFlow developer portal (developer.ecoflow.com → Security).",
+        "data": {
+          "region": "Region",
+          "access_key": "Access Key",
+          "secret_key": "Secret Key"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate EcoFlow IoT",
+        "description": "Your EcoFlow API credentials are no longer valid. Enter updated keys.",
+        "data": {
+          "region": "Region",
+          "access_key": "Access Key",
+          "secret_key": "Secret Key"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid Access Key or Secret Key.",
+      "cannot_connect": "Failed to connect to the EcoFlow API.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "These credentials are already configured.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "EcoFlow IoT options",
+        "data": {
+          "enable_mqtt": "Use MQTT for live data",
+          "poll_interval": "HTTP poll interval (seconds)",
+          "mqtt_stale_seconds": "MQTT staleness threshold (seconds)"
+        },
+        "data_description": {
+          "poll_interval": "How often to fall back to the HTTP API when MQTT is unavailable.",
+          "mqtt_stale_seconds": "If no MQTT message arrives within this window, the integration polls HTTP."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Connection",
+        "state": {
+          "connected": "Connected",
+          "connecting": "Connecting",
+          "disconnected": "Disconnected"
+        }
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Operating mode",
+        "state": {
+          "self_powered": "Self-powered",
+          "scheduled": "Scheduled",
+          "time_of_use": "Time of use",
+          "intelligent": "Intelligent"
+        }
+      }
+    }
+  }
+}
