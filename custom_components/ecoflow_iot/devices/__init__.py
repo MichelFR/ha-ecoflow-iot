@@ -13,6 +13,7 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
+from ..const import SN_PREFIX_LEN
 from .base import EcoFlowDevice
 from .home_battery import PowerOceanDevice
 from .power_stations import (
@@ -99,7 +100,9 @@ def resolve_device(sn: str, quota: Mapping[str, Any]) -> EcoFlowDevice | None:
         if device_cls.matches(sn, quota):
             return device_cls(sn)
 
-    _LOGGER.warning("No EcoFlow device handler matched serial %s", sn)
+    _LOGGER.warning(
+        "No EcoFlow device handler matched serial prefix %s", sn[:SN_PREFIX_LEN]
+    )
     return None
 
 

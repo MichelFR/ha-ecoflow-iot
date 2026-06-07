@@ -46,5 +46,8 @@ DEFAULT_POLL_INTERVAL: Final = 60  # seconds
 DEFAULT_MQTT_STALE_SECONDS: Final = 120  # consider MQTT stale after this many seconds
 DEFAULT_ENABLE_MQTT: Final = True
 SET_ACK_TIMEOUT: Final = 8.0  # seconds to await an MQTT set_reply before HTTP fallback
+# How many leading SN characters identify a device type. Shown to the user for
+# unsupported devices (the full serial is never surfaced).
+SN_PREFIX_LEN: Final = 4
 
 MANUFACTURER: Final = "EcoFlow"

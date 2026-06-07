@@ -17,13 +17,16 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import EcoFlowError, EcoFlowHttpClient, EcoFlowMqttClient
 from .const import (
     DEFAULT_MQTT_STALE_SECONDS,
     DEFAULT_POLL_INTERVAL,
+    DOMAIN,
     SET_ACK_TIMEOUT,
+    SN_PREFIX_LEN,
 )
 from .devices import EcoFlowDevice, resolve_device
 from .models import Certification, ConnectionState, DataSource, DeviceState
@@ -75,6 +78,21 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         """Return the MQTT broker endpoint, if known."""
         return self._mqtt.broker if self._mqtt else None
 
+    @callback
+    def _notify_unsupported(self, sn: str) -> None:
+        """Raise a repair issue for an unsupported device (prefix only)."""
+        prefix = sn[:SN_PREFIX_LEN]
+        _LOGGER.warning("Unsupported EcoFlow device with serial prefix %s", prefix)
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            f"unsupported_device_{prefix}",
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="unsupported_device",
+            translation_placeholders={"prefix": prefix},
+        )
+
     async def async_setup(self) -> None:
         """Discover devices, seed data over HTTP and start MQTT."""
         try:
@@ -95,6 +113,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 _LOGGER.warning("Initial quota fetch failed for %s: %s", sn, err)
             device = resolve_device(sn, state.quota)
             if device is None:
+                self._notify_unsupported(sn)
                 continue
             self.devices[sn] = device
             states[sn] = state
