@@ -32,6 +32,12 @@ lists every sensor / binary sensor / switch / number / select for that device
 The full entity reference index lives in [`docs/devices/README.md`](docs/devices/README.md);
 regenerate it after changing entities with `python3 scripts/gen_device_docs.py`.
 
+Devices are matched by **serial-number prefix**. If Home Assistant shows an
+**"Unsupported EcoFlow device (`XXXX`)" repair**, your device's prefix isn't mapped
+yet — check [`KNOWN_PREFIXES.md`](KNOWN_PREFIXES.md), and if it's missing please
+[open an issue](https://github.com/MichelFR/ha-ecoflow/issues) with the prefix (not your
+full serial) so it can be added.
+
 ## Features
 
 - **MQTT-first, HTTP fallback** — real-time push updates over TLS MQTT; HTTP polling
