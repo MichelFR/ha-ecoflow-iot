@@ -1,7 +1,7 @@
 {
-  "name": "EcoFlow IoT (Stream)",
+  "name": "EcoFlow IoT",
   "content_in_root": false,
-  "render_readme": true,
+  "render_readme": false,
   "homeassistant": "2024.8.0",
   "zip_release": false
 }
