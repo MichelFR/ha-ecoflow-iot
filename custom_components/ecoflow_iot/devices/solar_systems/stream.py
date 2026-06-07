@@ -29,7 +29,7 @@ from homeassistant.const import (
     UnitOfTime,
 )
 
-from .base import (
+from ..base import (
     EcoFlowBinarySensorEntityDescription,
     EcoFlowDevice,
     EcoFlowNumberEntityDescription,
@@ -38,6 +38,7 @@ from .base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..commands import build_stream_command
 
 # Quota keys that only the battery-equipped variants report.
 _BATTERY_MARKERS = ("cmsBattSoc", "bmsBattSoc", "soc")
@@ -597,12 +598,18 @@ class StreamDevice(EcoFlowDevice):
     """Full-featured Stream device (Ultra / Ultra X / AC / AC Pro / Pro)."""
 
     model = "EcoFlow Stream"
+    sn_prefixes = ("BK",)
     pv_string_count = 4
+
+    def build_command(self, command: dict[str, Any]) -> dict[str, Any]:
+        """Wrap the control params in the Stream routing envelope."""
+        return build_stream_command(command)
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:
-        # Battery-equipped Stream: has battery markers (or no quota yet to judge).
-        if not quota:
+        # Battery-equipped Stream (SN prefix BK). Checked after the
+        # battery-less microinverter variant in the registry.
+        if any(sn.startswith(p) for p in cls.sn_prefixes):
             return True
         return any(marker in quota for marker in _BATTERY_MARKERS)
 
@@ -635,11 +642,14 @@ class StreamMicroinverterDevice(EcoFlowDevice):
     """Stream Microinverter: grid-tie inverter with 2 PV strings, no battery."""
 
     model = "EcoFlow Stream Microinverter"
+    sn_prefixes = ("BK",)
     pv_string_count = 2
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:
-        # Reports grid/PV data but no battery state.
+        # A Stream-series SN (BK) that reports grid/PV data but no battery.
+        if not any(sn.startswith(p) for p in cls.sn_prefixes):
+            return False
         return bool(quota) and not any(m in quota for m in _BATTERY_MARKERS)
 
     def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:

@@ -27,3 +27,32 @@ def build_stream_command(params: dict[str, Any]) -> dict[str, Any]:
     ``id``/``version`` for the MQTT transport.
     """
     return {**STREAM_ENVELOPE, "params": params}
+
+
+def build_legacy_command(
+    module_type: int, operate_type: str, params: dict[str, Any]
+) -> dict[str, Any]:
+    """Build a legacy ``moduleType``/``operateType`` command body.
+
+    Used by the older power stations (Delta / River etc.). The coordinator adds
+    ``sn``/``id``/``version``.
+    """
+    return {
+        "moduleType": module_type,
+        "operateType": operate_type,
+        "params": params,
+    }
+
+
+def build_cmd_set_command(
+    cmd_set: int, cmd_id: int, params: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    """Build a ``cmdSet``/``cmdId`` style command body (some Delta/River models).
+
+    The values are merged into ``params`` alongside ``cmdSet`` and ``id`` as the
+    firmware expects.
+    """
+    body = {"cmdSet": cmd_set, "id": cmd_id}
+    if params:
+        body.update(params)
+    return {"params": body}

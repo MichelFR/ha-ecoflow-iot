@@ -18,8 +18,6 @@ from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.switch import SwitchEntityDescription
 from homeassistant.const import Platform
 
-from .commands import build_stream_command
-
 # A function that, given a single quota value, returns the entity's native value.
 ValueFn = Callable[[Any], Any]
 # A function that, given the full quota map, decides if the entity is available.
@@ -104,6 +102,13 @@ class EcoFlowDevice:
         """Return the entity descriptions for a platform (empty by default)."""
         return []
 
-    def build_command(self, params: dict[str, Any]) -> dict[str, Any]:
-        """Wrap a ``params`` payload into the device's command envelope."""
-        return build_stream_command(params)
+    def build_command(self, command: dict[str, Any]) -> dict[str, Any]:
+        """Map a ``command_fn`` result into the on-the-wire command payload.
+
+        The default is identity: a device's ``command_fn`` returns the full
+        command body (e.g. the legacy ``{"moduleType": .., "operateType": ..,
+        "params": {..}}`` shape), and the coordinator adds ``sn``/``id``/
+        ``version``. Devices that use a fixed routing envelope (e.g. Stream)
+        override this to wrap the returned ``params``.
+        """
+        return command

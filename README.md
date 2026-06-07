@@ -5,9 +5,26 @@ A clean, production-ready custom integration for EcoFlow devices built on the
 It uses **MQTT for live data and control**, and automatically **falls back to the
 HTTP REST API** when MQTT is unavailable.
 
-First supported family: **EcoFlow Stream** (Ultra / Ultra X / AC / AC Pro / Pro and
-the Stream Microinverter). The architecture is built to add more devices later by
-dropping in a single device-definition module.
+Device definitions are organised into category packages that mirror the EcoFlow
+developer-docs catalog, and resolution is automatic from each device's serial
+number. Adding another device later is a single new module.
+
+## Supported devices
+
+Resolved automatically by serial-number prefix (with quota-based fallback). ~1,190
+entities are mapped across the fleet from the official quota schemas.
+
+| Category | Devices |
+|---|---|
+| **Power Stations** | Delta 2, Delta 2 Max, Delta 3 Max, Delta 3 Max Plus, Delta Pro, Delta Pro 3, Delta Pro Ultra, River 2 Pro |
+| **Solar Systems** | Stream (Ultra / Ultra X / AC / AC Pro / Pro), Stream Microinverter, PowerStream |
+| **Home Battery** | PowerOcean |
+| **Smart Living** | Glacier, Power Kits, Smart Plug, WAVE Air Conditioner |
+| **Whole-Home Backup** | Smart Home Panel, Smart Home Panel 2 |
+
+Per-device entity tables (the full Stream breakdown) are below; the other devices
+follow the same sensor/binary-sensor/switch/number/select model derived from each
+device's documented quota fields and set-commands.
 
 ## Features
 
@@ -205,17 +222,35 @@ No switches, numbers or selects (no battery / relays to control).
 
 ```
 custom_components/ecoflow_iot/
-├── api/            # signing (auth.py), HTTP client, MQTT client, errors
-├── devices/        # base device + registry; stream.py holds the Stream entity maps
-├── coordinator.py  # MQTT push + HTTP fallback, write dispatch, connection state
-├── entity.py       # shared entity base (device info, availability, value extraction)
+├── api/                  # signing (auth.py), HTTP client, MQTT client, errors
+├── devices/              # device layer (mirrors the EcoFlow docs catalog)
+│   ├── base.py           #   EcoFlowDevice + entity-description dataclasses
+│   ├── commands.py       #   command builders (stream envelope / legacy / cmdSet)
+│   ├── __init__.py       #   DEVICE_REGISTRY + resolve_device(sn, quota)
+│   ├── power_stations/   #   delta_2, delta_2_max, delta_3_max(_plus), delta_pro(_3/_ultra), river_2_pro
+│   ├── solar_systems/    #   stream, power_stream
+│   ├── home_battery/     #   power_ocean
+│   ├── smart_living/     #   glacier, power_kits, smart_plug, wave
+│   └── whole_home_backup/#   smart_home_panel, smart_home_panel_ii
+├── coordinator.py        # MQTT push + HTTP fallback, write dispatch, connection state
+├── entity.py             # shared entity base (device info, availability, value extraction)
 └── sensor.py / binary_sensor.py / switch.py / number.py / select.py
 ```
 
-Adding a new device = add a `devices/<model>.py` with an `EcoFlowDevice` subclass and
-register it in `devices/__init__.py`. No platform changes needed.
+**Adding a device** = drop one `devices/<category>/<model>.py` with an `EcoFlowDevice`
+subclass (declaring its `model`, `sn_prefixes`, `matches()`, per-platform
+`entity_descriptions()`, and `command_fn`s) and register it in `devices/__init__.py`.
+No platform code changes. Each device's command style is handled by its
+`command_fn`/`build_command`: the Stream/Delta-3 envelope (`cmdId/cmdFunc`), the legacy
+`moduleType`/`operateType` body, the `cmdSet`/`id` body, or `cmdCode` — all built via
+`devices/commands.py`.
+
+`resolve_device()` is **SN-prefix-authoritative**: a serial's prefix selects the model;
+quota fields only disambiguate models that share a prefix (e.g. Delta 3 Max vs Max Plus)
+or identify devices with an unknown serial.
 
 ## Disclaimer
 
-Not affiliated with or endorsed by EcoFlow. Field names follow the public quota schema
-and authoritative community references; some per-firmware fields may vary.
+Not affiliated with or endorsed by EcoFlow. Device definitions are generated from the
+official EcoFlow developer documentation (quota schemas + set-commands); some
+per-firmware fields, units, or command parameters may still need on-device verification.
