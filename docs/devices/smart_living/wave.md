@@ -46,7 +46,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default.
 | Battery software present | connectivity | `bms.bmsSwFlag` | 🔧 💤 |
 | Battery undervoltage | problem | `pd.bmsUnderVoltage` | 🔧 |
 | High pressure protection | safety | `motor.hpProtFlg` | 🔧 |
-| Energy-saving shutdown | power_save | `motor.ecoStopFlag` | 🔧 |
+| Energy-saving shutdown | — | `motor.ecoStopFlag` | 🔧 |
 
 ## Switches
 

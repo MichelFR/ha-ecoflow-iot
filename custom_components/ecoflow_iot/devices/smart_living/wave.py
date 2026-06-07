@@ -445,7 +445,6 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         key="eco_stop_flag",
         mqtt_key="motor.ecoStopFlag",
         name="Energy-saving shutdown",
-        device_class=BinarySensorDeviceClass.POWER_SAVE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
