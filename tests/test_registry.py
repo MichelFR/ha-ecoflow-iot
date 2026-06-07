@@ -90,6 +90,7 @@ cases = [
     ("D3M1ZA1A9H7H0136", {"powGetPv2": 0}, "Delta3MaxPlusDevice"),
     ("D3M1ZA1A9H7H0136", {}, "Delta3MaxDevice"),
     ("HJ31ZDH2ZF690029", {}, "PowerOceanDevice"),
+    ("J32EZAB1234567890", {}, "PowerOceanDevice"),
     ("BX11ZCB4EF2E0002", {}, "GlacierDevice"),
     ("M106Z1234567890", {}, "PowerKitsDevice"),
     ("KT21ZCH2ZF170012", {}, "WaveDevice"),
