@@ -40,7 +40,7 @@
           "mqtt_stale_seconds": "MQTT staleness threshold (seconds)"
         },
         "data_description": {
-          "poll_interval": "How often to fall back to the HTTP API when MQTT is unavailable.",
+          "poll_interval": "How often to poll the HTTP API (fallback when MQTT is unavailable, and the cadence for refreshing HTTP-only values).",
           "mqtt_stale_seconds": "If no MQTT message arrives within this window, the integration polls HTTP."
         }
       }

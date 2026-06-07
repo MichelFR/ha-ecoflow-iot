@@ -102,6 +102,24 @@ class EcoFlowDevice:
         """Return the entity descriptions for a platform (empty by default)."""
         return []
 
+    def has_http_only_entities(self) -> bool:
+        """Whether any entity on any platform is marked ``http_only``.
+
+        Used by the coordinator to decide if the device needs the slow HTTP
+        refresh while MQTT is connected.
+        """
+        return any(
+            desc.http_only
+            for platform in (
+                Platform.SENSOR,
+                Platform.BINARY_SENSOR,
+                Platform.SWITCH,
+                Platform.NUMBER,
+                Platform.SELECT,
+            )
+            for desc in self.entity_descriptions(platform)
+        )
+
     def build_command(self, command: dict[str, Any]) -> dict[str, Any]:
         """Map a ``command_fn`` result into the on-the-wire command payload.
 

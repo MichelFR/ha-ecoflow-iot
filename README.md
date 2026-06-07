@@ -96,7 +96,9 @@ regenerate it after changing entities with `python3 scripts/gen_device_docs.py`.
   discharged*, solar production) carry the right `state_class`, so they can be added
   to Home Assistant's **Energy** dashboard.
 - **Options** (gear icon on the integration): HTTP poll interval, MQTT staleness
-  threshold, and an MQTT on/off toggle.
+  threshold, and an MQTT on/off toggle. HTTP-only values (marked 🌐 in the per-device
+  docs) are refreshed over HTTP on the poll interval even while MQTT is connected, but
+  only for devices that have such entities.
 - **Re-authentication:** if you rotate your API keys, Home Assistant prompts you to
   re-enter them — no need to delete the integration.
 

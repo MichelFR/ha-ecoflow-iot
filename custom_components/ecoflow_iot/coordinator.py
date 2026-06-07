@@ -58,6 +58,9 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         self._mqtt: EcoFlowMqttClient | None = None
         self._cert: Certification | None = None
         self.devices: dict[str, EcoFlowDevice] = {}
+        # Serials that expose at least one http_only entity (refreshed over HTTP
+        # on the poll interval even while MQTT is connected).
+        self._http_only_sns: set[str] = set()
         self.data = {}
 
     @property
@@ -97,6 +100,9 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             states[sn] = state
 
         self.data = states
+        self._http_only_sns = {
+            sn for sn, dev in self.devices.items() if dev.has_http_only_entities()
+        }
         if not self.devices:
             raise UpdateFailed("no supported EcoFlow devices found")
 
@@ -155,7 +161,27 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 state = self.data.get(sn)
                 if state is not None:
                     state.merge_quota(quota, DataSource.HTTP)
+        else:
+            await self._async_refresh_http_only()
         return self.data
+
+    async def _async_refresh_http_only(self) -> None:
+        """While MQTT is the live source, refresh HTTP-only values on each tick.
+
+        Runs only for devices that expose an ``http_only`` entity, so the
+        cadence is the configured poll interval. The snapshot is merged without
+        touching ``data_source``/``last_mqtt_ts`` so MQTT remains the reported
+        live source.
+        """
+        for sn in self._http_only_sns:
+            try:
+                quota = await self._http.get_all_quota(sn)
+            except EcoFlowError as err:
+                _LOGGER.debug("HTTP-only refresh failed for %s: %s", sn, err)
+                continue
+            state = self.data.get(sn)
+            if state is not None:
+                state.quota.update(quota)
 
     def _should_poll_http(self) -> bool:
         """Decide whether this tick needs an HTTP refresh."""

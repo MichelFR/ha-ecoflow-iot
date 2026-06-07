@@ -126,6 +126,8 @@ def flags(d) -> str:
         parts.append("🔧")
     if d.entity_registry_enabled_default is False:
         parts.append("💤")
+    if getattr(d, "http_only", False):
+        parts.append("🌐")
     return " ".join(parts)
 
 
@@ -180,7 +182,8 @@ def render_device(cls, category) -> str:
         "> Every device also exposes an always-available **Connection** "
         "diagnostic sensor (MQTT state + data source).",
         "",
-        "Legend: 🔧 = diagnostic entity · 💤 = disabled by default.",
+        "Legend: 🔧 = diagnostic entity · 💤 = disabled by default · "
+        "🌐 = HTTP-only (refreshed on a slower HTTP cadence, not via MQTT).",
         "",
     ]
 
