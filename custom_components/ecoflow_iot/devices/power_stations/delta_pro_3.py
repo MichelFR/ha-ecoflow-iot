@@ -40,12 +40,9 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_stream_command
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
+from ..helpers import (
+    round2 as _round2,
+)
 
 
 # flowInfo* fields: 0 = off, 2 = on

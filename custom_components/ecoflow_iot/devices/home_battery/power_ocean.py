@@ -34,17 +34,14 @@ from ..base import (
     EcoFlowSensorEntityDescription,
     _EcoFlowDescription,
 )
+from ..helpers import (
+    round2 as _round2,
+)
 
 
 # ---------------------------------------------------------------------------
 # Value helpers
 # ---------------------------------------------------------------------------
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
-
 
 def _nested(outer_key: str, inner_key: str):
     """Return a quota_value_fn that extracts ``quota[outer_key][inner_key]``."""

@@ -42,38 +42,18 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_cmd_set_command
+from ..helpers import (
+    milli as _scale_ma,
+    milli as _scale_mv,
+    round2 as _round2,
+    to_int as _int_val,
+)
 
 # ---------------------------------------------------------------------------
 # Value helpers
 # ---------------------------------------------------------------------------
 
 _CMD_SET = 32  # All Delta Pro set commands use cmdSet=32
-
-
-def _scale_mv(value: Any) -> float | None:
-    """Convert milli-volts (mV) to volts (V)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000, 2)
-
-
-def _scale_ma(value: Any) -> float | None:
-    """Convert milli-amps (mA) to amps (A)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000, 2)
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
-
-
-def _int_val(value: Any) -> int | None:
-    if value is None:
-        return None
-    return int(value)
 
 
 # ---------------------------------------------------------------------------

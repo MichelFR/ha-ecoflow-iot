@@ -41,6 +41,10 @@ from ..base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..helpers import (
+    deci as _deci,
+    round2 as _round0,
+)
 
 # All heartbeat fields are published under the "20_1." prefix.
 _P = "20_1."
@@ -52,20 +56,6 @@ _MATCH_KEY = f"{_P}batSoc"
 # ---------------------------------------------------------------------------
 # Scaling helpers
 # ---------------------------------------------------------------------------
-
-def _deci(value: Any) -> float | None:
-    """Convert a deci-unit integer (0.1 x) to its base-unit float."""
-    if value is None:
-        return None
-    return round(float(value) / 10.0, 2)
-
-
-def _round0(value: Any) -> float | None:
-    """Return value as a rounded float (no scaling needed)."""
-    if value is None:
-        return None
-    return round(float(value), 2)
-
 
 # ---------------------------------------------------------------------------
 # Command builders (cmdCode style — no legacy envelope)

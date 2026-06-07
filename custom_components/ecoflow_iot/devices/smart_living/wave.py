@@ -52,6 +52,12 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..helpers import (
+    centi as _scale_100,
+    deci as _scale_10,
+    milli as _scale_1000,
+    round2 as _round2,
+)
 
 # All WAVE set commands use moduleType 1.
 _MODULE_TYPE = 1
@@ -92,38 +98,11 @@ _DRAINAGE_MAP: dict[str, int] = {
 # ---------------------------------------------------------------------------
 
 
-def _scale_100(value: Any) -> float | None:
-    """Divide by 100 (×100-magnified temperatures)."""
-    if value is None:
-        return None
-    return round(float(value) / 100, 2)
-
-
-def _scale_10(value: Any) -> float | None:
-    """Divide by 10 (0.1-unit temperatures)."""
-    if value is None:
-        return None
-    return round(float(value) / 10, 1)
-
-
-def _scale_1000(value: Any) -> float | None:
-    """Divide by 1000 (mV→V, mA→A)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000, 3)
-
-
 def _bat_volt(value: Any) -> float | None:
     """pd.batVolt: unit 0.01 V."""
     if value is None:
         return None
     return round(float(value) / 100, 2)
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
 
 
 def _ac_volt(value: Any) -> float | None:

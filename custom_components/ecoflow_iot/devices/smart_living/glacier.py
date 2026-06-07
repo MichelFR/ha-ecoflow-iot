@@ -38,6 +38,11 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..helpers import (
+    deci as _deci_celsius,
+    milli as _scale_1000,
+    round2 as _round2,
+)
 
 # moduleType = 1 (PD) for all Glacier set commands.
 _MODULE_TYPE = 1
@@ -45,26 +50,6 @@ _MODULE_TYPE = 1
 # ---------------------------------------------------------------------------
 # Scaling helpers
 # ---------------------------------------------------------------------------
-
-
-def _deci_celsius(value: Any) -> float | None:
-    """Convert a deci-°C integer (×10) to °C."""
-    if value is None:
-        return None
-    return round(float(value) / 10, 1)
-
-
-def _scale_1000(value: Any) -> float | None:
-    """Convert a milli-unit integer to its base unit (mV→V, mA→A)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000, 3)
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
 
 
 # ---------------------------------------------------------------------------

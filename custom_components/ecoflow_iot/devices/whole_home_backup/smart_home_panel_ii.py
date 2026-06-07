@@ -37,6 +37,10 @@ from ..base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..helpers import (
+    deci as _scale_10,
+    round2 as _round2,
+)
 
 # ---------------------------------------------------------------------------
 # Command envelope
@@ -53,19 +57,6 @@ def _pd303_command(params: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Value helpers
 # ---------------------------------------------------------------------------
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
-
-
-def _scale_10(value: Any) -> float | None:
-    """The masterCur field is stored as 10x the real ampere value."""
-    if value is None:
-        return None
-    return round(float(value) / 10.0, 1)
 
 
 # ---------------------------------------------------------------------------

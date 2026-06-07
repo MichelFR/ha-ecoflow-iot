@@ -39,38 +39,17 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..helpers import (
+    centi as _scale_100,
+    deci as _scale_10,
+    milli as _scale_1000,
+    round2 as _round2,
+)
 
 
 # ---------------------------------------------------------------------------
 # Value helpers
 # ---------------------------------------------------------------------------
-
-def _scale_1000(value: Any) -> float | None:
-    """Convert a milli-unit integer to its base unit (mV->V, mA->A)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000, 2)
-
-
-def _scale_10(value: Any) -> float | None:
-    """Divide by 10 (firmware amplifies actual value x10)."""
-    if value is None:
-        return None
-    return round(float(value) / 10, 2)
-
-
-def _scale_100(value: Any) -> float | None:
-    """Divide by 100 (firmware amplifies actual value x100)."""
-    if value is None:
-        return None
-    return round(float(value) / 100, 2)
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
-
 
 # ---------------------------------------------------------------------------
 # Sensors — PD (moduleType 1, prefix pd.)

@@ -39,24 +39,15 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..helpers import (
+    milli as _scale_1000,
+    round2 as _round2,
+)
 
 
 # ---------------------------------------------------------------------------
 # Value helpers
 # ---------------------------------------------------------------------------
-
-def _scale_1000(value: Any) -> float | None:
-    """Convert a milli-unit integer to its base unit (mV→V, mA→A)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000, 2)
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
-
 
 # ---------------------------------------------------------------------------
 # Sensors – PD (moduleType 1)

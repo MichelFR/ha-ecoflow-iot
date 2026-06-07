@@ -53,6 +53,9 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..helpers import (
+    round2 as _round2,
+)
 
 # Serial-number prefix documented in spec examples (SP10ZAW5…).
 _SN_PREFIX = "SP10"
@@ -64,12 +67,6 @@ _CHANNEL_COUNT = 10
 # ---------------------------------------------------------------------------
 # Helper value functions
 # ---------------------------------------------------------------------------
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
 
 
 def _bool_from_int(value: Any) -> bool | None:

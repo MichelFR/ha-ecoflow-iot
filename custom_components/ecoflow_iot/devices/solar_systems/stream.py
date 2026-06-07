@@ -39,28 +39,14 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_stream_command
+from ..helpers import (
+    abs_round as _abs_round,
+    milli as _scale_1000,
+    round2 as _round2,
+)
 
 # Quota keys that only the battery-equipped variants report.
 _BATTERY_MARKERS = ("cmsBattSoc", "bmsBattSoc", "soc")
-
-
-def _scale_1000(value: Any) -> float | None:
-    """Convert a milli-unit integer to its base unit (mV->V, mA->A)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000, 2)
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
-
-
-def _abs_round(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(abs(float(value)), 2)
 
 
 def _computed_pv_power(quota: Mapping[str, Any], amp_key: str, vol_key: str) -> float | None:

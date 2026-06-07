@@ -36,18 +36,14 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_stream_command
+from ..helpers import (
+    round2 as _round2,
+)
 
 
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
-
-def _round2(value: Any) -> float | None:
-    """Round a numeric value to 2 decimal places."""
-    if value is None:
-        return None
-    return round(float(value), 2)
 
 
 def _ac_out_on(value: Any) -> bool | None:

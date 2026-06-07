@@ -36,17 +36,14 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_stream_command
+from ..helpers import (
+    round2 as _round2,
+)
 
 
 # ---------------------------------------------------------------------------
 # Value helpers
 # ---------------------------------------------------------------------------
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
-
 
 def _ac_out_on(value: Any) -> bool:
     """AC output is ON when the flow-info value is NOT 4."""

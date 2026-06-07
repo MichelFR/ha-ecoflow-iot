@@ -55,6 +55,11 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..helpers import (
+    deci as _scale_01a,
+    milli as _scale_milli,
+    round2 as _round2,
+)
 
 # ---------------------------------------------------------------------------
 # moduleType constants (from spec table)
@@ -69,26 +74,6 @@ _MT_WIRELESS: int = 15370
 # ---------------------------------------------------------------------------
 # Value-transform helpers
 # ---------------------------------------------------------------------------
-
-def _scale_milli(value: Any) -> float | None:
-    """Convert milli-unit integer (mV / mA) to base unit (V / A)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000.0, 3)
-
-
-def _scale_01a(value: Any) -> float | None:
-    """Convert 0.1 A units to A (used by ``totalAmp``)."""
-    if value is None:
-        return None
-    return round(float(value) / 10.0, 2)
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
-
 
 def _bool_int(value: Any) -> bool | None:
     if value is None:

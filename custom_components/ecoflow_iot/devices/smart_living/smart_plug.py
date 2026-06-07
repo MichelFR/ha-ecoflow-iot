@@ -42,6 +42,11 @@ from ..base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..helpers import (
+    deci as _scale_tenth,
+    milli as _scale_1000,
+    round2 as _round2,
+)
 
 # Example SN from the documentation: "HW52ZDH1RF3J0033"
 # SN prefix "HW52" is derived from documented example SNs.
@@ -54,26 +59,6 @@ _MARKER_KEY = "2_1.switchSta"
 # ---------------------------------------------------------------------------
 # Scaling helpers
 # ---------------------------------------------------------------------------
-
-
-def _scale_tenth(value: Any) -> float | None:
-    """Convert a 0.1-unit integer to its base unit (0.1 W -> W, 0.1 A -> A)."""
-    if value is None:
-        return None
-    return round(float(value) / 10, 1)
-
-
-def _scale_1000(value: Any) -> float | None:
-    """Convert a milli-unit integer to its base unit (mA -> A)."""
-    if value is None:
-        return None
-    return round(float(value) / 1000, 3)
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
 
 
 # ---------------------------------------------------------------------------

@@ -40,6 +40,9 @@ from ..base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..helpers import (
+    round2 as _round2,
+)
 
 # ---------------------------------------------------------------------------
 # Helper: build a cmdCode-style command body.
@@ -56,12 +59,6 @@ def _cmd(code: str, params: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Scaling helpers
 # ---------------------------------------------------------------------------
-
-
-def _round2(value: Any) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
 
 
 # ---------------------------------------------------------------------------
