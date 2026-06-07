@@ -52,32 +52,6 @@ New prefixes are cheap to add: it's usually a one-line change to the matching de
 | `SP10` | Smart Home Panel | medium |
 | `HD31` | Smart Home Panel 2 | medium |
 
-## Known but NOT yet implemented (from community sources)
-
-These appear in community data but have no device module here yet. If you own one,
-please open an issue.
-
-| Prefix(es) | Model | Notes |
-|---|---|---|
-| `R601` | River Max (gen 1) | older device, different schema |
-| `R655Z` | River 3 | |
-| `R631Z` | River 3 Plus | |
-| `P231Z` | Delta 3 | API may omit `productName` |
-| `P351Z` | Delta 3 Plus | |
-| `PR11` / `PR12` / `PR21` | Delta 3 Air variants | |
-| `AC71ZC` | WAVE 3 | |
-| `RF45Z` | Glacier Classic 55L | |
-| `F371Z` | Alternator Charger 800W | |
-| `DGEBZ5R` / `G351` / `G371` | Smart Generator (Dual Fuel) | |
-| `HZ31` | Solar Tracker | |
-| `H101Z` | Blade (robot mower) | |
-| `HC31` / `R37` | PowerOcean DC FIT / Plus | |
-| `BK21Z` / `SM3A` | Smart Meter | |
-
-**Non-unique prefixes (can't be identified by prefix alone):** gen-1 River/Delta units
-often share generic codes like `Rxxx`, `DAEBZ5…`, `Dxxxxx`. A 4-character prefix cannot
-distinguish these models.
-
 ## Sources
 
 - EcoFlow developer documentation example serials (per-device specs).
