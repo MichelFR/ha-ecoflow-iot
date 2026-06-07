@@ -2,7 +2,7 @@
   "issues": {
     "unsupported_device": {
       "title": "Unsupported EcoFlow device ({prefix})",
-      "description": "An EcoFlow device with serial prefix `{prefix}` is bound to your account but is not supported yet by this integration, so no entities were created for it. Only the prefix is shown for privacy. Please open an issue at https://github.com/MichelFR/ha-ecoflow/issues including this prefix so support can be added."
+      "description": "An EcoFlow device with serial prefix `{prefix}` is bound to your account but is not supported yet by this integration, so no entities were created for it. Only the prefix is shown for privacy. Please open an issue on the project's GitHub repository including this prefix so support can be added."
     }
   },
   "config": {
