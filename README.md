@@ -98,9 +98,10 @@ full serial) so it can be added.
   totals…), controls (switches/numbers/selects for the documented settings) and an
   always-available **Connection** diagnostic sensor. See
   [Supported devices](#supported-devices) for the full per-device list.
-- **Energy dashboard:** the cumulative `Wh`/`kWh` sensors (e.g. *Total charged/
-  discharged*, solar production) carry the right `state_class`, so they can be added
-  to Home Assistant's **Energy** dashboard.
+- **Energy dashboard:** the cumulative `Wh`/`kWh` energy sensors carry the right
+  `device_class`/`state_class`, so they can be added to Home Assistant's **Energy**
+  dashboard. For the Stream, see the [Energy Dashboard setup guide](docs/energy_dashboard.md)
+  (which sensor goes in each field, plus the grid/battery sign conventions).
 - **Options** (gear icon on the integration): HTTP poll interval, MQTT staleness
   threshold, and an MQTT on/off toggle. HTTP-only values (marked 🌐 in the per-device
   docs) are refreshed over HTTP on the poll interval even while MQTT is connected, but
