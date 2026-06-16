@@ -21,8 +21,10 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery cycles | — | — | `cycles` | 🔧 |
 | Time to full | duration | min | `cmsChgRemTime` | 🔧 |
 | Time to empty | duration | min | `cmsDsgRemTime` | 🔧 |
-| Total charged | energy | Wh | `accuChgEnergy` |  |
-| Total discharged | energy | Wh | `accuDsgEnergy` |  |
+| Total charged | energy | Wh | `accuChgEnergy` | 💤 |
+| Total discharged | energy | Wh | `accuDsgEnergy` | 💤 |
+| Battery charge energy | energy | Wh | _integrated_ |  |
+| Battery discharge energy | energy | Wh | _integrated_ |  |
 | Battery power | power | W | `powGetBpCms` |  |
 | Load power | power | W | `powGetSysLoad` |  |
 | Load from battery | power | W | `powGetSysLoadFromBp` | 💤 |
@@ -95,4 +97,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 61 — 45 sensor, 7 binary_sensor, 4 switch, 4 number, 1 select._
+_Entity totals: 63 — 47 sensor, 7 binary_sensor, 4 switch, 4 number, 1 select._

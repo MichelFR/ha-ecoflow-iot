@@ -203,6 +203,11 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.MINUTES,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    # accuChgEnergy/accuDsgEnergy are not in the documented quota schema and are
+    # not reported by current firmware, so they sit at "unknown" and never show
+    # up as Energy-Dashboard battery statistics. Kept (disabled by default) for
+    # any firmware that does emit them; the Energy Dashboard should instead use
+    # the powGetBpCms-derived charge/discharge energy below.
     EcoFlowSensorEntityDescription(
         key="accu_chg_energy",
         mqtt_key="accuChgEnergy",
@@ -210,6 +215,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        entity_registry_enabled_default=False,
     ),
     EcoFlowSensorEntityDescription(
         key="accu_dsg_energy",
@@ -218,6 +224,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        entity_registry_enabled_default=False,
     ),
 )
 
@@ -370,6 +377,41 @@ def _grid_import_power(quota: Mapping[str, Any]) -> float | None:
 def _grid_export_power(quota: Mapping[str, Any]) -> float | None:
     value = quota.get("gridConnectionPower")
     return max(-float(value), 0.0) if value is not None else None
+
+
+def _battery_charge_power(quota: Mapping[str, Any]) -> float | None:
+    # powGetBpCms is signed: positive = charging, negative = discharging.
+    value = quota.get("powGetBpCms")
+    return max(float(value), 0.0) if value is not None else None
+
+
+def _battery_discharge_power(quota: Mapping[str, Any]) -> float | None:
+    value = quota.get("powGetBpCms")
+    return max(-float(value), 0.0) if value is not None else None
+
+
+_BATTERY_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
+    EcoFlowIntegralSensorEntityDescription(
+        key="battery_charge_energy",
+        name="Battery charge energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        suggested_display_precision=1,
+        power_fn=_battery_charge_power,
+        available_fn=lambda q: "powGetBpCms" in q,
+    ),
+    EcoFlowIntegralSensorEntityDescription(
+        key="battery_discharge_energy",
+        name="Battery discharge energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        suggested_display_precision=1,
+        power_fn=_battery_discharge_power,
+        available_fn=lambda q: "powGetBpCms" in q,
+    ),
+)
 
 
 _ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
@@ -700,6 +742,7 @@ class StreamDevice(EcoFlowDevice):
         if platform == Platform.SENSOR:
             return [
                 *_BATTERY_SENSORS,
+                *_BATTERY_ENERGY_SENSORS,
                 *_POWERFLOW_SENSORS,
                 *_GRID_SENSORS,
                 *_PV_SENSORS,
