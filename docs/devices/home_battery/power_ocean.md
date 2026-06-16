@@ -1,6 +1,6 @@
 # EcoFlow PowerOcean
 
-**Category:** Home Battery · **Auto-detected by SN prefix:** `HJ31`
+**Category:** Home Battery · **Auto-detected by SN prefix:** `HJ31`, `J32E`
 
 > Generated from `custom_components/ecoflow_iot/devices/home_battery/power_ocean.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).

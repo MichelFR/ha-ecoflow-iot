@@ -32,6 +32,7 @@ from homeassistant.const import (
 from ..base import (
     EcoFlowBinarySensorEntityDescription,
     EcoFlowDevice,
+    EcoFlowIntegralSensorEntityDescription,
     EcoFlowNumberEntityDescription,
     EcoFlowSelectEntityDescription,
     EcoFlowSensorEntityDescription,
@@ -345,6 +346,66 @@ _PV_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 )
 
 
+# --- Derived energy (Energy Dashboard) ---------------------------------------
+#
+# Stream reports grid/solar power but no cumulative energy in the live quota
+# (energy lives only in the separate historical-data API). These sensors
+# integrate the live power into Wh totals so the device can populate the
+# Energy Dashboard's solar-production and grid consumption/return sources.
+# ``gridConnectionPower`` is signed: positive = drawn from grid (import),
+# negative = fed to grid (export); each leg is clamped non-negative so its
+# running total only ever increases.
+
+
+def _solar_power(quota: Mapping[str, Any]) -> float | None:
+    value = quota.get("powGetPvSum")
+    return max(float(value), 0.0) if value is not None else None
+
+
+def _grid_import_power(quota: Mapping[str, Any]) -> float | None:
+    value = quota.get("gridConnectionPower")
+    return max(float(value), 0.0) if value is not None else None
+
+
+def _grid_export_power(quota: Mapping[str, Any]) -> float | None:
+    value = quota.get("gridConnectionPower")
+    return max(-float(value), 0.0) if value is not None else None
+
+
+_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
+    EcoFlowIntegralSensorEntityDescription(
+        key="solar_energy",
+        name="Solar energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        suggested_display_precision=1,
+        power_fn=_solar_power,
+        available_fn=lambda q: "powGetPvSum" in q,
+    ),
+    EcoFlowIntegralSensorEntityDescription(
+        key="grid_import_energy",
+        name="Grid import energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        suggested_display_precision=1,
+        power_fn=_grid_import_power,
+        available_fn=lambda q: "gridConnectionPower" in q,
+    ),
+    EcoFlowIntegralSensorEntityDescription(
+        key="grid_export_energy",
+        name="Grid export energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        suggested_display_precision=1,
+        power_fn=_grid_export_power,
+        available_fn=lambda q: "gridConnectionPower" in q,
+    ),
+)
+
+
 def _pv_string_sensors(count: int) -> tuple[EcoFlowSensorEntityDescription, ...]:
     """Build per-MPPT power/voltage/current sensors for ``count`` strings."""
     descs: list[EcoFlowSensorEntityDescription] = []
@@ -608,6 +669,7 @@ class StreamDevice(EcoFlowDevice):
                 *_PV_SENSORS,
                 *_pv_string_sensors(self.pv_string_count),
                 *_AC_SENSORS,
+                *_ENERGY_SENSORS,
                 *_DIAG_SENSORS,
             ]
         if platform == Platform.BINARY_SENSOR:
@@ -644,6 +706,7 @@ class StreamMicroinverterDevice(EcoFlowDevice):
                 *_GRID_SENSORS,
                 *_PV_SENSORS,
                 *_pv_string_sensors(self.pv_string_count),
+                *_ENERGY_SENSORS,
                 *_DIAG_SENSORS,
             ]
         if platform == Platform.BINARY_SENSOR:

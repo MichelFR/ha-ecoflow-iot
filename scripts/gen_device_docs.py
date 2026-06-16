@@ -113,6 +113,8 @@ def unit(d) -> str:
 def quota_key(d) -> str:
     if getattr(d, "mqtt_key", ""):
         return f"`{d.mqtt_key}`"
+    if getattr(d, "power_fn", None) is not None:
+        return "_integrated_"
     if getattr(d, "quota_value_fn", None) is not None:
         return "_computed_"
     if getattr(d, "current_option_fn", None) is not None:

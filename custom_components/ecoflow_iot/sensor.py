@@ -6,16 +6,21 @@ from datetime import datetime, timezone
 from typing import Any
 
 from homeassistant.components.sensor import (
+    RestoreSensor,
     SensorDeviceClass,
     SensorEntity,
 )
 from homeassistant.const import EntityCategory, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from . import EcoFlowConfigEntry
 from .coordinator import EcoFlowCoordinator
-from .devices.base import EcoFlowSensorEntityDescription
+from .devices.base import (
+    EcoFlowIntegralSensorEntityDescription,
+    EcoFlowSensorEntityDescription,
+)
 from .entity import EcoFlowEntity
 from .models import ConnectionState
 
@@ -33,7 +38,10 @@ async def async_setup_entry(
     for sn, device in coordinator.devices.items():
         entities.append(EcoFlowConnectionSensor(coordinator, sn))
         for description in device.entity_descriptions(_PLATFORM):
-            entities.append(EcoFlowSensor(coordinator, sn, description))
+            if isinstance(description, EcoFlowIntegralSensorEntityDescription):
+                entities.append(EcoFlowIntegralSensor(coordinator, sn, description))
+            else:
+                entities.append(EcoFlowSensor(coordinator, sn, description))
     async_add_entities(entities)
 
 
@@ -46,6 +54,79 @@ class EcoFlowSensor(EcoFlowEntity, SensorEntity):
     def native_value(self) -> Any:
         """Return the current sensor value."""
         return self._raw_value()
+
+
+class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
+    """Energy (Wh) accumulated by integrating an instantaneous power (W).
+
+    Stream-family devices report grid/solar *power* but no cumulative *energy*,
+    so this entity integrates that power on every coordinator update
+    (trapezoidal rule) into a monotonically increasing Wh total suitable for the
+    Home Assistant Energy Dashboard. The total is restored across restarts so
+    statistics stay continuous, and the integration pauses (rather than bridges)
+    whenever the source value is unavailable or the device goes offline.
+    """
+
+    entity_description: EcoFlowIntegralSensorEntityDescription
+
+    def __init__(
+        self,
+        coordinator: EcoFlowCoordinator,
+        sn: str,
+        description: EcoFlowIntegralSensorEntityDescription,
+    ) -> None:
+        """Initialise the running total and last-sample tracking."""
+        super().__init__(coordinator, sn, description)
+        self._energy_wh: float = 0.0
+        self._last_power: float | None = None
+        self._last_ts: datetime | None = None
+
+    async def async_added_to_hass(self) -> None:
+        """Restore the accumulated total and seed the first sample."""
+        await super().async_added_to_hass()
+        last = await self.async_get_last_sensor_data()
+        if last is not None and last.native_value is not None:
+            try:
+                self._energy_wh = float(last.native_value)
+            except (TypeError, ValueError):
+                self._energy_wh = 0.0
+        # Record the current sample as the integration start without
+        # back-dating energy across the restart gap.
+        self._accumulate(write=False)
+
+    @property
+    def native_value(self) -> float:
+        """Return the accumulated energy in Wh."""
+        return round(self._energy_wh, 3)
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Integrate the latest power sample, then write state."""
+        self._accumulate(write=True)
+
+    def _current_power(self) -> float | None:
+        """Instantaneous power to integrate, or None to pause integration."""
+        state = self._state
+        if state is None or not state.online:
+            return None
+        return self.entity_description.power_fn(self._quota)
+
+    def _accumulate(self, *, write: bool) -> None:
+        """Add ``power * dt`` (trapezoidal) since the previous sample."""
+        now = dt_util.utcnow()
+        power = self._current_power()
+        if (
+            power is not None
+            and self._last_power is not None
+            and self._last_ts is not None
+        ):
+            dt_hours = (now - self._last_ts).total_seconds() / 3600.0
+            if dt_hours > 0:
+                self._energy_wh += (power + self._last_power) / 2.0 * dt_hours
+        self._last_ts = now
+        self._last_power = power
+        if write:
+            self.async_write_ha_state()
 
 
 class EcoFlowConnectionSensor(EcoFlowEntity, SensorEntity):

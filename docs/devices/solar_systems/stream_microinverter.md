@@ -24,6 +24,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Solar string 2 power | power | W | _computed_ |  |
 | Solar string 2 voltage | voltage | V | `plugInInfoPv2Vol` | 🔧 💤 |
 | Solar string 2 current | current | A | `plugInInfoPv2Amp` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Grid import energy | energy | Wh | _integrated_ |  |
+| Grid export energy | energy | Wh | _integrated_ |  |
 | Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | 🔧 💤 |
 | Feed-in power limit | power | W | `feedGridModePowLimit` | 🔧 |
 
@@ -36,4 +39,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 17 — 15 sensor, 2 binary_sensor, 0 switch, 0 number, 0 select._
+_Entity totals: 20 — 18 sensor, 2 binary_sensor, 0 switch, 0 number, 0 select._

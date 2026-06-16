@@ -49,6 +49,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Solar string 4 current | current | A | `plugInInfoPv4Amp` | 🔧 💤 |
 | AC socket 1 power | power | W | `powGetSchuko1` |  |
 | AC socket 2 power | power | W | `powGetSchuko2` |  |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Grid import energy | energy | Wh | _integrated_ |  |
+| Grid export energy | energy | Wh | _integrated_ |  |
 | Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | 🔧 💤 |
 | Feed-in power limit | power | W | `feedGridModePowLimit` | 🔧 |
 
@@ -90,4 +93,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 56 — 40 sensor, 7 binary_sensor, 4 switch, 4 number, 1 select._
+_Entity totals: 59 — 43 sensor, 7 binary_sensor, 4 switch, 4 number, 1 select._

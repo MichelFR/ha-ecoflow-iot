@@ -44,6 +44,25 @@ class EcoFlowSensorEntityDescription(_EcoFlowDescription, SensorEntityDescriptio
     """Describes a read-only sensor."""
 
 
+# Given the full quota map, return the instantaneous power (in W) to integrate,
+# or None to pause integration (value missing / device offline).
+PowerFn = Callable[[Mapping[str, Any]], float | None]
+
+
+@dataclass(frozen=True, kw_only=True)
+class EcoFlowIntegralSensorEntityDescription(EcoFlowSensorEntityDescription):
+    """A sensor that integrates an instantaneous power (W) into energy (Wh).
+
+    For devices that report power but no cumulative energy counter (e.g. Stream
+    grid/solar): the sensor platform accumulates ``power_fn(quota) * dt`` over
+    time and reports a monotonically increasing Wh total, usable directly as an
+    Energy-Dashboard source. ``power_fn`` should return a non-negative value (or
+    None) so the running total only ever increases.
+    """
+
+    power_fn: PowerFn
+
+
 @dataclass(frozen=True, kw_only=True)
 class EcoFlowBinarySensorEntityDescription(
     _EcoFlowDescription, BinarySensorEntityDescription
