@@ -50,6 +50,11 @@ full serial) so it can be added.
   last MQTT update time.
 - **Full entity coverage** — sensors (battery, solar per-MPPT, grid/AC, inverter, power
   flow, energy totals), binary sensors, switches, numbers and a mode select.
+- **Energy Dashboard ready** — the Stream exposes cumulative `Wh` energy sensors for
+  solar production, grid import/export, battery charge/discharge and each AC socket, so
+  it plugs straight into Home Assistant's **Energy** dashboard. See the
+  [Energy Dashboard setup guide](docs/energy_dashboard.md) for the per-field mapping and
+  the grid/battery power sign conventions.
 - Config flow with region selection, reauth, options (poll interval, MQTT staleness,
   MQTT enable/disable), and redacted diagnostics.
 

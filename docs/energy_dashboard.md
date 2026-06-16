@@ -24,14 +24,14 @@ All energy sensors below are `total_increasing` Wh and **enabled by default**. T
 grid/solar/socket/battery energy sensors are *derived* by integrating the device's live
 power (the Stream developer API does not report cumulative energy in its live quota).
 
-| Energy dialog | Energy sensor (required) | Power sensor (optional) | Power type |
+| Energy dialog field | Energy sensor (required) | Power sensor (optional) | Power type |
 |---|---|---|---|
-| **Solar panels** → *Energie der PV-Erzeugung* | **Solar energy** | Solar power | — |
-| **Grid** → *Aus dem Netz bezogene Energie* (consumption / import) | **Grid import energy** | Grid power | **Standard** |
-| **Grid** → *In das Netz eingespeiste Energie* (return / export) | **Grid export energy** | (same Grid power sensor) | — |
-| **Battery** → *In die Batterie geladene Energie* (charged in) | **Battery charge energy** | Battery power | **Inverted** |
-| **Battery** → *Aus der Batterie entladene Energie* (discharged out) | **Battery discharge energy** | (same Battery power sensor) | — |
-| **Battery** → *Batterieladezustand-Sensor* (SoC %) | — | **Battery** (SoC) | — |
+| **Solar panels** → *Solar production energy* | **Solar energy** | Solar power | — |
+| **Grid** → *Grid consumption* (energy consumed from the grid) | **Grid import energy** | Grid power | **Standard** |
+| **Grid** → *Return to grid* (energy returned to the grid) | **Grid export energy** | (same Grid power sensor) | — |
+| **Battery** → *Energy going into the battery* | **Battery charge energy** | Battery power | **Inverted** |
+| **Battery** → *Energy coming out of the battery* | **Battery discharge energy** | (same Battery power sensor) | — |
+| **Battery** → *Battery state of charge sensor* | — | **Battery** (SoC) | — |
 | **Individual devices** | **AC socket 1 energy** / **AC socket 2 energy** | — | — |
 
 > The **Stream Microinverter** has no battery and no AC sockets, so only the solar and
@@ -39,7 +39,7 @@ power (the Stream developer API does not report cumulative energy in its live qu
 
 ## Sign conventions (Standard vs Inverted)
 
-These only matter for the optional **power** overlay ("Art der Leistungsmessung"). HA's
+These only matter for the optional **power** overlay ("Type of power measurement"). HA's
 **Standard** means *positive = consumption / draw*. Match it as follows:
 
 - **Grid power → Standard.** Our `Grid power` (`gridConnectionPower`) is positive when
@@ -48,8 +48,8 @@ These only matter for the optional **power** overlay ("Art der Leistungsmessung"
   **charging** and negative when discharging. HA's standard battery convention is the
   opposite (positive = discharge), so choose **Inverted**.
 
-"Zwei Sensoren" (two sensors) doesn't apply — we expose a single signed power sensor for
-grid and for battery, not separate import/export or charge/discharge power sensors.
+"Two sensors" doesn't apply — we expose a single signed power sensor for grid and for
+battery, not separate import/export or charge/discharge power sensors.
 
 **Verify empirically after saving:** with the battery clearly charging, or the grid
 clearly importing (load on, no sun), the live flow should point the right way. If it's
@@ -59,8 +59,8 @@ reversed, flip Standard ↔ Inverted.
 
 The two grid energy fields are easy to mix up:
 
-- *Aus dem Netz **bezogene** Energie* = energy drawn **from** the grid → **Grid import energy**
-- *In das Netz **eingespeiste** Energie* = energy fed **into** the grid → **Grid export energy**
+- *Grid consumption* = energy consumed **from** the grid → **Grid import energy**
+- *Return to grid* = energy returned **to** the grid → **Grid export energy**
 
 If swapped, your consumption and return — and any cost/feed-in tracking — will be
 backwards. (Tell-tale: the auto-filled display name shows the wrong sensor.)
