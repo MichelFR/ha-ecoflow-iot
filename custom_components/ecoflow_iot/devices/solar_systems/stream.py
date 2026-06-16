@@ -475,6 +475,42 @@ _AC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
 )
 
+
+def _socket_power(key: str):
+    """Return a power_fn yielding a socket's (non-negative) output power."""
+
+    def _fn(quota: Mapping[str, Any]) -> float | None:
+        value = quota.get(key)
+        return max(float(value), 0.0) if value is not None else None
+
+    return _fn
+
+
+# Per-socket energy totals for the Energy Dashboard's "individual devices"
+# (full Stream only — the microinverter has no AC sockets).
+_AC_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
+    EcoFlowIntegralSensorEntityDescription(
+        key="schuko1_energy",
+        name="AC socket 1 energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        suggested_display_precision=1,
+        power_fn=_socket_power("powGetSchuko1"),
+        available_fn=lambda q: "powGetSchuko1" in q,
+    ),
+    EcoFlowIntegralSensorEntityDescription(
+        key="schuko2_energy",
+        name="AC socket 2 energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        suggested_display_precision=1,
+        power_fn=_socket_power("powGetSchuko2"),
+        available_fn=lambda q: "powGetSchuko2" in q,
+    ),
+)
+
 _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="wifi_rssi",
@@ -670,6 +706,7 @@ class StreamDevice(EcoFlowDevice):
                 *_pv_string_sensors(self.pv_string_count),
                 *_AC_SENSORS,
                 *_ENERGY_SENSORS,
+                *_AC_ENERGY_SENSORS,
                 *_DIAG_SENSORS,
             ]
         if platform == Platform.BINARY_SENSOR:
