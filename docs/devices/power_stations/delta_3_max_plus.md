@@ -35,6 +35,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | `cmsChgDsgState` |  |
 | AC output | power | `flowInfoAcOut` |  |
 | AC2 output | power | `flowInfoAc2Out` |  |
 | DC output | power | `flowInfo12v` |  |
@@ -62,4 +63,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 33 — 19 sensor, 4 binary_sensor, 7 switch, 3 number, 0 select._
+_Entity totals: 34 — 19 sensor, 5 binary_sensor, 7 switch, 3 number, 0 select._

@@ -58,6 +58,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | `chargeWattPower` |  |
 | Storm warning | safety | `stormIsEnable` |  |
 | EPS mode | power | `epsModeInfo` | 🔧 |
 
@@ -104,4 +105,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 70 — 42 sensor, 2 binary_sensor, 8 switch, 17 number, 1 select._
+_Entity totals: 71 — 42 sensor, 3 binary_sensor, 8 switch, 17 number, 1 select._

@@ -50,6 +50,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | `20_1.batInputWatts` |  |
 | Solar string 1 active | running | `20_1.pv1CtrlMpptOffFlag` | 🔧 |
 | Solar string 2 active | running | `20_1.pv2CtrlMpptOffFlag` | 🔧 |
 | Battery active | running | `20_1.batOffFlag` | 🔧 |
@@ -77,4 +78,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 48 — 34 sensor, 9 binary_sensor, 0 switch, 4 number, 1 select._
+_Entity totals: 49 — 34 sensor, 10 binary_sensor, 0 switch, 4 number, 1 select._

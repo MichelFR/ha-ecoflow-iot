@@ -1013,6 +1013,14 @@ def _lddc_channel_sensors(count: int = 12) -> tuple[EcoFlowSensorEntityDescripti
 # ---------------------------------------------------------------------------
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
+    EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        mqtt_key="inWatts",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        value_fn=lambda v: float(v) > 0,
+        available_fn=lambda q: "inWatts" in q,
+    ),
     # BBC_IN
     EcoFlowBinarySensorEntityDescription(
         key="bbcin_dc_in_state",

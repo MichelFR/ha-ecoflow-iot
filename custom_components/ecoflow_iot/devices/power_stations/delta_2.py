@@ -1025,6 +1025,14 @@ _MPPT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        mqtt_key="bms_bmsStatus.inputWatts",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        value_fn=lambda v: float(v) > 0,
+        available_fn=lambda q: "bms_bmsStatus.inputWatts" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
         key="mppt_car_state",
         mqtt_key="mppt.carState",
         name="Car charger",

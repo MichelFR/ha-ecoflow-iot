@@ -730,6 +730,14 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        mqtt_key="hs_yj751_pd_appshow_addr.wattsInSum",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        value_fn=lambda v: float(v) > 0,
+        available_fn=lambda q: "hs_yj751_pd_appshow_addr.wattsInSum" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
         key="wireless_4g_on",
         mqtt_key="hs_yj751_pd_appshow_addr.wireless4gOn",
         name="4G enabled",

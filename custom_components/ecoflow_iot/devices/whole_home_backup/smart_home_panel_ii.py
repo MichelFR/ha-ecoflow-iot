@@ -263,6 +263,14 @@ def _circuit_sensors(count: int = _CIRCUIT_COUNT) -> tuple[EcoFlowSensorEntityDe
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        mqtt_key="chargeWattPower",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        value_fn=lambda v: float(v) > 0,
+        available_fn=lambda q: "chargeWattPower" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
         key="storm_is_enable",
         mqtt_key="stormIsEnable",
         name="Storm warning",

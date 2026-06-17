@@ -79,6 +79,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | `hs_yj751_pd_appshow_addr.wattsInSum` |  |
 | 4G enabled | connectivity | `hs_yj751_pd_appshow_addr.wireless4gOn` | 🔧 |
 | 4G connected | connectivity | `hs_yj751_pd_appshow_addr.wireless4gCon` | 🔧 💤 |
 | AC Always-On | — | `hs_yj751_pd_app_set_info_addr.acOftenOpenFlg` | 🔧 |
@@ -116,4 +117,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 82 — 63 sensor, 4 binary_sensor, 6 switch, 8 number, 1 select._
+_Entity totals: 83 — 63 sensor, 5 binary_sensor, 6 switch, 8 number, 1 select._

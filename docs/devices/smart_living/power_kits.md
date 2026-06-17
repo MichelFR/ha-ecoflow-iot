@@ -138,6 +138,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | `inWatts` |  |
 | DC input connected | connectivity | `dcInState` | 🔧 |
 | DC input charging paused | problem | `chgPause` | 🔧 |
 | Inverter low power mode | — | `lsplFlag` | 🔧 💤 |
@@ -172,4 +173,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 143 — 122 sensor, 9 binary_sensor, 5 switch, 7 number, 0 select._
+_Entity totals: 144 — 122 sensor, 10 binary_sensor, 5 switch, 7 number, 0 select._

@@ -409,6 +409,16 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        mqtt_key="20_1.batInputWatts",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        # batInputWatts is signed: positive = charging (same source as the
+        # battery charge/discharge energy sensors).
+        value_fn=lambda v: float(v) > 0,
+        available_fn=lambda q: "20_1.batInputWatts" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
         key="pv1_connected",
         mqtt_key=f"{_P}pv1CtrlMpptOffFlag",
         name="Solar string 1 active",

@@ -33,6 +33,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | _computed_ |  |
 | 12V DC output | power | `pd.carState` |  |
 | Energy management | running | `pd.watchIsConfig` | 🔧 |
 | AC output enabled | power | `mppt.cfgAcEnabled` |  |
@@ -63,4 +64,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 29 — 17 sensor, 4 binary_sensor, 4 switch, 3 number, 1 select._
+_Entity totals: 30 — 17 sensor, 5 binary_sensor, 4 switch, 3 number, 1 select._

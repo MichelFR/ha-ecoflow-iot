@@ -124,6 +124,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | `bms_bmsStatus.inputWatts` |  |
 | Car charger | power | `mppt.carState` |  |
 | DCDC 24 V output | power | `mppt.dc24vState` | 🔧 |
 | AC output | power | `inv.cfgAcEnabled` |  |
@@ -170,4 +171,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 136 — 108 sensor, 10 binary_sensor, 5 switch, 12 number, 1 select._
+_Entity totals: 137 — 108 sensor, 11 binary_sensor, 5 switch, 12 number, 1 select._

@@ -569,6 +569,15 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        mqtt_key="cmsChgDsgState",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        # cmsChgDsgState: 0=idle, 1=discharging, 2=charging.
+        value_fn=lambda v: int(v) == 2,
+        available_fn=lambda q: "cmsChgDsgState" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
         key="pv_h_connected",
         mqtt_key="plugInInfoPvHFlag",
         name="High-voltage solar connected",

@@ -70,6 +70,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | `cmsChgDsgState` |  |
 | High-voltage solar connected | connectivity | `plugInInfoPvHFlag` | 🔧 |
 | Low-voltage solar connected | connectivity | `plugInInfoPvLFlag` | 🔧 |
 | AC charger connected | plug | `plugInInfoAcInFlag` | 🔧 |
@@ -135,4 +136,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 101 — 54 sensor, 25 binary_sensor, 8 switch, 13 number, 1 select._
+_Entity totals: 102 — 54 sensor, 26 binary_sensor, 8 switch, 13 number, 1 select._

@@ -280,6 +280,16 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        # River 2 Pro has no single battery-input field, so treat charging as
+        # any input present from AC or solar.
+        quota_value_fn=lambda q: (float(q.get("inv.inputWatts") or 0) > 0)
+        or (float(q.get("mppt.inWatts") or 0) > 0),
+        available_fn=lambda q: "inv.inputWatts" in q or "mppt.inWatts" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
         key="dc_car_on",
         mqtt_key="pd.carState",
         name="12V DC output",

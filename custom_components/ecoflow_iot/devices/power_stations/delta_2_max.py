@@ -880,6 +880,14 @@ _EMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        mqtt_key="bms_bmsStatus.inputWatts",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        value_fn=lambda v: float(v) > 0,
+        available_fn=lambda q: "bms_bmsStatus.inputWatts" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
         key="inv_cfg_ac_enabled",
         mqtt_key="inv.cfgAcEnabled",
         name="AC output enabled",
