@@ -36,6 +36,7 @@ from ..base import (
 )
 from ..energy import battery_charge_discharge_signed, grid_import_export_signed, solar_energy
 from ..helpers import (
+    battery_charging_icon,
     round2 as _round2,
 )
 
@@ -153,6 +154,11 @@ _SYSTEM_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         value_fn=_round2,
+        # Stepped charging icon while charging, else automatic battery icon.
+        icon_fn=lambda q: battery_charging_icon(
+            q.get("bpSoc"),
+            q.get("chargingStatus") not in (None, "EV_CHG_STS_AVAILABLE"),
+        ),
     ),
     EcoFlowSensorEntityDescription(
         key="bp_pwr",

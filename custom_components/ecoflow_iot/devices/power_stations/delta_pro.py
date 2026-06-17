@@ -44,6 +44,7 @@ from ..base import (
 from ..commands import build_cmd_set_command
 from ..energy import battery_charge_discharge, solar_energy
 from ..helpers import (
+    battery_charging_icon,
     milli as _scale_ma,
     milli as _scale_mv,
     round2 as _round2,
@@ -70,6 +71,8 @@ _BMS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=_round2,
+        # Stepped charging icon while charging, else automatic battery icon.
+        icon_fn=lambda q: battery_charging_icon(q.get("bmsMaster.soc"), float(q.get("bmsMaster.inputWatts") or 0) > 0),
     ),
     EcoFlowSensorEntityDescription(
         key="bms_temp",

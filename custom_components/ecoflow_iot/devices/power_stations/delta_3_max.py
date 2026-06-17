@@ -38,6 +38,7 @@ from ..base import (
 from ..commands import build_stream_command
 from ..energy import solar_energy
 from ..helpers import (
+    battery_charging_icon,
     round2 as _round2,
 )
 
@@ -230,6 +231,8 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=_round2,
+        # Stepped charging icon while charging, else automatic battery icon.
+        icon_fn=lambda q: battery_charging_icon(q.get("cmsBattSoc"), int(q.get("cmsChgDsgState") or 0) == 2),
     ),
     EcoFlowSensorEntityDescription(
         key="cms_dsg_rem_time",

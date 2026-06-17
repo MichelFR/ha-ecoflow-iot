@@ -34,6 +34,9 @@ from ..base import (
 )
 from ..commands import build_legacy_command
 from ..energy import solar_energy
+from ..helpers import (
+    battery_charging_icon,
+)
 
 # ---------------------------------------------------------------------------
 # Module-type constants (from spec)
@@ -133,6 +136,8 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
+        # Stepped charging icon while charging, else automatic battery icon.
+        icon_fn=lambda q: battery_charging_icon(q.get("pd.soc"), (float(q.get("inv.inputWatts") or 0) > 0) or (float(q.get("mppt.inWatts") or 0) > 0)),
     ),
     # --- Charge / discharge remaining times ---
     EcoFlowSensorEntityDescription(
