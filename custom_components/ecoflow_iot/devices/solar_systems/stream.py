@@ -577,6 +577,16 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
+        key="battery_charging",
+        mqtt_key="powGetBpCms",
+        name="Battery charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        # powGetBpCms is signed: positive = charging (same convention as the
+        # battery charge/discharge energy sensors). On while charging.
+        value_fn=lambda v: float(v) > 0,
+        available_fn=lambda q: "powGetBpCms" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
         key="batt_heating",
         mqtt_key="bmsBattHeating",
         name="Battery heater",

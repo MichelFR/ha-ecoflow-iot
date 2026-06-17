@@ -63,6 +63,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 | Entity | Device class | Quota key | Flags |
 |---|---|---|---|
+| Battery charging | battery_charging | `powGetBpCms` |  |
 | Battery heater | heat | `bmsBattHeating` | 🔧 |
 | Smart meter connected | connectivity | `cloudMetter.hasMeter` | 🔧 |
 | Storm guard | — | `stormPatternEnable` | 🔧 |
@@ -97,4 +98,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 63 — 47 sensor, 7 binary_sensor, 4 switch, 4 number, 1 select._
+_Entity totals: 64 — 47 sensor, 8 binary_sensor, 4 switch, 4 number, 1 select._
