@@ -35,7 +35,7 @@ regenerate it after changing entities with `python3 scripts/gen_device_docs.py`.
 Devices are matched by **serial-number prefix**. If Home Assistant shows an
 **"Unsupported EcoFlow device (`XXXX`)" repair**, your device's prefix isn't mapped
 yet — check [`KNOWN_PREFIXES.md`](KNOWN_PREFIXES.md), and if it's missing please
-[open an issue](https://github.com/MichelFR/ha-ecoflow/issues) with the prefix (not your
+[open an issue](https://github.com/MichelFR/ha-ecoflow-iot/issues) with the prefix (not your
 full serial) so it can be added.
 
 ## Features
@@ -70,17 +70,17 @@ full serial) so it can be added.
 
 ### Option A — HACS (recommended)
 
-[![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=MichelFR&repository=ha-ecoflow&category=integration)
+[![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=MichelFR&repository=ha-ecoflow-iot&category=integration)
 
 1. Click the button above to add this repository to HACS — or add it manually:
    **HACS → ⋮ (top-right) → Custom repositories**, URL
-   `https://github.com/MichelFR/ha-ecoflow`, category **Integration**.
+   `https://github.com/MichelFR/ha-ecoflow-iot`, category **Integration**.
 2. Search for **EcoFlow IoT** in HACS and click **Download**.
 3. **Restart Home Assistant.**
 
 ### Option B — Manual
 
-1. Download the latest [release](https://github.com/MichelFR/ha-ecoflow/releases)
+1. Download the latest [release](https://github.com/MichelFR/ha-ecoflow-iot/releases)
    (or clone this repo).
 2. Copy the `custom_components/ecoflow_iot` folder into your Home Assistant
    `config/custom_components/` directory (so you have

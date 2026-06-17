@@ -23,7 +23,7 @@ shown). If that happens:
      ships as `J32E`, not just `HJ31`). **Open an issue** with the prefix and your model.
    - If it's listed as **known but not yet implemented**, or **not in the table at all**,
      **open an issue** so support can be added:
-     <https://github.com/MichelFR/ha-ecoflow/issues>
+     <https://github.com/MichelFR/ha-ecoflow-iot/issues>
 2. In the issue, please include: the **4-char prefix**, the **exact model name**, and —
    if you can — a redacted `quota/all` sample (Developer Tools → the integration's
    diagnostics). **Never post your full serial number** publicly.

@@ -4,9 +4,9 @@
   "codeowners": ["@MichelFR"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/MichelFR/ha-ecoflow",
+  "documentation": "https://github.com/MichelFR/ha-ecoflow-iot",
   "iot_class": "cloud_push",
-  "issue_tracker": "https://github.com/MichelFR/ha-ecoflow/issues",
+  "issue_tracker": "https://github.com/MichelFR/ha-ecoflow-iot/issues",
   "loggers": ["paho"],
   "requirements": ["paho-mqtt>=1.6.1"],
   "version": "0.5.0"

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Working notes for AI agents and contributors on this repo (`ha-ecoflow`, a Home
+Working notes for AI agents and contributors on this repo (`ha-ecoflow-iot`, a Home
 Assistant custom integration for EcoFlow devices built on the **official EcoFlow
 developer API**). Read this before adding devices or touching the device layer.
 
