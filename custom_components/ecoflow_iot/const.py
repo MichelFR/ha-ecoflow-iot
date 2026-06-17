@@ -15,6 +15,7 @@ CONF_REGION: Final = "region"
 CONF_POLL_INTERVAL: Final = "poll_interval"
 CONF_MQTT_STALE_SECONDS: Final = "mqtt_stale_seconds"
 CONF_ENABLE_MQTT: Final = "enable_mqtt"
+CONF_INVERT_GRID_SIGN: Final = "invert_grid_sign"
 
 # Regions -> REST base URL.
 REGION_EU: Final = "eu"
@@ -45,6 +46,12 @@ TOPIC_GET_REPLY: Final = "get_reply"
 DEFAULT_POLL_INTERVAL: Final = 60  # seconds
 DEFAULT_MQTT_STALE_SECONDS: Final = 120  # consider MQTT stale after this many seconds
 DEFAULT_ENABLE_MQTT: Final = True
+# Stream firmware reports gridConnectionPower with the opposite sign to Home
+# Assistant's grid convention (it reports feeding the grid as POSITIVE, despite
+# the docs claiming feed-in is negative). Default to normalising it so that
+# import is positive / export is negative; users whose unit already matches HA
+# can turn this off.
+DEFAULT_INVERT_GRID_SIGN: Final = True
 SET_ACK_TIMEOUT: Final = 8.0  # seconds to await an MQTT set_reply before HTTP fallback
 # How many leading SN characters identify a device type. Shown to the user for
 # unsupported devices (the full serial is never surfaced).

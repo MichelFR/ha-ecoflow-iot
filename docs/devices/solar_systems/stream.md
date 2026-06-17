@@ -52,8 +52,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | AC socket 1 power | power | W | `powGetSchuko1` |  |
 | AC socket 2 power | power | W | `powGetSchuko2` |  |
 | Solar energy | energy | Wh | _integrated_ |  |
-| Grid import energy | energy | Wh | _integrated_ |  |
-| Grid export energy | energy | Wh | _integrated_ |  |
+| Grid import energy | energy | Wh | `gridConnectionPower` |  |
+| Grid export energy | energy | Wh | `gridConnectionPower` |  |
 | AC socket 1 energy | energy | Wh | _integrated_ |  |
 | AC socket 2 energy | energy | Wh | _integrated_ |  |
 | Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | 🔧 💤 |

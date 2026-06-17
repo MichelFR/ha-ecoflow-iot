@@ -20,6 +20,7 @@ from .coordinator import EcoFlowCoordinator
 from .devices.base import (
     EcoFlowIntegralSensorEntityDescription,
     EcoFlowSensorEntityDescription,
+    GridRole,
 )
 from .entity import EcoFlowEntity
 from .models import ConnectionState
@@ -53,6 +54,9 @@ class EcoFlowSensor(EcoFlowEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         """Return the current sensor value."""
+        if self.entity_description.grid_role is GridRole.SIGNED:
+            signed = self._signed_grid_power()
+            return None if signed is None else round(signed, 2)
         return self._raw_value()
 
 
@@ -109,6 +113,10 @@ class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
         state = self._state
         if state is None or not state.online:
             return None
+        role = self.entity_description.grid_role
+        if role is GridRole.IMPORT or role is GridRole.EXPORT:
+            signed = self._signed_grid_power()
+            return None if signed is None else role.leg_power(signed)
         return self.entity_description.power_fn(self._quota)
 
     def _accumulate(self, *, write: bool) -> None:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
@@ -27,6 +28,32 @@ AvailableFn = Callable[[Mapping[str, Any]], bool]
 CommandFn = Callable[[Any, Mapping[str, Any]], dict[str, Any]]
 
 
+class GridRole(Enum):
+    """How an entity derives its value from a *signed* grid-power source.
+
+    The source field (``mqtt_key``) is first normalised to the Home Assistant
+    grid convention (import positive, export negative) according to the
+    ``invert_grid_sign`` option, then the role selects what the entity exposes.
+    Used for Stream's ``gridConnectionPower``, whose firmware sign is the
+    opposite of HA's convention (see :data:`const.DEFAULT_INVERT_GRID_SIGN`).
+    """
+
+    SIGNED = "signed"  # the normalised signed power itself (W)
+    IMPORT = "import"  # max(signed, 0): instantaneous power drawn from the grid
+    EXPORT = "export"  # max(-signed, 0): instantaneous power fed to the grid
+
+    def leg_power(self, signed: float) -> float:
+        """Non-negative power for the IMPORT/EXPORT leg of a signed grid value.
+
+        ``signed`` is W in HA convention (import positive, export negative).
+        """
+        if self is GridRole.IMPORT:
+            return max(signed, 0.0)
+        if self is GridRole.EXPORT:
+            return max(-signed, 0.0)
+        raise ValueError(f"leg_power is only defined for IMPORT/EXPORT, not {self}")
+
+
 @dataclass(frozen=True, kw_only=True)
 class _EcoFlowDescription:
     """Fields shared by every EcoFlow entity description."""
@@ -37,6 +64,9 @@ class _EcoFlowDescription:
     quota_value_fn: Callable[[Mapping[str, Any]], Any] | None = None
     available_fn: AvailableFn | None = None
     http_only: bool = False
+    # When set, the entity derives its value from the signed grid-power field
+    # ``mqtt_key`` (normalised via the ``invert_grid_sign`` option) per the role.
+    grid_role: GridRole | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -58,9 +88,12 @@ class EcoFlowIntegralSensorEntityDescription(EcoFlowSensorEntityDescription):
     time and reports a monotonically increasing Wh total, usable directly as an
     Energy-Dashboard source. ``power_fn`` should return a non-negative value (or
     None) so the running total only ever increases.
+
+    ``power_fn`` is optional when ``grid_role`` is set (IMPORT/EXPORT): the
+    instantaneous power is then derived from the normalised signed grid field.
     """
 
-    power_fn: PowerFn
+    power_fn: PowerFn | None = None
 
 
 @dataclass(frozen=True, kw_only=True)

@@ -37,6 +37,7 @@ from ..base import (
     EcoFlowSelectEntityDescription,
     EcoFlowSensorEntityDescription,
     EcoFlowSwitchEntityDescription,
+    GridRole,
     _EcoFlowDescription,
 )
 from ..commands import build_stream_command
@@ -288,7 +289,9 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
-        value_fn=_round2,
+        # Normalised to HA convention (import positive, export negative) via the
+        # invert_grid_sign option; see GridRole / DEFAULT_INVERT_GRID_SIGN.
+        grid_role=GridRole.SIGNED,
     ),
     EcoFlowSensorEntityDescription(
         key="sys_grid_power",
@@ -359,24 +362,18 @@ _PV_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 # (energy lives only in the separate historical-data API). These sensors
 # integrate the live power into Wh totals so the device can populate the
 # Energy Dashboard's solar-production and grid consumption/return sources.
-# ``gridConnectionPower`` is signed: positive = drawn from grid (import),
-# negative = fed to grid (export); each leg is clamped non-negative so its
-# running total only ever increases.
+#
+# ``gridConnectionPower`` is signed, but its firmware sign is the OPPOSITE of
+# EcoFlow's docs and of HA's convention: real units report feeding the grid as
+# POSITIVE and drawing from the grid as NEGATIVE (confirmed on hardware in both
+# directions). The grid import/export legs below therefore use GridRole, which
+# normalises the sign via the invert_grid_sign option (default on) before
+# clamping each leg non-negative so its running total only ever increases.
 
 
 def _solar_power(quota: Mapping[str, Any]) -> float | None:
     value = quota.get("powGetPvSum")
     return max(float(value), 0.0) if value is not None else None
-
-
-def _grid_import_power(quota: Mapping[str, Any]) -> float | None:
-    value = quota.get("gridConnectionPower")
-    return max(float(value), 0.0) if value is not None else None
-
-
-def _grid_export_power(quota: Mapping[str, Any]) -> float | None:
-    value = quota.get("gridConnectionPower")
-    return max(-float(value), 0.0) if value is not None else None
 
 
 def _battery_charge_power(quota: Mapping[str, Any]) -> float | None:
@@ -432,7 +429,8 @@ _ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
         suggested_display_precision=1,
-        power_fn=_grid_import_power,
+        mqtt_key="gridConnectionPower",
+        grid_role=GridRole.IMPORT,
         available_fn=lambda q: "gridConnectionPower" in q,
     ),
     EcoFlowIntegralSensorEntityDescription(
@@ -442,7 +440,8 @@ _ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
         suggested_display_precision=1,
-        power_fn=_grid_export_power,
+        mqtt_key="gridConnectionPower",
+        grid_role=GridRole.EXPORT,
         available_fn=lambda q: "gridConnectionPower" in q,
     ),
 )

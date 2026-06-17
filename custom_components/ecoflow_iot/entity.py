@@ -7,7 +7,12 @@ from typing import Any
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, MANUFACTURER
+from .const import (
+    CONF_INVERT_GRID_SIGN,
+    DEFAULT_INVERT_GRID_SIGN,
+    DOMAIN,
+    MANUFACTURER,
+)
 from .coordinator import EcoFlowCoordinator
 from .devices.base import _EcoFlowDescription
 from .models import DeviceState
@@ -69,3 +74,23 @@ class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
         if desc.value_fn is not None:
             return desc.value_fn(value)
         return value
+
+    @property
+    def _grid_sign(self) -> float:
+        """+1 or -1, multiplied into a raw grid-power field to normalise it.
+
+        Normalises to Home Assistant's grid convention (import positive, export
+        negative). Stream firmware reports the opposite sign, so the default
+        (``invert_grid_sign`` on) flips it.
+        """
+        options = self.coordinator.config_entry.options
+        inverted = options.get(CONF_INVERT_GRID_SIGN, DEFAULT_INVERT_GRID_SIGN)
+        return -1.0 if inverted else 1.0
+
+    def _signed_grid_power(self) -> float | None:
+        """Signed grid power (W) normalised to HA convention, or None."""
+        desc: _EcoFlowDescription = self.entity_description  # type: ignore[assignment]
+        value = self._quota.get(desc.mqtt_key)
+        if value is None:
+            return None
+        return self._grid_sign * float(value)

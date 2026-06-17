@@ -25,8 +25,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Solar string 2 voltage | voltage | V | `plugInInfoPv2Vol` | 🔧 💤 |
 | Solar string 2 current | current | A | `plugInInfoPv2Amp` | 🔧 💤 |
 | Solar energy | energy | Wh | _integrated_ |  |
-| Grid import energy | energy | Wh | _integrated_ |  |
-| Grid export energy | energy | Wh | _integrated_ |  |
+| Grid import energy | energy | Wh | `gridConnectionPower` |  |
+| Grid export energy | energy | Wh | `gridConnectionPower` |  |
 | Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | 🔧 💤 |
 | Feed-in power limit | power | W | `feedGridModePowLimit` | 🔧 |
 

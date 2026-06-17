@@ -27,11 +27,13 @@ from .api import EcoFlowAuthError, EcoFlowConnectionError, EcoFlowError, EcoFlow
 from .const import (
     CONF_ACCESS_KEY,
     CONF_ENABLE_MQTT,
+    CONF_INVERT_GRID_SIGN,
     CONF_MQTT_STALE_SECONDS,
     CONF_POLL_INTERVAL,
     CONF_REGION,
     CONF_SECRET_KEY,
     DEFAULT_ENABLE_MQTT,
+    DEFAULT_INVERT_GRID_SIGN,
     DEFAULT_MQTT_STALE_SECONDS,
     DEFAULT_POLL_INTERVAL,
     DEFAULT_REGION,
@@ -180,6 +182,12 @@ class EcoFlowOptionsFlow(OptionsFlow):
                         min=30, max=3600, step=5, mode=NumberSelectorMode.BOX
                     )
                 ),
+                vol.Required(
+                    CONF_INVERT_GRID_SIGN,
+                    default=options.get(
+                        CONF_INVERT_GRID_SIGN, DEFAULT_INVERT_GRID_SIGN
+                    ),
+                ): bool,
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)

@@ -43,11 +43,13 @@
         "data": {
           "enable_mqtt": "Use MQTT for live data",
           "poll_interval": "HTTP poll interval (seconds)",
-          "mqtt_stale_seconds": "MQTT staleness threshold (seconds)"
+          "mqtt_stale_seconds": "MQTT staleness threshold (seconds)",
+          "invert_grid_sign": "Invert Stream grid power sign"
         },
         "data_description": {
           "poll_interval": "How often to poll the HTTP API (fallback when MQTT is unavailable, and the cadence for refreshing HTTP-only values).",
-          "mqtt_stale_seconds": "If no MQTT message arrives within this window, the integration polls HTTP."
+          "mqtt_stale_seconds": "If no MQTT message arrives within this window, the integration polls HTTP.",
+          "invert_grid_sign": "Some Stream units report grid power with the sign inverted — they show power fed into the grid as positive instead of negative, the opposite of Home Assistant's convention. This depends on the model and firmware, so it can't be detected automatically. Leave this on (the default) and the sign is corrected: Grid power reads negative while you export, and the Grid import / export energy sensors count in the right direction. Turn it off only if your unit already matches Home Assistant — i.e. exporting to the grid already shows Grid power as negative (import positive, export negative)."
         }
       }
     }
