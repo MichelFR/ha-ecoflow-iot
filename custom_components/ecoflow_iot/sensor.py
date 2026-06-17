@@ -16,6 +16,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from . import EcoFlowConfigEntry
+from .const import DATA_RESET_ENERGY_IDS, DOMAIN
 from .coordinator import EcoFlowCoordinator
 from .devices.base import (
     EcoFlowIntegralSensorEntityDescription,
@@ -88,15 +89,32 @@ class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
     async def async_added_to_hass(self) -> None:
         """Restore the accumulated total and seed the first sample."""
         await super().async_added_to_hass()
-        last = await self.async_get_last_sensor_data()
-        if last is not None and last.native_value is not None:
-            try:
-                self._energy_wh = float(last.native_value)
-            except (TypeError, ValueError):
-                self._energy_wh = 0.0
+        if self._consume_reset_request():
+            # A reset was queued from the options flow: start fresh at zero
+            # instead of restoring the (possibly wrong-direction) old total.
+            self._energy_wh = 0.0
+        else:
+            last = await self.async_get_last_sensor_data()
+            if last is not None and last.native_value is not None:
+                try:
+                    self._energy_wh = float(last.native_value)
+                except (TypeError, ValueError):
+                    self._energy_wh = 0.0
         # Record the current sample as the integration start without
         # back-dating energy across the restart gap.
         self._accumulate(write=False)
+
+    def _consume_reset_request(self) -> bool:
+        """Return True (once) if a one-shot reset was queued for this entity."""
+        entry_id = self.coordinator.config_entry.entry_id
+        store = self.hass.data.get(DOMAIN, {}).get(entry_id, {})
+        ids = store.get(DATA_RESET_ENERGY_IDS)
+        if ids and self.unique_id in ids:
+            ids.discard(self.unique_id)
+            if not ids:
+                store.pop(DATA_RESET_ENERGY_IDS, None)
+            return True
+        return False
 
     @property
     def native_value(self) -> float:

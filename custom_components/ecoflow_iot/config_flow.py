@@ -12,7 +12,10 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     OptionsFlow,
 )
+from homeassistant.components.recorder import get_instance
+from homeassistant.const import Platform
 from homeassistant.core import callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     NumberSelector,
@@ -31,7 +34,9 @@ from .const import (
     CONF_MQTT_STALE_SECONDS,
     CONF_POLL_INTERVAL,
     CONF_REGION,
+    CONF_RESET_GRID_ENERGY,
     CONF_SECRET_KEY,
+    DATA_RESET_ENERGY_IDS,
     DEFAULT_ENABLE_MQTT,
     DEFAULT_INVERT_GRID_SIGN,
     DEFAULT_MQTT_STALE_SECONDS,
@@ -40,6 +45,7 @@ from .const import (
     DOMAIN,
     REGION_EU,
     REGION_GLOBAL,
+    RESET_ENERGY_KEYS,
 )
 
 _REGION_OPTIONS = [
@@ -153,9 +159,22 @@ class EcoFlowOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Manage poll interval, MQTT staleness and MQTT enablement."""
+        """Manage poll/MQTT options, grid sign and a one-shot energy reset."""
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            # The reset checkbox is an action, not a stored option: consume it.
+            reset = user_input.pop(CONF_RESET_GRID_ENERGY, False)
+            # Predict whether saving will change options (and thus reload).
+            changed = dict(self.config_entry.options) != user_input
+            if reset:
+                await self._reset_grid_energy()
+            result = self.async_create_entry(title="", data=user_input)
+            if reset and not changed:
+                # Nothing else changed, so the update listener won't reload;
+                # force one so the queued reset reaches the rebuilt entities.
+                self.hass.async_create_task(
+                    self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                )
+            return result
 
         options = self.config_entry.options
         schema = vol.Schema(
@@ -188,6 +207,56 @@ class EcoFlowOptionsFlow(OptionsFlow):
                         CONF_INVERT_GRID_SIGN, DEFAULT_INVERT_GRID_SIGN
                     ),
                 ): bool,
+                vol.Required(CONF_RESET_GRID_ENERGY, default=False): bool,
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)
+
+    async def _reset_grid_energy(self) -> None:
+        """One-shot reset of the grid energy sensors: zero the live counters and
+        wipe their recorded history + Energy-Dashboard statistics.
+
+        The live counters can't be zeroed in place (the options save reloads the
+        entry), so the affected unique_ids are stashed in ``hass.data`` and each
+        ``EcoFlowIntegralSensor`` zeroes itself instead of restoring when it is
+        recreated on the reload. States/events and long-term statistics are
+        deleted here via the recorder.
+        """
+        coordinator = getattr(self.config_entry, "runtime_data", None)
+        if coordinator is None:
+            return
+        unique_ids: set[str] = set()
+        for sn, device in coordinator.devices.items():
+            keys = {d.key for d in device.entity_descriptions(Platform.SENSOR)}
+            unique_ids |= {f"{sn}_{key}" for key in RESET_ENERGY_KEYS if key in keys}
+        if not unique_ids:
+            return
+
+        # 1) Queue the live counters to restart at zero on the reload.
+        store = self.hass.data.setdefault(DOMAIN, {}).setdefault(
+            self.config_entry.entry_id, {}
+        )
+        store[DATA_RESET_ENERGY_IDS] = set(unique_ids)
+
+        # 2) Wipe recorded history. statistic_id == entity_id for these sensors.
+        if "recorder" not in self.hass.config.components:
+            return
+        registry = er.async_get(self.hass)
+        entity_ids = [
+            eid
+            for uid in unique_ids
+            if (eid := registry.async_get_entity_id(Platform.SENSOR, DOMAIN, uid))
+        ]
+        if not entity_ids:
+            return
+        # States/events (recent history graph) — purge_entities does NOT touch
+        # statistics, so the Energy-Dashboard data is cleared separately below.
+        if self.hass.services.has_service("recorder", "purge_entities"):
+            await self.hass.services.async_call(
+                "recorder",
+                "purge_entities",
+                {"entity_id": entity_ids, "keep_days": 0},
+                blocking=False,
+            )
+        # Long-term + short-term statistics (what the Energy Dashboard reads).
+        get_instance(self.hass).async_clear_statistics(entity_ids)

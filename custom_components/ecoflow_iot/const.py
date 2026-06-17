@@ -16,6 +16,13 @@ CONF_POLL_INTERVAL: Final = "poll_interval"
 CONF_MQTT_STALE_SECONDS: Final = "mqtt_stale_seconds"
 CONF_ENABLE_MQTT: Final = "enable_mqtt"
 CONF_INVERT_GRID_SIGN: Final = "invert_grid_sign"
+# Transient options-flow checkbox (never persisted): queues a one-shot reset of
+# the grid energy totals, applied when the entities are recreated on reload.
+CONF_RESET_GRID_ENERGY: Final = "reset_grid_energy"
+# Integral-energy sensor keys the reset checkbox zeroes.
+RESET_ENERGY_KEYS: Final = ("grid_import_energy", "grid_export_energy")
+# hass.data slot holding the set of entity unique_ids queued for reset.
+DATA_RESET_ENERGY_IDS: Final = "reset_energy_ids"
 
 # Regions -> REST base URL.
 REGION_EU: Final = "eu"
