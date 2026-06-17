@@ -39,6 +39,21 @@ def round2(value: Any) -> float | None:
     return round_value(value, 2)
 
 
+def battery_charging_icon(level: Any, charging: bool) -> str | None:
+    """A stepped charging battery icon while charging, else None.
+
+    Returns ``mdi:battery-charging-{10..100}`` matching the level (nearest 10%)
+    while ``charging`` is true. Returning None lets Home Assistant fall back to
+    the automatic battery icon for the sensor's ``battery`` device class.
+    """
+    if not charging:
+        return None
+    if level is None:
+        return "mdi:battery-charging"
+    step = max(10, min(100, round(float(level) / 10) * 10))
+    return f"mdi:battery-charging-{step}"
+
+
 def scale(value: Any, divisor: float, ndigits: int = 2) -> float | None:
     """Divide ``value`` by ``divisor`` and round (None-safe)."""
     if value is None:

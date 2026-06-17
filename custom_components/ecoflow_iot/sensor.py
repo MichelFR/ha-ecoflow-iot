@@ -60,6 +60,16 @@ class EcoFlowSensor(EcoFlowEntity, SensorEntity):
             return None if signed is None else round(signed, 2)
         return self._raw_value()
 
+    @property
+    def icon(self) -> str | None:
+        """Dynamic icon (e.g. stepped charging battery), else static/auto icon."""
+        icon_fn = self.entity_description.icon_fn
+        if icon_fn is not None:
+            dynamic = icon_fn(self._quota)
+            if dynamic is not None:
+                return dynamic
+        return self.entity_description.icon
+
 
 class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
     """Energy (Wh) accumulated by integrating an instantaneous power (W).

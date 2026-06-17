@@ -43,6 +43,7 @@ from ..base import (
 )
 from ..energy import battery_charge_discharge_signed, solar_energy
 from ..helpers import (
+    battery_charging_icon,
     deci as _deci,
     round2 as _round0,
 )
@@ -91,6 +92,10 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=_round0,
+        # Stepped charging icon while charging (batInputWatts > 0), else auto.
+        icon_fn=lambda q: battery_charging_icon(
+            q.get(f"{_P}batSoc"), float(q.get(f"{_P}batInputWatts") or 0) > 0
+        ),
     ),
     EcoFlowSensorEntityDescription(
         key="bat_input_volt",

@@ -67,6 +67,9 @@ class _EcoFlowDescription:
     # When set, the entity derives its value from the signed grid-power field
     # ``mqtt_key`` (normalised via the ``invert_grid_sign`` option) per the role.
     grid_role: GridRole | None = None
+    # Computes a dynamic icon from the full quota map (e.g. a charging battery);
+    # returns None to fall back to the static/automatic device-class icon.
+    icon_fn: Callable[[Mapping[str, Any]], str | None] | None = None
 
 
 @dataclass(frozen=True, kw_only=True)

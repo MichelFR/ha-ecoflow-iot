@@ -43,6 +43,7 @@ from ..base import (
 from ..commands import build_stream_command
 from ..helpers import (
     abs_round as _abs_round,
+    battery_charging_icon,
     milli as _scale_1000,
     round2 as _round2,
 )
@@ -124,6 +125,10 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=_round2,
+        # Stepped charging icon while charging (powGetBpCms > 0), else auto.
+        icon_fn=lambda q: battery_charging_icon(
+            q.get("cmsBattSoc"), float(q.get("powGetBpCms") or 0) > 0
+        ),
     ),
     EcoFlowSensorEntityDescription(
         key="bms_batt_soc",

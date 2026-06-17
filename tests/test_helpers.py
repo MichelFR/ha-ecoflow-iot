@@ -58,3 +58,13 @@ def test_coercion_and_flag():
     assert helpers.to_int("5") == 5
     assert helpers.flag_is(4, 4) is True
     assert helpers.flag_is(0, 4) is False
+
+
+def test_battery_charging_icon():
+    # Not charging -> None so HA uses the automatic battery icon.
+    assert helpers.battery_charging_icon(76, False) is None
+    # Charging -> stepped icon at the nearest 10%.
+    assert helpers.battery_charging_icon(76, True) == "mdi:battery-charging-80"
+    assert helpers.battery_charging_icon(5, True) == "mdi:battery-charging-10"
+    assert helpers.battery_charging_icon(100, True) == "mdi:battery-charging-100"
+    assert helpers.battery_charging_icon(None, True) == "mdi:battery-charging"
