@@ -28,6 +28,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Charge upper limit | battery | % | `cmsMaxChgSoc` | 🔧 💤 |
 | Discharge lower limit | battery | % | `cmsMinDsgSoc` | 🔧 💤 |
 | Backup reserve level | battery | % | `backupReverseSoc` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -67,4 +68,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 33 — 17 sensor, 6 binary_sensor, 6 switch, 3 number, 1 select._
+_Entity totals: 34 — 18 sensor, 6 binary_sensor, 6 switch, 3 number, 1 select._

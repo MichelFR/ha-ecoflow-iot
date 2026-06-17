@@ -39,6 +39,7 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..energy import battery_charge_discharge, solar_energy
 from ..helpers import (
     milli as _scale_1000,
     round2 as _round2,
@@ -1406,6 +1407,16 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
 
 
 # ---------------------------------------------------------------------------
+# Energy-Dashboard derived sensors
+# ---------------------------------------------------------------------------
+
+_ENERGY_SENSORS = (
+    solar_energy("mppt.inWatts"),
+    *battery_charge_discharge(["bms_bmsStatus.inputWatts"], ["bms_bmsStatus.outputWatts"]),
+)
+
+
+# ---------------------------------------------------------------------------
 # Device class
 # ---------------------------------------------------------------------------
 
@@ -1432,6 +1443,7 @@ class Delta2Device(EcoFlowDevice):
                 *_EMS_STATUS_SENSORS,
                 *_INV_SENSORS,
                 *_MPPT_SENSORS,
+                *_ENERGY_SENSORS,
             ]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)

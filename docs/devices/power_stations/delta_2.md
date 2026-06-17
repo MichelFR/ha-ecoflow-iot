@@ -116,6 +116,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | XT60 paddle type | — | — | `mppt.x60ChgType` | 🔧 💤 |
 | Configured charging type | — | — | `mppt.cfgChgType` | 🔧 💤 |
 | MPPT fault code | — | — | `mppt.faultCode` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Battery charge energy | energy | Wh | _integrated_ |  |
+| Battery discharge energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -167,4 +170,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 133 — 105 sensor, 10 binary_sensor, 5 switch, 12 number, 1 select._
+_Entity totals: 136 — 108 sensor, 10 binary_sensor, 5 switch, 12 number, 1 select._

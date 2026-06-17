@@ -73,6 +73,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | AC TT output frequency | frequency | Hz | `hs_yj751_pd_backend_addr.outAcTtPf` | 🔧 💤 |
 | AC L14 output frequency | frequency | Hz | `hs_yj751_pd_backend_addr.outAcL14Pf` | 🔧 💤 |
 | AC POWER IN/OUT output frequency | frequency | Hz | `hs_yj751_pd_backend_addr.outAcP58Pf` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -115,4 +116,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 81 — 62 sensor, 4 binary_sensor, 6 switch, 8 number, 1 select._
+_Entity totals: 82 — 63 sensor, 4 binary_sensor, 6 switch, 8 number, 1 select._

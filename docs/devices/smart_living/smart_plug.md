@@ -17,6 +17,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Temperature | temperature | °C | `2_1.temp` | 🔧 |
 | Max current | current | A | `2_1.maxCur` | 🔧 💤 |
 | Frequency | frequency | Hz | `2_1.freq` | 🔧 💤 |
+| Energy | energy | Wh | _integrated_ |  |
 
 ## Switches
 
@@ -32,4 +33,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 8 — 6 sensor, 0 binary_sensor, 1 switch, 1 number, 0 select._
+_Entity totals: 9 — 7 sensor, 0 binary_sensor, 1 switch, 1 number, 0 select._

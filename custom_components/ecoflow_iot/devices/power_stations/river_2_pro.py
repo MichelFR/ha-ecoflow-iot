@@ -33,6 +33,7 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..energy import solar_energy
 
 # ---------------------------------------------------------------------------
 # Module-type constants (from spec)
@@ -433,6 +434,8 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
 # Device class
 # ---------------------------------------------------------------------------
 
+_ENERGY_SENSORS = (solar_energy("mppt.inWatts"),)
+
 
 class River2ProDevice(EcoFlowDevice):
     """EcoFlow River 2 Pro power station.
@@ -454,7 +457,7 @@ class River2ProDevice(EcoFlowDevice):
 
     def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:
         if platform == Platform.SENSOR:
-            return list(_SENSORS)
+            return [*_SENSORS, *_ENERGY_SENSORS]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)
         if platform == Platform.SWITCH:

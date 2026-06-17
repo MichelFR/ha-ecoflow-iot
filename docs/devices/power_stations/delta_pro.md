@@ -84,6 +84,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Generator auto-on threshold | — | % | `ems.minOpenOilEbSoc` | 🔧 💤 |
 | Generator auto-off threshold | — | % | `ems.maxCloseOilEbSoc` | 🔧 💤 |
 | EMS LCD SOC | battery | % | `ems.lcdShowSoc` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Battery charge energy | energy | Wh | _integrated_ |  |
+| Battery discharge energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -132,4 +135,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 98 — 73 sensor, 9 binary_sensor, 5 switch, 9 number, 2 select._
+_Entity totals: 101 — 76 sensor, 9 binary_sensor, 5 switch, 9 number, 2 select._

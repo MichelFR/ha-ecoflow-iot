@@ -64,6 +64,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Screen brightness | — | % | `lcdLight` | 🔧 💤 |
 | Charge/discharge state | — | — | `cmsChgDsgState` | 🔧 💤 |
 | Multi-battery charge/discharge mode | — | — | `multiBpChgDsgMode` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -134,4 +135,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 100 — 53 sensor, 25 binary_sensor, 8 switch, 13 number, 1 select._
+_Entity totals: 101 — 54 sensor, 25 binary_sensor, 8 switch, 13 number, 1 select._

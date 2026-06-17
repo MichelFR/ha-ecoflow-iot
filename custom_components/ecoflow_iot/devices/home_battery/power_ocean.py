@@ -34,6 +34,7 @@ from ..base import (
     EcoFlowSensorEntityDescription,
     _EcoFlowDescription,
 )
+from ..energy import battery_charge_discharge_signed, grid_import_export_signed, solar_energy
 from ..helpers import (
     round2 as _round2,
 )
@@ -500,6 +501,16 @@ _SN_PREFIXES = ("HJ31", "J32E")
 # A distinctive top-level quota key that only PowerOcean devices report.
 _DISTINCTIVE_KEY = "bpSoc"
 
+# ---------------------------------------------------------------------------
+# Energy-Dashboard derived sensors
+# ---------------------------------------------------------------------------
+
+_ENERGY_SENSORS = (
+    solar_energy("mpptPwr"),
+    *battery_charge_discharge_signed("bpPwr"),
+    *grid_import_export_signed("sysGridPwr"),
+)
+
 
 class PowerOceanDevice(EcoFlowDevice):
     """EcoFlow PowerOcean whole-home battery / inverter system."""
@@ -526,6 +537,7 @@ class PowerOceanDevice(EcoFlowDevice):
                 *_pv_string_sensors(self.pv_string_count),
                 *_EV_SENSORS,
                 *_HEAT_SENSORS,
+                *_ENERGY_SENSORS,
             ]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)

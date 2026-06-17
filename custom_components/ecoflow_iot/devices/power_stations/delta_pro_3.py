@@ -40,6 +40,7 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_stream_command
+from ..energy import solar_energy
 from ..helpers import (
     round2 as _round2,
 )
@@ -1029,6 +1030,8 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
 # Device class
 # ---------------------------------------------------------------------------
 
+_ENERGY_SENSORS = (solar_energy("powGetPvH", "powGetPvL"),)
+
 
 class DeltaPro3Device(EcoFlowDevice):
     """EcoFlow Delta Pro 3 power station.
@@ -1059,6 +1062,7 @@ class DeltaPro3Device(EcoFlowDevice):
                 *_POWER_SENSORS,
                 *_INPUT_CONFIG_SENSORS,
                 *_DIAG_SENSORS,
+                *_ENERGY_SENSORS,
             ]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)

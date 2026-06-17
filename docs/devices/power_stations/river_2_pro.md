@@ -27,6 +27,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Discharge limit (reported) | — | % | `bms_emsStatus.minDsgSoc` | 🔧 💤 |
 | Backup reserve (reported) | — | % | `pd.bpPowerSoc` | 🔧 💤 |
 | AC output frequency (raw) | frequency | Hz | `mppt.cfgAcOutFreq` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -62,4 +63,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 28 — 16 sensor, 4 binary_sensor, 4 switch, 3 number, 1 select._
+_Entity totals: 29 — 17 sensor, 4 binary_sensor, 4 switch, 3 number, 1 select._

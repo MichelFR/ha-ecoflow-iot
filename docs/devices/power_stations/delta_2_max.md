@@ -95,6 +95,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Generator on SOC | — | % | `bms_emsStatus.minOpenOilEb` | 🔧 💤 |
 | Generator off SOC | — | % | `bms_emsStatus.maxCloseOilEb` | 🔧 💤 |
 | LCD displayed SOC | — | % | `bms_emsStatus.lcdShowSoc` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Battery charge energy | energy | Wh | _integrated_ |  |
+| Battery discharge energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -138,4 +141,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 109 — 84 sensor, 9 binary_sensor, 6 switch, 10 number, 0 select._
+_Entity totals: 112 — 87 sensor, 9 binary_sensor, 6 switch, 10 number, 0 select._

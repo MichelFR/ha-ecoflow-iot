@@ -42,6 +42,7 @@ from ..base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..energy import consumption_energy
 from ..helpers import (
     deci as _scale_tenth,
     milli as _scale_1000,
@@ -168,6 +169,10 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
 # Device class
 # ---------------------------------------------------------------------------
 
+_ENERGY_SENSORS = (
+    consumption_energy("plug_energy", "Energy", ("2_1.watts", 10)),
+)
+
 
 class SmartPlugDevice(EcoFlowDevice):
     """EcoFlow Smart Plug (WN511 series)."""
@@ -184,7 +189,7 @@ class SmartPlugDevice(EcoFlowDevice):
 
     def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:
         if platform == Platform.SENSOR:
-            return list(_SENSORS)
+            return [*_SENSORS, *_ENERGY_SENSORS]
         if platform == Platform.SWITCH:
             return list(_SWITCHES)
         if platform == Platform.NUMBER:

@@ -42,6 +42,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Rated power | power | W | `20_1.ratedPower` | 🔧 💤 |
 | LED brightness | — | — | `20_1.invBrightness` | 🔧 💤 |
 | Restart count | — | — | `20_1.resetCount` | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Battery charge energy | energy | Wh | _integrated_ |  |
+| Battery discharge energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -74,4 +77,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 45 — 31 sensor, 9 binary_sensor, 0 switch, 4 number, 1 select._
+_Entity totals: 48 — 34 sensor, 9 binary_sensor, 0 switch, 4 number, 1 select._

@@ -41,6 +41,7 @@ from ..base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..energy import battery_charge_discharge_signed, solar_energy
 from ..helpers import (
     deci as _deci,
     round2 as _round0,
@@ -573,6 +574,16 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
 
 
 # ---------------------------------------------------------------------------
+# Energy-Dashboard derived sensors
+# ---------------------------------------------------------------------------
+
+_ENERGY_SENSORS = (
+    solar_energy(("20_1.pv1InputWatts", 10), ("20_1.pv2InputWatts", 10)),
+    *battery_charge_discharge_signed(("20_1.batInputWatts", 10)),
+)
+
+
+# ---------------------------------------------------------------------------
 # Device class
 # ---------------------------------------------------------------------------
 
@@ -594,7 +605,7 @@ class PowerStreamDevice(EcoFlowDevice):
 
     def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:
         if platform == Platform.SENSOR:
-            return list(_SENSORS)
+            return [*_SENSORS, *_ENERGY_SENSORS]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)
         if platform == Platform.NUMBER:

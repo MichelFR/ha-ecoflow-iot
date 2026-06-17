@@ -55,6 +55,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery max cell temperature | temperature | °C | `bms_bmsStatus.maxCellTmp` | 🔧 💤 |
 | LCD SoC | battery | % | `bms_emsStatus.lcdSoc` | 🔧 💤 |
 | Screen timeout | duration | s | `pd.blTime` | 🔧 💤 |
+| Battery charge energy | energy | Wh | _integrated_ |  |
+| Battery discharge energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -104,4 +106,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 70 — 44 sensor, 15 binary_sensor, 4 switch, 4 number, 3 select._
+_Entity totals: 72 — 46 sensor, 15 binary_sensor, 4 switch, 4 number, 3 select._

@@ -38,6 +38,7 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..energy import battery_charge_discharge
 from ..helpers import (
     deci as _deci_celsius,
     milli as _scale_1000,
@@ -887,6 +888,10 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
 # Device class
 # ---------------------------------------------------------------------------
 
+_ENERGY_SENSORS = (
+    *battery_charge_discharge(["bms_bmsStatus.inWatts"], ["bms_bmsStatus.outWatts"]),
+)
+
 
 class GlacierDevice(EcoFlowDevice):
     """EcoFlow Glacier portable refrigerator/freezer with optional battery."""
@@ -905,7 +910,7 @@ class GlacierDevice(EcoFlowDevice):
 
     def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:
         if platform == Platform.SENSOR:
-            return list(_SENSORS)
+            return [*_SENSORS, *_ENERGY_SENSORS]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)
         if platform == Platform.SWITCH:

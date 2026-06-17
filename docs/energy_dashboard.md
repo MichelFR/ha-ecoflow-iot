@@ -1,9 +1,8 @@
 # Home Assistant Energy Dashboard setup
 
 This guide explains which EcoFlow entities to use in **Settings → Energy**, and the
-sign conventions that trip people up. It currently covers the **Stream** family
-(Ultra / Ultra X / AC / AC Pro / Pro, and the Microinverter); other devices expose
-power but mostly not cumulative energy yet.
+sign conventions that trip people up. It walks through the **Stream** family in detail,
+then lists the equivalent sensors on the rest of the fleet.
 
 ## Two kinds of sensor
 
@@ -36,6 +35,25 @@ power (the Stream developer API does not report cumulative energy in its live qu
 
 > The **Stream Microinverter** has no battery and no AC sockets, so only the solar and
 > grid rows apply to it.
+
+## Other devices
+
+The same derived `Wh` sensors (enabled by default, integrated from the device's live
+power) are now exposed across the fleet. Pick the matching entity for each Energy
+Dashboard field:
+
+| Derived sensor(s) | Devices |
+|---|---|
+| **Solar energy** (Solar production) | Delta 2 / 2 Max / 3 Max / 3 Max Plus / Pro / Pro 3 / Pro Ultra, River 2 Pro, PowerStream, PowerOcean, Power Kits, Wave |
+| **Battery charge / discharge energy** (Home battery in/out) | Delta 2 / 2 Max / Pro, Power Kits, Glacier *(separate in/out sensors)*; PowerOcean, PowerStream *(single signed sensor — see caveat)* |
+| **Grid import / export energy** (Grid consumption / Return) | PowerOcean, Smart Home Panel II *(single signed sensor — see caveat)* |
+| **Energy** / **Energy consumption** (Individual devices) | Smart Plug, Wave |
+| **Home energy** (whole-home load) | Smart Home Panel II |
+
+Devices that expose only device-total power and no battery-specific reading
+(Delta 3 Max / 3 Max Plus / Pro 3 / Pro Ultra, River 2 Pro) get **Solar energy** only —
+there's no clean battery in/out signal to integrate. Smart Home Panel (v1) keeps its
+native daily `Grid energy today` counter.
 
 ## Sign conventions (Standard vs Inverted)
 
@@ -76,3 +94,9 @@ backwards. (Tell-tale: the auto-filled display name shows the wrong sensor.)
   `accuDsgEnergy`) are **disabled by default** — those quota fields aren't in the
   documented schema and aren't reported by current firmware. Use **Battery charge
   energy** / **Battery discharge energy** instead.
+- **Signed-sensor sign convention may need flipping.** Where battery or grid energy is
+  derived from a *single signed* reading — PowerOcean (`bpPwr`, `sysGridPwr`), PowerStream
+  (`batInputWatts`), Smart Home Panel II (`gridWatt`) — the charge/discharge or
+  import/export split assumes a sign convention that isn't fully documented. If the two
+  look swapped (e.g. discharge climbs while charging), just select the opposite sensor in
+  the dialog, or open an issue and the default will be corrected.

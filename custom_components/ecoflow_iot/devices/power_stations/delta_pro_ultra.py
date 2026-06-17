@@ -40,6 +40,7 @@ from ..base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..energy import solar_energy
 from ..helpers import (
     round2 as _round2,
 )
@@ -994,6 +995,13 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
 # Device class
 # ---------------------------------------------------------------------------
 
+_ENERGY_SENSORS = (
+    solar_energy(
+        "hs_yj751_pd_appshow_addr.inLvMpptPwr",
+        "hs_yj751_pd_appshow_addr.inHvMpptPwr",
+    ),
+)
+
 
 class DeltaProUltraDevice(EcoFlowDevice):
     """EcoFlow Delta Pro Ultra power station."""
@@ -1014,7 +1022,7 @@ class DeltaProUltraDevice(EcoFlowDevice):
 
     def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:
         if platform == Platform.SENSOR:
-            return list(_SENSORS)
+            return [*_SENSORS, *_ENERGY_SENSORS]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)
         if platform == Platform.SWITCH:

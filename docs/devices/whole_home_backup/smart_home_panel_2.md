@@ -50,6 +50,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Circuit 11 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch11Info.setAmp` | 🔧 💤 |
 | Circuit 12 power | power | W | _computed_ |  |
 | Circuit 12 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch12Info.setAmp` | 🔧 💤 |
+| Grid import energy | energy | Wh | _integrated_ |  |
+| Grid export energy | energy | Wh | _integrated_ |  |
+| Home energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -101,4 +104,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 67 — 39 sensor, 2 binary_sensor, 8 switch, 17 number, 1 select._
+_Entity totals: 70 — 42 sensor, 2 binary_sensor, 8 switch, 17 number, 1 select._

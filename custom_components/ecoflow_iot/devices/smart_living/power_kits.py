@@ -55,6 +55,7 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..energy import battery_charge_discharge, solar_energy
 from ..helpers import (
     deci as _scale_01a,
     milli as _scale_milli,
@@ -1303,6 +1304,11 @@ _POWER_KITS_SN_PREFIXES = ("M106Z", "M109Z", "M102Z", "M10EZ", "M10E1", "M106W")
 # Distinctive quota key present in all Power Kits deployments
 _POWER_KITS_MARKER = "totalSoc"
 
+_ENERGY_SENSORS = (
+    solar_energy("pv1InWatts", "pv2InWatts"),
+    *battery_charge_discharge(["totalInWatts"], ["totalOutWatts"]),
+)
+
 
 class PowerKitsDevice(EcoFlowDevice):
     """EcoFlow Power Kits modular off-grid power system."""
@@ -1339,6 +1345,7 @@ class PowerKitsDevice(EcoFlowDevice):
                 # DC distribution panel
                 *_LDDC_SENSORS,
                 *_lddc_channel_sensors(12),
+                *_ENERGY_SENSORS,
             ]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)

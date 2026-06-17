@@ -52,6 +52,7 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_legacy_command
+from ..energy import consumption_energy, solar_energy
 from ..helpers import (
     centi as _scale_100,
     deci as _scale_10,
@@ -610,6 +611,11 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
 # Device class
 # ---------------------------------------------------------------------------
 
+_ENERGY_SENSORS = (
+    solar_energy("pd.mpptPwr"),
+    consumption_energy("consumption_energy", "Energy consumption", "pd.sysPowerWatts"),
+)
+
 
 class WaveDevice(EcoFlowDevice):
     """EcoFlow WAVE portable air conditioner."""
@@ -629,7 +635,7 @@ class WaveDevice(EcoFlowDevice):
 
     def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:
         if platform == Platform.SENSOR:
-            return list(_SENSORS)
+            return [*_SENSORS, *_ENERGY_SENSORS]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)
         if platform == Platform.SWITCH:

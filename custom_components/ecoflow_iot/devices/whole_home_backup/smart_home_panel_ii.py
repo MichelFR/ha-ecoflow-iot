@@ -37,6 +37,7 @@ from ..base import (
     EcoFlowSwitchEntityDescription,
     _EcoFlowDescription,
 )
+from ..energy import consumption_energy, grid_import_export_signed
 from ..helpers import (
     deci as _scale_10,
     round2 as _round2,
@@ -468,6 +469,11 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
 # Device class
 # ---------------------------------------------------------------------------
 
+_ENERGY_SENSORS = (
+    *grid_import_export_signed("wattInfo.gridWatt"),
+    consumption_energy("home_energy", "Home energy", "wattInfo.allHallWatt"),
+)
+
 
 class SmartHomePanel2Device(EcoFlowDevice):
     """EcoFlow Smart Home Panel 2 (PD303).
@@ -502,6 +508,7 @@ class SmartHomePanel2Device(EcoFlowDevice):
                 *_SYSTEM_SENSORS,
                 *_ac_channel_sensors(3),
                 *_circuit_sensors(_CIRCUIT_COUNT),
+                *_ENERGY_SENSORS,
             ]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)

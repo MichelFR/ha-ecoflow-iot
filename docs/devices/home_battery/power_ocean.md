@@ -44,6 +44,11 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Heat pump inlet temperature | temperature | °C | _computed_ | 🔧 💤 |
 | Heat pump outlet temperature | temperature | °C | _computed_ | 🔧 💤 |
 | Heat pump ambient temperature | temperature | °C | _computed_ | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Battery charge energy | energy | Wh | _integrated_ |  |
+| Battery discharge energy | energy | Wh | _integrated_ |  |
+| Grid import energy | energy | Wh | _integrated_ |  |
+| Grid export energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -53,4 +58,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 34 — 33 sensor, 1 binary_sensor, 0 switch, 0 number, 0 select._
+_Entity totals: 39 — 38 sensor, 1 binary_sensor, 0 switch, 0 number, 0 select._

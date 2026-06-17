@@ -130,6 +130,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | DC circuit 11 current | current | A | _computed_ | 🔧 💤 |
 | DC circuit 12 power | power | W | _computed_ | 💤 |
 | DC circuit 12 current | current | A | _computed_ | 🔧 💤 |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Battery charge energy | energy | Wh | _integrated_ |  |
+| Battery discharge energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -169,4 +172,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 140 — 119 sensor, 9 binary_sensor, 5 switch, 7 number, 0 select._
+_Entity totals: 143 — 122 sensor, 9 binary_sensor, 5 switch, 7 number, 0 select._

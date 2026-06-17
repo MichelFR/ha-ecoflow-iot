@@ -36,6 +36,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery time to empty | duration | min | `pd.batDsgRemain` | 🔧 |
 | Timer remaining | duration | min | `pd.timeRemain` |  |
 | Water level | — | — | `pd.waterValue` |  |
+| Solar energy | energy | Wh | _integrated_ |  |
+| Energy consumption | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
@@ -77,4 +79,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 43 — 25 sensor, 6 binary_sensor, 3 switch, 3 number, 6 select._
+_Entity totals: 45 — 27 sensor, 6 binary_sensor, 3 switch, 3 number, 6 select._

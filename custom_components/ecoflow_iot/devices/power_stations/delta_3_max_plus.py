@@ -36,6 +36,7 @@ from ..base import (
     _EcoFlowDescription,
 )
 from ..commands import build_stream_command
+from ..energy import solar_energy
 from ..helpers import (
     round2 as _round2,
 )
@@ -366,6 +367,9 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
 # Device class
 # ---------------------------------------------------------------------------
 
+_ENERGY_SENSORS = (solar_energy("powGetPv", "powGetPv2"),)
+
+
 class Delta3MaxPlusDevice(EcoFlowDevice):
     """EcoFlow DELTA 3 MAX PLUS power station.
 
@@ -392,7 +396,7 @@ class Delta3MaxPlusDevice(EcoFlowDevice):
 
     def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:
         if platform == Platform.SENSOR:
-            return list(_SENSORS)
+            return [*_SENSORS, *_ENERGY_SENSORS]
         if platform == Platform.BINARY_SENSOR:
             return list(_BINARY_SENSORS)
         if platform == Platform.SWITCH:
