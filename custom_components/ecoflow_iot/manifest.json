@@ -1,6 +1,7 @@
 {
   "domain": "ecoflow_iot",
   "name": "EcoFlow IoT",
+  "after_dependencies": ["recorder"],
   "codeowners": ["@MichelFR"],
   "config_flow": true,
   "dependencies": [],
@@ -9,5 +10,5 @@
   "issue_tracker": "https://github.com/MichelFR/ha-ecoflow-iot/issues",
   "loggers": ["paho"],
   "requirements": ["paho-mqtt>=1.6.1"],
-  "version": "0.9.0"
+  "version": "0.9.1"
 }
