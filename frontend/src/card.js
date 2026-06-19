@@ -7,7 +7,7 @@
  * breakdown; tapping Solar today opens an hourly production/forecast graph.
  * Entities are auto-discovered from the ecoflow_iot integration. */
 
-import { LitElement, html } from "lit";
+import { LitElement, html, svg } from "lit";
 import { CARD_TYPE } from "./const.js";
 import { deviceImageUrl } from "./device-image.js";
 import { entityMap, streamDevices } from "./entities.js";
@@ -391,6 +391,25 @@ export class EcoFlowEnergyCard extends LitElement {
     const C = 2 * Math.PI * 44; // ring circumference (r=44 in the 100x100 viewBox)
     const pct = soc != null ? Math.max(0, Math.min(100, soc)) : 0;
 
+    // Charge / discharge / reserve limits as small radial ticks on the ring.
+    const ticks = [
+      {
+        v: numState(this._state("number.min_discharge_soc")),
+        cls: "discharge",
+        label: this._t("card.discharge_limit"),
+      },
+      {
+        v: numState(this._state("number.backup_reserve")),
+        cls: "reserve",
+        label: this._t("card.reserve"),
+      },
+      {
+        v: numState(this._state("number.max_charge_soc")),
+        cls: "charge",
+        label: this._t("card.charge_limit"),
+      },
+    ].filter((t) => t.v != null);
+
     return html`<div
       class="batt-circle clickable"
       @click=${() => this._moreInfo("sensor.cms_batt_soc")}
@@ -418,6 +437,18 @@ export class EcoFlowEnergyCard extends LitElement {
                   stroke-dasharray="16 261"
                 ></circle>`
               : ""}
+            ${ticks.map((t) => {
+              const a = (Math.max(0, Math.min(100, t.v)) / 100) * 2 * Math.PI;
+              const sin = Math.sin(a);
+              const cos = Math.cos(a);
+              return svg`<line
+                class="ring-tick ${t.cls}"
+                x1=${(50 + 39.5 * sin).toFixed(1)}
+                y1=${(50 - 39.5 * cos).toFixed(1)}
+                x2=${(50 + 48.5 * sin).toFixed(1)}
+                y2=${(50 - 48.5 * cos).toFixed(1)}
+              ><title>${t.label} ${Math.round(t.v)}%</title></line>`;
+            })}
           </svg>`
         : ""}
       ${showImg

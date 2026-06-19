@@ -92,6 +92,20 @@ export const cardStyles = css`
       transform: rotate(360deg);
     }
   }
+  /* charge / discharge / reserve limit ticks on the ring */
+  .ring-tick {
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+  .ring-tick.charge {
+    stroke: var(--energy-solar-color, #ff9800);
+  }
+  .ring-tick.discharge {
+    stroke: var(--error-color, #db4437);
+  }
+  .ring-tick.reserve {
+    stroke: var(--primary-text-color);
+  }
   .batt-circle .device-img {
     position: absolute;
     top: 47%;
