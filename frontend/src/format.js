@@ -22,6 +22,21 @@ export function fmtPower(watts) {
   return `${Math.round(watts)} W`;
 }
 
+/* Power in W -> { n, u } so the number and unit can be sized separately. */
+export function splitPower(watts) {
+  if (watts == null || !Number.isFinite(watts)) return { n: "–", u: "W" };
+  if (Math.abs(watts) >= 1000) return { n: (watts / 1000).toFixed(2), u: "kW" };
+  return { n: String(Math.round(watts)), u: "W" };
+}
+
+/* Energy in kWh -> { n, u }. */
+export function splitKWh(kwh) {
+  return {
+    n: kwh != null && Number.isFinite(kwh) ? kwh.toFixed(1) : "–",
+    u: "kWh",
+  };
+}
+
 /* Energy in Wh -> compact "Wh" / "kWh" string. */
 export function fmtEnergyWh(wh, digits = 1) {
   if (wh == null || !Number.isFinite(wh)) return null;

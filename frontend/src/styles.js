@@ -27,7 +27,7 @@ export const cardStyles = css`
     min-width: 0;
   }
   .name {
-    font-size: 1.5em;
+    font-size: 1.4em;
     font-weight: 700;
     line-height: 1.15;
   }
@@ -167,16 +167,16 @@ export const cardStyles = css`
   .ac {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-top: 12px;
+    gap: 8px;
+    margin-top: 14px;
   }
   .ac-socket {
     display: flex;
     align-items: center;
     gap: 9px;
     background: var(--secondary-background-color);
-    border-radius: 10px;
-    padding: 5px 10px;
+    border-radius: 12px;
+    padding: 6px 10px;
     transition: filter 0.15s ease;
   }
   .ac-socket:hover {
@@ -202,13 +202,15 @@ export const cardStyles = css`
   }
   .ac-name {
     color: var(--secondary-text-color);
-    font-size: 0.76em;
+    font-size: 0.8em;
     line-height: 1.2;
   }
   .ac-power {
     font-weight: 700;
-    font-size: 0.95em;
     color: var(--primary-text-color);
+  }
+  .ac-power .metric-num {
+    font-size: 1.05em;
   }
 
   /* power stats */
@@ -221,7 +223,7 @@ export const cardStyles = css`
   .stat {
     background: var(--secondary-background-color);
     border-radius: 14px;
-    padding: 12px 14px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -249,13 +251,28 @@ export const cardStyles = css`
     --mdc-icon-size: 16px;
   }
   .stat-value {
-    font-size: 1.5em;
     font-weight: 700;
     color: var(--primary-text-color);
   }
   .stat-sub {
     font-size: 0.82em;
     color: var(--secondary-text-color);
+  }
+  /* shared number + muted unit, used for every primary value */
+  .metric {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+  }
+  .metric-num {
+    font-size: 1.4em;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .metric-unit {
+    font-size: 0.78em;
+    font-weight: 600;
+    opacity: 0.8;
   }
   .solar .stat-value {
     color: var(--energy-solar-color, #ff9800);
@@ -293,23 +310,18 @@ export const cardStyles = css`
     margin-left: 8px;
   }
   .today-head ha-icon {
-    --mdc-icon-size: 20px;
+    --mdc-icon-size: 18px;
     color: var(--energy-solar-color, #ff9800);
     align-self: center;
   }
   .today-label {
     color: var(--secondary-text-color);
-    font-size: 0.9em;
+    font-size: 0.85em;
   }
   .today-value {
     margin-left: auto;
-    font-size: 1.6em;
     font-weight: 800;
     color: var(--energy-solar-color, #ff9800);
-  }
-  .today-unit {
-    font-size: 0.6em;
-    font-weight: 600;
   }
   .fc-bar {
     height: 10px;

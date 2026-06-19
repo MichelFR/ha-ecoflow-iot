@@ -18,7 +18,14 @@ import {
   forecastTodayWh,
   mergeForecastWhHours,
 } from "./energy.js";
-import { fmtPower, isEntityId, isTemplate, numState } from "./format.js";
+import {
+  fmtPower,
+  isEntityId,
+  isTemplate,
+  numState,
+  splitKWh,
+  splitPower,
+} from "./format.js";
 import { ensureHaComponents } from "./ha-components.js";
 import { localize } from "./localize.js";
 import { cardStyles } from "./styles.js";
@@ -509,7 +516,11 @@ export class EcoFlowEnergyCard extends LitElement {
             <span class="ac-power">
               ${s.swState && !on
                 ? this._t("card.off")
-                : (fmtPower(power) ?? (s.pwState ? "—" : ""))}
+                : power != null
+                  ? this._metric(splitPower(power))
+                  : s.pwState
+                    ? "—"
+                    : ""}
             </span>
           </div>
           ${s.swState
@@ -569,6 +580,14 @@ export class EcoFlowEnergyCard extends LitElement {
     </ha-dialog>`;
   }
 
+  /* A value as a large number + a smaller muted unit, used uniformly. */
+  _metric(split) {
+    return html`<span class="metric"
+      ><span class="metric-num">${split.n}</span
+      ><span class="metric-unit">${split.u}</span></span
+    >`;
+  }
+
   _renderStats() {
     const solar = numState(this._state("sensor.pv_total"));
     const panels = panelData(this);
@@ -589,7 +608,7 @@ export class EcoFlowEnergyCard extends LitElement {
             ? html`<ha-icon class="more" icon="mdi:chevron-right"></ha-icon>`
             : ""}
         </div>
-        <div class="stat-value">${fmtPower(solar) ?? "–"}</div>
+        <div class="stat-value">${this._metric(splitPower(solar))}</div>
         ${canBreakdown
           ? html`<div class="stat-sub">
               ${panels.length} ${this._t("panels.title").toLowerCase()}
@@ -623,7 +642,7 @@ export class EcoFlowEnergyCard extends LitElement {
     >
       <div class="stat-head"><ha-icon icon=${icon}></ha-icon>${this._t("card.grid")}</div>
       <div class="stat-value">
-        ${grid != null ? fmtPower(Math.abs(grid)) : "–"}
+        ${this._metric(splitPower(grid != null ? Math.abs(grid) : null))}
       </div>
       <div class="stat-sub">${label}</div>
     </div>`;
@@ -651,11 +670,7 @@ export class EcoFlowEnergyCard extends LitElement {
         <ha-icon icon="mdi:white-balance-sunny"></ha-icon>
         <span class="today-label">${this._periodLabel()}</span>
         <ha-icon class="today-more" icon="mdi:chart-bar"></ha-icon>
-        <span class="today-value">
-          ${todayKWh != null ? todayKWh.toFixed(1) : "–"}<span class="today-unit"
-            >&nbsp;kWh</span
-          >
-        </span>
+        <span class="today-value">${this._metric(splitKWh(todayKWh))}</span>
       </div>
       ${hasForecast
         ? html`<div class="fc-bar">
