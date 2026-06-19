@@ -1,0 +1,15 @@
+{
+  "name": "ecoflow-energy-card",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build for the EcoFlow Energy card bundled with the EcoFlow IoT integration",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --format=esm --minify --outfile=../custom_components/ecoflow_iot/www/ecoflow-energy-card.js",
+    "watch": "npm run build -- --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "lit": "^3.2.0"
+  }
+}

@@ -65,3 +65,12 @@ SET_ACK_TIMEOUT: Final = 8.0  # seconds to await an MQTT set_reply before HTTP f
 SN_PREFIX_LEN: Final = 4
 
 MANUFACTURER: Final = "EcoFlow"
+
+# --- Bundled Lovelace card ---------------------------------------------------
+# The integration ships an "EcoFlow Energy" card under ``www/`` and serves that
+# whole folder over HTTP at ``/ecoflow_iot`` (the card JS plus device images).
+# The card JS is auto-registered as a Lovelace resource in storage mode, so most
+# users never have to add it by hand.
+CARD_ASSET_BASE: Final = f"/{DOMAIN}"  # serves custom_components/ecoflow_iot/www
+CARD_FILENAME: Final = "ecoflow-energy-card.js"
+CARD_URL: Final = f"{CARD_ASSET_BASE}/{CARD_FILENAME}"

@@ -1,0 +1,313 @@
+import { css } from "lit";
+
+export const cardStyles = css`
+  ha-card {
+    padding: 20px;
+  }
+  .empty {
+    padding: 8px;
+    color: var(--secondary-text-color);
+  }
+  .clickable {
+    cursor: pointer;
+  }
+
+  /* header: name + device image */
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 132px;
+  }
+  .head-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .name {
+    font-size: 1.5em;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .subtitle {
+    color: var(--secondary-text-color);
+    font-size: 0.95em;
+  }
+  .device-img {
+    max-width: 46%;
+    max-height: 150px;
+    object-fit: contain;
+    margin: -10px -6px 0 0;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.28));
+  }
+
+  /* battery */
+  .battery {
+    margin-top: 6px;
+  }
+  .batt-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .batt-row ha-icon,
+  .batt-row ha-state-icon {
+    --mdc-icon-size: 26px;
+    color: var(--state-icon-color, var(--primary-text-color));
+  }
+  .soc {
+    font-size: 1.9em;
+    font-weight: 700;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 0.9em;
+  }
+  .chip ha-icon {
+    --mdc-icon-size: 16px;
+  }
+  .chip.charge {
+    color: var(--energy-solar-color, #ff9800);
+    background: color-mix(
+      in srgb,
+      var(--energy-solar-color, #ff9800) 18%,
+      transparent
+    );
+  }
+  .chip.discharge {
+    color: var(--state-sensor-battery-high-color, #43a047);
+    background: color-mix(
+      in srgb,
+      var(--state-sensor-battery-high-color, #43a047) 18%,
+      transparent
+    );
+  }
+  .bar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--divider-color);
+    margin: 10px 0 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--state-sensor-battery-high-color, #43a047);
+    transition: width 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .fill.low {
+    background: var(--error-color, #db4437);
+  }
+  .fill.charging::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 45%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%
+    );
+    animation: sweep 1.6s linear infinite;
+  }
+  @keyframes sweep {
+    from {
+      transform: translateX(-110%);
+    }
+    to {
+      transform: translateX(330%);
+    }
+  }
+  .reserve {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    background: var(--primary-text-color);
+    opacity: 0.55;
+  }
+
+  /* power stats */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .stat {
+    background: var(--secondary-background-color);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
+  .stat.clickable:hover {
+    filter: brightness(1.08);
+  }
+  .stat.clickable:active {
+    transform: scale(0.99);
+  }
+  .stat-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--secondary-text-color);
+    font-size: 0.85em;
+  }
+  .stat-head ha-icon {
+    --mdc-icon-size: 18px;
+  }
+  .stat-head .more {
+    margin-left: auto;
+    opacity: 0.6;
+    --mdc-icon-size: 16px;
+  }
+  .stat-value {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .stat-sub {
+    font-size: 0.82em;
+    color: var(--secondary-text-color);
+  }
+  .solar .stat-value {
+    color: var(--energy-solar-color, #ff9800);
+  }
+  .grid.import .stat-value {
+    color: var(--energy-grid-consumption-color, #488fc2);
+  }
+  .grid.export .stat-value {
+    color: var(--energy-grid-return-color, #8353d1);
+  }
+
+  /* today's production + forecast */
+  .today {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--secondary-background-color);
+  }
+  .today-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .today-head ha-icon {
+    --mdc-icon-size: 20px;
+    color: var(--energy-solar-color, #ff9800);
+    align-self: center;
+  }
+  .today-label {
+    color: var(--secondary-text-color);
+    font-size: 0.9em;
+  }
+  .today-value {
+    margin-left: auto;
+    font-size: 1.6em;
+    font-weight: 800;
+    color: var(--energy-solar-color, #ff9800);
+  }
+  .today-unit {
+    font-size: 0.6em;
+    font-weight: 600;
+  }
+  .fc-bar {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--divider-color);
+    margin: 12px 0 6px;
+    overflow: hidden;
+  }
+  .fc-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: var(--energy-solar-color, #ff9800);
+    transition: width 0.5s ease;
+  }
+  .fc-fill.met {
+    background: var(--state-sensor-battery-high-color, #43a047);
+  }
+  .fc-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82em;
+    color: var(--secondary-text-color);
+  }
+  .fc-legend b {
+    color: var(--primary-text-color);
+    font-weight: 700;
+  }
+
+  /* dialog */
+  .dlg-body {
+    padding: 4px 4px 8px;
+  }
+  .panels {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .panel-row {
+    padding: 10px 8px;
+    border-radius: 10px;
+    transition: background-color 0.15s ease;
+  }
+  .panel-row:hover {
+    background: var(--secondary-background-color);
+  }
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-text-color);
+  }
+  .panel-name ha-icon {
+    --mdc-icon-size: 20px;
+    color: var(--energy-solar-color, #ff9800);
+  }
+  .panel-val {
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .pbar {
+    height: 7px;
+    border-radius: 4px;
+    background: var(--divider-color);
+    margin-top: 7px;
+    overflow: hidden;
+  }
+  .pfill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--energy-solar-color, #ff9800);
+    transition: width 0.4s ease;
+  }
+  .panel-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding: 10px 8px 2px;
+    border-top: 1px solid var(--divider-color);
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+`;

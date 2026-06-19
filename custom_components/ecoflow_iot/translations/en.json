@@ -65,7 +65,19 @@
           "connecting": "Connecting",
           "disconnected": "Disconnected"
         }
-      }
+      },
+      "cms_batt_soc": { "name": "Battery" },
+      "bat_power": { "name": "Battery power" },
+      "pv_total": { "name": "Solar power" },
+      "grid_power": { "name": "Grid power" },
+      "solar_energy": { "name": "Solar energy" },
+      "pv1_power": { "name": "Solar string 1 power" },
+      "pv2_power": { "name": "Solar string 2 power" },
+      "pv3_power": { "name": "Solar string 3 power" },
+      "pv4_power": { "name": "Solar string 4 power" }
+    },
+    "binary_sensor": {
+      "battery_charging": { "name": "Battery charging" }
     },
     "select": {
       "operating_mode": {

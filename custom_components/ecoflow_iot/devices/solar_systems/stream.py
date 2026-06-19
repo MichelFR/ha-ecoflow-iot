@@ -120,6 +120,9 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="cms_batt_soc",
         mqtt_key="cmsBattSoc",
+        # translation_key lets the bundled Lovelace card auto-discover this
+        # sensor regardless of the user's language or renamed entity_id.
+        translation_key="cms_batt_soc",
         name="Battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -238,6 +241,7 @@ _POWERFLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bat_power",
         mqtt_key="powGetBpCms",
+        translation_key="bat_power",
         name="Battery power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -290,6 +294,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="grid_power",
         mqtt_key="gridConnectionPower",
+        translation_key="grid_power",
         name="Grid power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -352,6 +357,7 @@ _PV_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="pv_total",
         mqtt_key="powGetPvSum",
+        translation_key="pv_total",
         name="Solar power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -419,6 +425,7 @@ _BATTERY_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
 _ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
     EcoFlowIntegralSensorEntityDescription(
         key="solar_energy",
+        translation_key="solar_energy",
         name="Solar energy",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -463,6 +470,7 @@ def _pv_string_sensors(count: int) -> tuple[EcoFlowSensorEntityDescription, ...]
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"pv{i}_power",
+                translation_key=f"pv{i}_power",
                 name=f"Solar string {i} power",
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
@@ -584,6 +592,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="battery_charging",
         mqtt_key="powGetBpCms",
+        translation_key="battery_charging",
         name="Battery charging",
         device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
         # powGetBpCms is signed: positive = charging (same convention as the

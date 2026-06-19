@@ -1,0 +1,73 @@
+{
+  "card": {
+    "no_device": "No EcoFlow Stream device found. Set up the EcoFlow IoT integration first.",
+    "device": "EcoFlow Stream",
+    "solar": "Solar",
+    "grid": "Grid",
+    "grid_import": "Importing",
+    "grid_export": "Exporting",
+    "grid_idle": "Grid idle",
+    "battery": "Battery",
+    "charging": "Charging",
+    "discharging": "Discharging",
+    "today": "Solar today",
+    "produced": "produced",
+    "forecast": "Forecast",
+    "of_forecast": "{pct}% of forecast",
+    "exceeded": "Forecast reached"
+  },
+  "panels": {
+    "title": "Solar panels",
+    "panel": "Panel {n}",
+    "total": "Total",
+    "none": "No per-panel solar data is available for this device."
+  },
+  "editor": {
+    "device": "EcoFlow device",
+    "automatic": "Automatic",
+    "entity": "Entity",
+    "value_template": "Value / template",
+    "mode_auto": "Auto",
+    "mode_entity": "Entity",
+    "mode_custom": "Custom",
+    "auto_value": "Auto-detected: {value}",
+    "not_found": "not found",
+    "overridden": "{n} overridden",
+    "shown": "Shown",
+    "nothing_shown": "Nothing shown"
+  },
+  "page": {
+    "appearance": "Appearance",
+    "entities": "Entities",
+    "forecast": "Solar forecast"
+  },
+  "toggle": {
+    "show_image": "Show device image",
+    "show_battery": "Show battery bar",
+    "show_today": "Show today's production",
+    "show_grid": "Show grid power",
+    "show_panels": "Tap solar power for per-panel breakdown",
+    "show_forecast": "Compare today's production with the forecast"
+  },
+  "short": {
+    "show_image": "Image",
+    "show_battery": "Battery",
+    "show_today": "Today",
+    "show_grid": "Grid",
+    "show_panels": "Panels",
+    "show_forecast": "Forecast"
+  },
+  "slot": {
+    "sensor": {
+      "cms_batt_soc": "Battery level",
+      "pv_total": "Solar power",
+      "grid_power": "Grid power",
+      "solar_energy": "Solar energy (source for today's total)",
+      "pv1_power": "Solar panel 1",
+      "pv2_power": "Solar panel 2",
+      "pv3_power": "Solar panel 3",
+      "pv4_power": "Solar panel 4",
+      "forecast_today": "Forecast entity (expected production today)"
+    }
+  }
+}

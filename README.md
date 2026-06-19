@@ -56,6 +56,11 @@ full serial) so it can be added.
   Home Assistant's **Energy** dashboard. See the
   [Energy Dashboard setup guide](docs/energy_dashboard.md) for the per-device mapping and
   the grid/battery sign conventions.
+- **Bundled Lovelace card** — an **EcoFlow Energy** card for Stream devices, with the
+  device image, an animated battery bar, live Solar and Grid power, today's solar
+  production (with an optional forecast comparison) and a tap-to-expand per-panel
+  breakdown. Entities are auto-detected; it ships with the integration and registers
+  itself, so no manual resource setup is needed. See [EcoFlow Energy card](#ecoflow-energy-card).
 - Config flow with region selection, reauth, options (poll interval, MQTT staleness,
   MQTT enable/disable), and redacted diagnostics.
 
@@ -114,6 +119,30 @@ full serial) so it can be added.
   only for devices that have such entities.
 - **Re-authentication:** if you rotate your API keys, Home Assistant prompts you to
   re-enter them — no need to delete the integration.
+
+### EcoFlow Energy card
+
+The integration bundles a custom Lovelace card, **EcoFlow Energy**, tailored to Stream
+devices (Ultra / Ultra X / AC / AC Pro / Pro). It serves and registers itself, so in the
+common case you just add it from the dashboard's card picker.
+
+- **Add it:** edit a dashboard → **+ Add Card** → search for **EcoFlow Energy**. With a
+  single Stream it auto-detects everything; with more than one, pick the device in the
+  card's visual editor.
+- **Shows:** the device photo, an animated battery bar (with charge/discharge rate),
+  **Solar power**, **Grid power** (import/export), and **today's solar production** —
+  with an optional comparison against a solar-forecast entity (e.g. Forecast.Solar's
+  "estimated energy production – today"). Tap **Solar power** for a per-panel (per-MPPT)
+  breakdown.
+- **Editor:** an ABRP-style visual editor — Appearance toggles, an Entities page for
+  overriding any auto-detected entity (Auto / Entity / Custom-template), and a Solar
+  forecast page to point at your forecast entity.
+- **Today's total** is read from the recorder's statistics for the cumulative Solar
+  energy sensor (the same source as the Energy Dashboard), so the **recorder** must be
+  enabled (it is by default).
+- The card is auto-registered as a dashboard resource when Lovelace runs in **storage
+  mode** (the default UI mode). In **YAML mode**, add the resource manually:
+  `/ecoflow_iot/ecoflow-energy-card.js` as a **JavaScript Module**.
 
 ## How data flows
 
