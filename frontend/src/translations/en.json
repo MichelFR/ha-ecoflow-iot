@@ -34,11 +34,24 @@
     "not_found": "not found",
     "overridden": "{n} overridden",
     "shown": "Shown",
-    "nothing_shown": "Nothing shown"
+    "nothing_shown": "Nothing shown",
+    "panel": "Panel {n}",
+    "panel_name": "Panel name",
+    "panel_entity": "Power sensor",
+    "panel_hidden": "Hidden from the card.",
+    "panels_hint": "Rename a panel, point it at a different sensor, or hide it from the breakdown. Use the toggle to show or hide each panel.",
+    "panels_count": "{n} panels",
+    "panels_hidden": "{n} hidden",
+    "loading": "Loading…",
+    "forecast_hint": "Choose which solar-forecast providers to use — the same ones set up in Home Assistant's Energy dashboard (Settings → Dashboards → Energy → Solar panels).",
+    "forecast_none": "No solar forecast is configured. Add a forecast under Settings → Dashboards → Energy → Solar panels, then it appears here.",
+    "forecast_none_short": "Not configured",
+    "forecast_selected": "{n} of {total} providers"
   },
   "page": {
     "appearance": "Appearance",
     "entities": "Entities",
+    "panels": "Solar panels",
     "forecast": "Solar forecast"
   },
   "toggle": {

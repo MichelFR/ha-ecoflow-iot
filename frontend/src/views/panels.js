@@ -9,10 +9,17 @@ import { localize } from "../localize.js";
 export function panelData(card) {
   const panels = [];
   for (let i = 1; i <= 4; i++) {
+    const cfg = card._config.panels?.[i] || {};
+    if (cfg.hidden) continue; // per-panel hide from the editor
     const slot = `sensor.pv${i}_power`;
     const state = card._state(slot);
     if (!state) continue;
-    panels.push({ i, watts: numState(state), id: card._entityId(slot) });
+    panels.push({
+      i,
+      watts: numState(state),
+      id: card._entityId(slot),
+      name: cfg.name || null,
+    });
   }
   return panels;
 }
@@ -34,9 +41,8 @@ export function renderPanels(card) {
       >
         <div class="panel-head">
           <span class="panel-name">
-            <ha-icon icon="mdi:solar-panel"></ha-icon>${t("panels.panel", {
-              n: p.i,
-            })}
+            <ha-icon icon="mdi:solar-panel"></ha-icon>${p.name ||
+            t("panels.panel", { n: p.i })}
           </span>
           <span class="panel-val">${fmtPower(p.watts) ?? "–"}</span>
         </div>

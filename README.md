@@ -130,13 +130,19 @@ common case you just add it from the dashboard's card picker.
   single Stream it auto-detects everything; with more than one, pick the device in the
   card's visual editor.
 - **Shows:** the device photo, an animated battery bar (with charge/discharge rate),
-  **Solar power**, **Grid power** (import/export), and **today's solar production** —
-  with an optional comparison against a solar-forecast entity (e.g. Forecast.Solar's
-  "estimated energy production – today"). Tap **Solar power** for a per-panel (per-MPPT)
-  breakdown.
+  **Solar power**, **Grid power** (import/export), and **today's solar production** with
+  an optional forecast comparison. Tap **Solar power** for a per-panel (per-MPPT)
+  breakdown; tap **Solar today** for an hourly production graph with the forecast curve
+  overlaid (like the Energy dashboard's Solar production card).
+- **Solar forecast:** uses the **same forecast configured in Home Assistant's Energy
+  dashboard** (Settings → Dashboards → Energy → Solar panels). The card's editor lists
+  those forecast providers so you can choose which to include; the dashed forecast curve
+  and the "X / Y kWh" comparison are drawn from them. If no Energy-dashboard forecast is
+  set up, the card simply omits the comparison.
 - **Editor:** an ABRP-style visual editor — Appearance toggles, an Entities page for
-  overriding any auto-detected entity (Auto / Entity / Custom-template), and a Solar
-  forecast page to point at your forecast entity.
+  overriding any auto-detected entity (Auto / Entity / Custom-template), a **Solar
+  panels** page to rename, re-map or hide each panel, and a **Solar forecast** page to
+  pick which forecast providers to use.
 - **Today's total** is read from the recorder's statistics for the cumulative Solar
   energy sensor (the same source as the Energy Dashboard), so the **recorder** must be
   enabled (it is by default).

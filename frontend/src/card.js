@@ -2,27 +2,29 @@
  *
  * A compact energy card for EcoFlow Stream devices: device image, an animated
  * battery bar, live Solar and Grid power, and today's solar production with an
- * optional forecast comparison. Tapping Solar power opens a per-panel
- * breakdown. Entities are auto-discovered from the ecoflow_iot integration; the
- * editor only needs the device when more than one Stream exists. */
+ * optional forecast comparison (the same forecast configured in Home
+ * Assistant's Energy dashboard). Tapping Solar power opens a per-panel
+ * breakdown; tapping Solar today opens an hourly production/forecast graph.
+ * Entities are auto-discovered from the ecoflow_iot integration. */
 
 import { LitElement, html } from "lit";
 import { CARD_TYPE } from "./const.js";
 import { deviceImageUrl } from "./device-image.js";
 import { entityMap, streamDevices } from "./entities.js";
 import {
-  fmtEnergyWh,
-  fmtPower,
-  isEntityId,
-  isTemplate,
-  numState,
-  stateToKWh,
-} from "./format.js";
+  fetchHourlyWh,
+  fetchSolarForecasts,
+  forecastHourly,
+  forecastTodayWh,
+  mergeForecastWhHours,
+} from "./energy.js";
+import { fmtPower, isEntityId, isTemplate, numState } from "./format.js";
 import { ensureHaComponents } from "./ha-components.js";
 import { localize } from "./localize.js";
 import { fetchTodayWh } from "./statistics.js";
 import { cardStyles } from "./styles.js";
 import { panelData, renderPanels } from "./views/panels.js";
+import { renderForecastGraph } from "./views/forecast-graph.js";
 
 const STATS_REFRESH_MS = 5 * 60 * 1000;
 
@@ -39,14 +41,20 @@ export class EcoFlowEnergyCard extends LitElement {
 
   constructor() {
     super();
-    this._dialog = null; // null | "panels"
-    this._todayWh = undefined; // undefined = not fetched yet, null = unavailable
+    this._dialog = null; // null | "panels" | "today"
+    this._todayWh = undefined; // undefined = not fetched, null = unavailable
+    this._forecasts = {}; // raw energy/solar_forecast result
+    this._forecastsFetched = false;
+    this._hourly = null; // {hour: Wh} actual, lazily fetched for the graph
   }
 
   connectedCallback() {
     super.connectedCallback();
     ensureHaComponents();
-    this._statsTimer = setInterval(() => this._refreshToday(), STATS_REFRESH_MS);
+    this._statsTimer = setInterval(() => {
+      this._refreshToday();
+      this._refreshForecast();
+    }, STATS_REFRESH_MS);
   }
 
   disconnectedCallback() {
@@ -78,6 +86,10 @@ export class EcoFlowEnergyCard extends LitElement {
     return localize(this.hass, key, vars);
   }
 
+  _show(key, def = true) {
+    return this._config[key] ?? def;
+  }
+
   /* -- entity resolution -- */
 
   get _device() {
@@ -91,8 +103,6 @@ export class EcoFlowEnergyCard extends LitElement {
     return devices[0];
   }
 
-  /* Resolve a slot: a per-slot override (entity id, template or literal) wins
-   * over the auto-discovered entity. */
   _state(slot) {
     const override = this._config.entities?.[slot];
     if (override) {
@@ -118,17 +128,17 @@ export class EcoFlowEnergyCard extends LitElement {
     return this._map?.[slot];
   }
 
-  _show(key, def = true) {
-    return this._config[key] ?? def;
-  }
-
-  /* -- today's production via statistics -- */
+  /* -- async data: today's total, forecast, hourly -- */
 
   updated(changed) {
     super.updated(changed);
     if (changed.has("hass") || changed.has("_config")) {
       this._syncTemplates();
       if (this._todayWh === undefined) this._refreshToday();
+      if (!this._forecastsFetched) {
+        this._forecastsFetched = true;
+        this._refreshForecast();
+      }
     }
   }
 
@@ -139,6 +149,36 @@ export class EcoFlowEnergyCard extends LitElement {
     if (wh !== this._todayWh) {
       this._todayWh = wh;
       this.requestUpdate();
+    }
+  }
+
+  async _refreshForecast() {
+    if (!this.hass) return;
+    this._forecasts = await fetchSolarForecasts(this.hass);
+    this.requestUpdate();
+  }
+
+  _mergedForecast() {
+    return mergeForecastWhHours(
+      this._forecasts,
+      this._config.forecast_config_entries
+    );
+  }
+
+  _forecastTodayKWh() {
+    const wh = forecastTodayWh(this._mergedForecast());
+    return wh != null ? wh / 1000 : null;
+  }
+
+  async _openToday() {
+    this._dialog = "today";
+    const id = this._entityId("sensor.solar_energy");
+    if (id && this.hass) {
+      const hours = await fetchHourlyWh(this.hass, id);
+      if (hours) {
+        this._hourly = hours;
+        this.requestUpdate();
+      }
     }
   }
 
@@ -154,7 +194,7 @@ export class EcoFlowEnergyCard extends LitElement {
     ].filter((value) => isTemplate(value));
     for (const template of templates) {
       if (this._tmplUnsub[template]) continue;
-      this._tmplUnsub[template] = true; // claim before the async subscribe
+      this._tmplUnsub[template] = true;
       try {
         this._tmplUnsub[template] = await this.hass.connection.subscribeMessage(
           (msg) => {
@@ -178,7 +218,6 @@ export class EcoFlowEnergyCard extends LitElement {
     }
   }
 
-  /* Open the standard more-info dialog for a slot's (or explicit) entity. */
   _moreInfo(slot) {
     this._moreInfoId(this._entityId(slot));
   }
@@ -207,18 +246,37 @@ export class EcoFlowEnergyCard extends LitElement {
     this._map = entityMap(this.hass, device.ents);
 
     return html`<ha-card>
-      ${this._renderHead(device)} ${this._show("show_battery") ? this._renderBattery() : ""}
-      ${this._renderStats()} ${this._show("show_today") ? this._renderToday() : ""}
+      ${this._renderHead(device)}
+      ${this._show("show_battery") ? this._renderBattery() : ""}
+      ${this._renderStats()}
+      ${this._show("show_today") ? this._renderToday() : ""}
       ${this._dialog === "panels"
-        ? html`<ha-dialog
-            open
-            header-title=${this._t("panels.title")}
-            @closed=${() => (this._dialog = null)}
-          >
-            <div class="dlg-body">${renderPanels(this)}</div>
-          </ha-dialog>`
+        ? this._dialogFrame(this._t("panels.title"), renderPanels(this))
+        : ""}
+      ${this._dialog === "today"
+        ? this._dialogFrame(
+            this._t("card.today"),
+            renderForecastGraph(this, {
+              actual: this._hourly || {},
+              forecast: forecastHourly(this._mergedForecast()),
+              totalWh: this._todayWh,
+              showForecast:
+                this._show("show_forecast") &&
+                Object.keys(this._forecasts || {}).length > 0,
+            })
+          )
         : ""}
     </ha-card>`;
+  }
+
+  _dialogFrame(title, body) {
+    return html`<ha-dialog
+      open
+      header-title=${title}
+      @closed=${() => (this._dialog = null)}
+    >
+      <div class="dlg-body">${body}</div>
+    </ha-dialog>`;
   }
 
   _renderHead(device) {
@@ -258,17 +316,13 @@ export class EcoFlowEnergyCard extends LitElement {
       this._state("binary_sensor.battery_charging")?.state === "on" ||
       (batPower != null && batPower > 1);
     const discharging = !charging && batPower != null && batPower < -1;
-    const reserve = numState(this.hass.states[this._reserveEntityId()]);
 
     return html`<div class="battery">
       <div
         class="batt-row clickable"
         @click=${() => this._moreInfo("sensor.cms_batt_soc")}
       >
-        <ha-state-icon
-          .hass=${this.hass}
-          .stateObj=${socState}
-        ></ha-state-icon>
+        <ha-state-icon .hass=${this.hass} .stateObj=${socState}></ha-state-icon>
         <span class="soc">${soc != null ? Math.round(soc) : "–"}%</span>
         ${charging && batPower != null
           ? html`<span class="chip charge"
@@ -291,24 +345,14 @@ export class EcoFlowEnergyCard extends LitElement {
             : ""}"
           style="width:${soc ?? 0}%"
         ></div>
-        ${reserve != null && reserve > 0 && reserve < 100
-          ? html`<div class="reserve" style="left:${reserve}%"></div>`
-          : ""}
       </div>
     </div>`;
-  }
-
-  /* The backup-reserve number entity isn't auto-mapped (it's a config control),
-   * but if the user pointed a slot at it we honour it as the bar marker. */
-  _reserveEntityId() {
-    return this._entityId("number.backup_reserve") || "";
   }
 
   _renderStats() {
     const solar = numState(this._state("sensor.pv_total"));
     const panels = panelData(this);
     const canBreakdown = this._show("show_panels") && panels.length > 0;
-
     const gridState = this._state("sensor.grid_power");
     const grid = numState(gridState);
 
@@ -332,13 +376,13 @@ export class EcoFlowEnergyCard extends LitElement {
             </div>`
           : ""}
       </div>
-      ${this._show("show_grid") ? this._renderGrid(gridState, grid) : html`<div></div>`}
+      ${this._show("show_grid")
+        ? this._renderGrid(grid)
+        : html`<div></div>`}
     </div>`;
   }
 
-  _renderGrid(gridState, grid) {
-    // HA convention after the integration's invert option: import positive,
-    // export negative.
+  _renderGrid(grid) {
     const importing = grid != null && grid > 1;
     const exporting = grid != null && grid < -1;
     const cls = importing ? "import" : exporting ? "export" : "";
@@ -347,15 +391,17 @@ export class EcoFlowEnergyCard extends LitElement {
       : exporting
         ? this._t("card.grid_export")
         : this._t("card.grid_idle");
-    const icon = exporting ? "mdi:transmission-tower-export" : importing ? "mdi:transmission-tower-import" : "mdi:transmission-tower";
+    const icon = exporting
+      ? "mdi:transmission-tower-export"
+      : importing
+        ? "mdi:transmission-tower-import"
+        : "mdi:transmission-tower";
 
     return html`<div
       class="stat grid ${cls} clickable"
       @click=${() => this._moreInfo("sensor.grid_power")}
     >
-      <div class="stat-head">
-        <ha-icon icon=${icon}></ha-icon>${this._t("card.grid")}
-      </div>
+      <div class="stat-head"><ha-icon icon=${icon}></ha-icon>${this._t("card.grid")}</div>
       <div class="stat-value">
         ${grid != null ? fmtPower(Math.abs(grid)) : "–"}
       </div>
@@ -364,13 +410,12 @@ export class EcoFlowEnergyCard extends LitElement {
   }
 
   _renderToday() {
-    const todayWh = this._todayWh;
-    const todayKWh = todayWh != null ? todayWh / 1000 : null;
-    const forecastState = this._show("show_forecast")
-      ? this._state("sensor.forecast_today")
-      : undefined;
-    const forecast = forecastState ? stateToKWh(forecastState) : null;
-
+    const todayKWh = this._todayWh != null ? this._todayWh / 1000 : null;
+    const hasForecastData = Object.keys(this._forecasts || {}).length > 0;
+    const forecast =
+      this._show("show_forecast") && hasForecastData
+        ? this._forecastTodayKWh()
+        : null;
     const hasForecast = forecast != null && forecast > 0;
     const pct =
       hasForecast && todayKWh != null
@@ -378,14 +423,12 @@ export class EcoFlowEnergyCard extends LitElement {
         : null;
     const met = pct != null && pct >= 100;
 
-    return html`<div class="today">
+    return html`<div class="today clickable" @click=${() => this._openToday()}>
       <div class="today-head">
         <ha-icon icon="mdi:white-balance-sunny"></ha-icon>
         <span class="today-label">${this._t("card.today")}</span>
-        <span
-          class="today-value clickable"
-          @click=${() => this._moreInfo("sensor.solar_energy")}
-        >
+        <ha-icon class="today-more" icon="mdi:chart-bar"></ha-icon>
+        <span class="today-value">
           ${todayKWh != null ? todayKWh.toFixed(1) : "–"}<span class="today-unit"
             >&nbsp;kWh</span
           >
@@ -393,7 +436,10 @@ export class EcoFlowEnergyCard extends LitElement {
       </div>
       ${hasForecast
         ? html`<div class="fc-bar">
-              <div class="fc-fill ${met ? "met" : ""}" style="width:${pct}%"></div>
+              <div
+                class="fc-fill ${met ? "met" : ""}"
+                style="width:${pct}%"
+              ></div>
             </div>
             <div class="fc-legend">
               <span>

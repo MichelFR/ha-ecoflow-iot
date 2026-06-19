@@ -200,11 +200,24 @@ export const cardStyles = css`
     padding: 14px;
     border-radius: 14px;
     background: var(--secondary-background-color);
+    transition: filter 0.15s ease;
+  }
+  .today.clickable:hover {
+    filter: brightness(1.08);
   }
   .today-head {
     display: flex;
     align-items: baseline;
     gap: 8px;
+  }
+  .today-more {
+    align-self: center;
+    margin-left: auto;
+    color: var(--secondary-text-color);
+    --mdc-icon-size: 18px;
+  }
+  .today-more + .today-value {
+    margin-left: 8px;
   }
   .today-head ha-icon {
     --mdc-icon-size: 20px;
@@ -309,5 +322,89 @@ export const cardStyles = css`
     border-top: 1px solid var(--divider-color);
     font-weight: 700;
     color: var(--primary-text-color);
+  }
+
+  /* forecast / production graph */
+  .fc-graph-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .fc-graph-title {
+    font-weight: 700;
+    font-size: 1.15em;
+    color: var(--primary-text-color);
+  }
+  .fc-graph-total {
+    background: var(--secondary-background-color);
+    border-radius: 14px;
+    padding: 5px 12px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .chart {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .fc-grid {
+    stroke: var(--divider-color);
+    stroke-width: 1;
+  }
+  .fc-axis {
+    fill: var(--secondary-text-color);
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .fc-axis-y,
+  .fc-unit {
+    text-anchor: end;
+  }
+  .fc-axis-x {
+    text-anchor: middle;
+  }
+  .fc-actual {
+    fill: var(--energy-solar-color, #ff9800);
+  }
+  .fc-line {
+    fill: none;
+    stroke: var(--primary-text-color);
+    stroke-width: 2;
+    stroke-dasharray: 6 5;
+    stroke-linejoin: round;
+    opacity: 0.85;
+  }
+  .fc-graph-legend {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: var(--secondary-text-color);
+  }
+  .lg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lg::before {
+    content: "";
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .lg-actual::before {
+    height: 12px;
+    width: 10px;
+    border-radius: 2px;
+    background: var(--energy-solar-color, #ff9800);
+  }
+  .lg-fc::before {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--primary-text-color) 0 6px,
+      transparent 6px 11px
+    );
   }
 `;

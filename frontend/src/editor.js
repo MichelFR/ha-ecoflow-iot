@@ -7,6 +7,7 @@
 import { LitElement, html, css } from "lit";
 import { CARD_TYPE, PLATFORM } from "./const.js";
 import { entityMap, streamDevices } from "./entities.js";
+import { fetchForecastConfigEntries } from "./energy.js";
 import { isEntityId, isTemplate } from "./format.js";
 import { ensureHaComponents } from "./ha-components.js";
 import { localize } from "./localize.js";
@@ -35,23 +36,21 @@ const PAGE_SLOTS = {
     ["sensor.pv_total", "mdi:solar-power-variant"],
     ["sensor.grid_power", "mdi:transmission-tower"],
     ["sensor.solar_energy", "mdi:lightning-bolt"],
-    ["sensor.pv1_power", "mdi:solar-panel"],
-    ["sensor.pv2_power", "mdi:solar-panel"],
-    ["sensor.pv3_power", "mdi:solar-panel"],
-    ["sensor.pv4_power", "mdi:solar-panel"],
   ],
-  forecast: [["sensor.forecast_today", "mdi:weather-sunny"]],
+  // Per-panel slots live on the dedicated "panels" page (see _renderPanelsPage);
+  // the forecast page (provider multi-select) is rendered by _renderForecastPage.
 };
 
-// Slots with no auto-discovery default to the Entity picker (e.g. an external
-// solar-forecast entity the integration can't provide).
-const ENTITY_ONLY_SLOTS = new Set(["sensor.forecast_today"]);
+const ENTITY_ONLY_SLOTS = new Set();
 
 const PAGES = [
   { id: "appearance", icon: "mdi:palette-outline" },
   { id: "entities", icon: "mdi:tune-variant" },
+  { id: "panels", icon: "mdi:solar-panel" },
   { id: "forecast", icon: "mdi:weather-partly-cloudy" },
 ];
+
+const MAX_PANELS = 4;
 
 export class EcoFlowEnergyCardEditor extends LitElement {
   static get properties() {
@@ -60,6 +59,7 @@ export class EcoFlowEnergyCardEditor extends LitElement {
       _config: {},
       _page: { state: true },
       _modes: { state: true },
+      _providers: { state: true },
     };
   }
 
@@ -67,6 +67,7 @@ export class EcoFlowEnergyCardEditor extends LitElement {
     super();
     this._page = null; // null = root, otherwise a PAGES id
     this._modes = {}; // slot key -> "auto" | "entity" | "custom" (UI state)
+    this._providers = undefined; // forecast config entries (loaded async)
   }
 
   connectedCallback() {
@@ -80,6 +81,17 @@ export class EcoFlowEnergyCardEditor extends LitElement {
 
   _t(key, vars) {
     return localize(this.hass, key, vars);
+  }
+
+  updated() {
+    // Load the forecast providers (the Energy dashboard's configured ones) once
+    // the hass object is available.
+    if (this.hass && this._providers === undefined && !this._loadingProviders) {
+      this._loadingProviders = true;
+      fetchForecastConfigEntries(this.hass).then((providers) => {
+        this._providers = providers;
+      });
+    }
   }
 
   render() {
@@ -126,6 +138,23 @@ export class EcoFlowEnergyCardEditor extends LitElement {
   }
 
   _summary(pageId) {
+    if (pageId === "panels") {
+      const panels = this._detectedPanels();
+      const hidden = panels.filter(
+        (i) => this._config.panels?.[i]?.hidden
+      ).length;
+      let text = this._t("editor.panels_count", { n: panels.length });
+      if (hidden) text += ` · ${this._t("editor.panels_hidden", { n: hidden })}`;
+      return text;
+    }
+    if (pageId === "forecast") {
+      const providers = this._providers;
+      if (providers === undefined) return this._t("editor.automatic");
+      if (!providers.length) return this._t("editor.forecast_none_short");
+      const sel = this._config.forecast_config_entries;
+      const n = sel === undefined ? providers.length : sel.length;
+      return this._t("editor.forecast_selected", { n, total: providers.length });
+    }
     const overridden = (PAGE_SLOTS[pageId] || []).filter(
       ([key]) => this._config.entities?.[key]
     ).length;
@@ -155,9 +184,123 @@ export class EcoFlowEnergyCardEditor extends LitElement {
       ${(TOGGLES[page.id] || []).map(([key, def, icon]) =>
         this._renderToggle(key, def, icon)
       )}
-      ${(PAGE_SLOTS[page.id] || []).map(([key, icon]) =>
-        this._renderSlot(key, icon)
+      ${page.id === "panels"
+        ? this._renderPanelsPage()
+        : page.id === "forecast"
+          ? this._renderForecastPage()
+          : (PAGE_SLOTS[page.id] || []).map(([key, icon]) =>
+              this._renderSlot(key, icon)
+            )}`;
+  }
+
+  /* -- solar forecast page: pick which Energy-dashboard providers to use -- */
+
+  _renderForecastPage() {
+    const providers = this._providers;
+    if (providers === undefined) {
+      return html`<div class="hint top-hint">${this._t("editor.loading")}</div>`;
+    }
+    if (!providers.length) {
+      return html`<div class="hint top-hint">${this._t("editor.forecast_none")}</div>`;
+    }
+    const sel = this._config.forecast_config_entries;
+    const isOn = (id) => (sel === undefined ? true : sel.includes(id));
+    return html`<div class="hint top-hint">${this._t("editor.forecast_hint")}</div>
+      ${providers.map(
+        (p) => html`<div class="row">
+          <ha-icon icon="mdi:weather-sunny"></ha-icon>
+          <span class="row-label"
+            >${p.title}<span class="row-sub">${p.domain}</span></span
+          >
+          <ha-switch
+            .checked=${isOn(p.id)}
+            @change=${(ev) => this._toggleProvider(p.id, ev.target.checked)}
+          ></ha-switch>
+        </div>`
       )}`;
+  }
+
+  _toggleProvider(id, checked) {
+    const all = (this._providers || []).map((p) => p.id);
+    let sel = this._config.forecast_config_entries ?? all.slice();
+    sel = checked ? [...new Set([...sel, id])] : sel.filter((x) => x !== id);
+    const config = { ...this._config, type: `custom:${CARD_TYPE}` };
+    // Default (all selected) isn't persisted; an explicit subset/empty is.
+    if (sel.length === all.length && all.every((a) => sel.includes(a))) {
+      delete config.forecast_config_entries;
+    } else {
+      config.forecast_config_entries = sel;
+    }
+    this._dispatch(config);
+  }
+
+  /* -- solar panels page: per-panel show/hide, name and sensor override -- */
+
+  /* Panels the device exposes (a pvN_power auto-maps or has an override). */
+  _detectedPanels() {
+    const map = this._defaults();
+    const found = [];
+    for (let i = 1; i <= MAX_PANELS; i++) {
+      if (map[`sensor.pv${i}_power`] || this._config.entities?.[`sensor.pv${i}_power`]) {
+        found.push(i);
+      }
+    }
+    return found.length ? found : [1, 2, 3, 4];
+  }
+
+  _renderPanelsPage() {
+    return html`<div class="hint top-hint">${this._t("editor.panels_hint")}</div>
+      ${this._detectedPanels().map((i) => this._renderPanelConfig(i))}`;
+  }
+
+  _renderPanelConfig(i) {
+    const pc = this._config.panels?.[i] || {};
+    const hidden = !!pc.hidden;
+    const slot = `sensor.pv${i}_power`;
+    return html`<div class="panel-block">
+      <div class="panel-title-row">
+        <ha-icon icon="mdi:solar-panel"></ha-icon>
+        <span class="panel-title"
+          >${pc.name || this._t("editor.panel", { n: i })}</span
+        >
+        <ha-switch
+          .checked=${!hidden}
+          @change=${(ev) =>
+            this._dispatch(this._withPanel(i, { hidden: !ev.target.checked }))}
+        ></ha-switch>
+      </div>
+      ${hidden
+        ? html`<div class="hint">${this._t("editor.panel_hidden")}</div>`
+        : html`<ha-form
+              .hass=${this.hass}
+              .data=${{ value: pc.name || "" }}
+              .schema=${[{ name: "value", selector: { text: {} } }]}
+              .computeLabel=${() => this._t("editor.panel_name")}
+              @value-changed=${(ev) => {
+                ev.stopPropagation();
+                this._dispatch(
+                  this._withPanel(i, { name: ev.detail.value.value || "" })
+                );
+              }}
+            ></ha-form>
+            ${this._renderSlot(slot, "mdi:flash", this._t("editor.panel_entity"))}`}
+    </div>`;
+  }
+
+  _withPanel(i, patch) {
+    const panels = { ...(this._config.panels || {}) };
+    const cur = { ...(panels[i] || {}) };
+    for (const [key, value] of Object.entries(patch)) {
+      // A falsy value clears the key so only deviations from the default are
+      // persisted (shown + no custom name).
+      if (value === "" || value == null || value === false) delete cur[key];
+      else cur[key] = value;
+    }
+    if (Object.keys(cur).length) panels[i] = cur;
+    else delete panels[i];
+    const config = { ...this._config, panels, type: `custom:${CARD_TYPE}` };
+    if (!Object.keys(panels).length) delete config.panels;
+    return config;
   }
 
   _renderToggle(key, def, icon) {
@@ -198,13 +341,13 @@ export class EcoFlowEnergyCardEditor extends LitElement {
     </div>`;
   }
 
-  _renderSlot(key, icon) {
+  _renderSlot(key, icon, label) {
     const override = this._config.entities?.[key] || "";
     const mode = this._slotMode(key, override);
     const def = this._defaults()[key];
 
     return html`<div class="section">
-        <ha-icon icon=${icon}></ha-icon>${this._t(`slot.${key}`)}
+        <ha-icon icon=${icon}></ha-icon>${label || this._t(`slot.${key}`)}
       </div>
       ${this._renderModeChips(key, mode)}
       ${mode === "auto"
@@ -377,6 +520,11 @@ export class EcoFlowEnergyCardEditor extends LitElement {
         flex: 1;
         color: var(--primary-text-color);
       }
+      .row-sub {
+        display: block;
+        font-size: 0.8em;
+        color: var(--secondary-text-color);
+      }
       .section {
         display: flex;
         align-items: center;
@@ -419,6 +567,28 @@ export class EcoFlowEnergyCardEditor extends LitElement {
         color: var(--secondary-text-color);
         font-size: 0.85em;
         margin: 4px 4px 12px;
+      }
+      .top-hint {
+        margin: 0 4px 10px;
+      }
+      .panel-block {
+        padding: 6px 4px 12px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+      .panel-title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 0;
+      }
+      .panel-title-row ha-icon {
+        --mdc-icon-size: 20px;
+        color: var(--energy-solar-color, #ff9800);
+      }
+      .panel-title {
+        flex: 1;
+        font-weight: 600;
+        color: var(--primary-text-color);
       }
       ha-form {
         display: block;
