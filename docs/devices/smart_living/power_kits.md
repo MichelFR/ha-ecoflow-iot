@@ -1,5 +1,7 @@
 # EcoFlow Power Kits
 
+<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/power-kits.png" alt="EcoFlow Power Kits" width="240"></p>
+
 **Category:** Smart Living · **Auto-detected by SN prefix:** `M106Z`, `M109Z`, `M102Z`, `M10EZ`, `M10E1`, `M106W`
 
 > Generated from `custom_components/ecoflow_iot/devices/smart_living/power_kits.py` by `scripts/gen_device_docs.py` — do not edit by hand.

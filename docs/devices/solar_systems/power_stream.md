@@ -1,5 +1,7 @@
 # EcoFlow PowerStream
 
+<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/stream-ultra.png" alt="EcoFlow PowerStream" width="240"></p>
+
 **Category:** Solar Systems · **Auto-detected by SN prefix:** `HW51`
 
 > Generated from `custom_components/ecoflow_iot/devices/solar_systems/power_stream.py` by `scripts/gen_device_docs.py` — do not edit by hand.

@@ -1,5 +1,7 @@
 # EcoFlow Delta Pro 3
 
+<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-pro-3.png" alt="EcoFlow Delta Pro 3" width="240"></p>
+
 **Category:** Power Stations · **Auto-detected by SN prefix:** `MR51`
 
 > Generated from `custom_components/ecoflow_iot/devices/power_stations/delta_pro_3.py` by `scripts/gen_device_docs.py` — do not edit by hand.

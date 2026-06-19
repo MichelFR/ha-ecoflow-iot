@@ -1,5 +1,7 @@
 # EcoFlow Smart Plug
 
+<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/smart-plug.png" alt="EcoFlow Smart Plug" width="240"></p>
+
 **Category:** Smart Living · **Auto-detected by SN prefix:** `HW52`
 
 > Generated from `custom_components/ecoflow_iot/devices/smart_living/smart_plug.py` by `scripts/gen_device_docs.py` — do not edit by hand.

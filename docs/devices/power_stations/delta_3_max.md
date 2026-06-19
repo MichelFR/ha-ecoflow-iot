@@ -1,5 +1,7 @@
 # EcoFlow Delta 3 Max
 
+<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-3-max.png" alt="EcoFlow Delta 3 Max" width="240"></p>
+
 **Category:** Power Stations · **Auto-detected by SN prefix:** `D3N1`, `D3M1`
 
 > Generated from `custom_components/ecoflow_iot/devices/power_stations/delta_3_max.py` by `scripts/gen_device_docs.py` — do not edit by hand.

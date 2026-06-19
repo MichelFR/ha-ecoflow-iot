@@ -1,5 +1,7 @@
 # EcoFlow Stream
 
+<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/stream-ultra.png" alt="EcoFlow Stream" width="240"></p>
+
 **Category:** Solar Systems · **Auto-detected by SN prefix:** `BK`
 
 > Generated from `custom_components/ecoflow_iot/devices/solar_systems/stream.py` by `scripts/gen_device_docs.py` — do not edit by hand.

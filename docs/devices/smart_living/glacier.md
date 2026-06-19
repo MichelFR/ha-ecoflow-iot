@@ -1,5 +1,7 @@
 # EcoFlow Glacier
 
+<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/glacier.png" alt="EcoFlow Glacier" width="240"></p>
+
 **Category:** Smart Living · **Auto-detected by SN prefix:** `BX11Z`
 
 > Generated from `custom_components/ecoflow_iot/devices/smart_living/glacier.py` by `scripts/gen_device_docs.py` — do not edit by hand.

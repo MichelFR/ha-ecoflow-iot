@@ -37,6 +37,37 @@ UNIT_SYMBOLS = {
     "PERCENTAGE": "%", "MINUTES": "min", "SECONDS": "s", "HOURS": "h",
 }
 
+# Device model -> bundled product image key (mirrors the card's device-image.js;
+# specific patterns first). Used to embed each device's photo in its doc.
+WWW_DEVICES = CC / "ecoflow_iot" / "www" / "devices"
+IMAGE_MATCHES = [
+    (r"delta 2 max", "delta-2-max"),
+    (r"delta 2", "delta-2"),
+    (r"delta 3 max plus", "delta-3-max-plus"),
+    (r"delta 3 max", "delta-3-max"),
+    (r"delta pro ultra", "delta-pro-ultra"),
+    (r"delta pro 3", "delta-pro-3"),
+    (r"delta pro", "delta-pro"),
+    (r"river 2 pro", "river-2-pro"),
+    (r"stream microinverter", "stream-microinverter"),
+    (r"stream", "stream-ultra"),
+    (r"powerstream", "powerstream"),
+    (r"glacier", "glacier"),
+    (r"power kits", "power-kits"),
+    (r"smart plug", "smart-plug"),
+    (r"wave", "wave"),
+    (r"smart home panel 2", "smart-home-panel-2"),
+    (r"smart home panel", "smart-home-panel"),
+]
+
+
+def image_key(model: str):
+    """Bundled image key for a model, if such an image exists, else None."""
+    for pat, key in IMAGE_MATCHES:
+        if re.search(pat, model, re.I) and (WWW_DEVICES / f"{key}.png").exists():
+            return key
+    return None
+
 
 # --- Home Assistant stub ----------------------------------------------------
 
@@ -172,9 +203,17 @@ def render_device(cls, category) -> str:
     def descs(p):
         return dev.entity_descriptions(Auto(f"Platform.{p}"))
 
+    img = image_key(name)
+    img_md = (
+        f'<p align="center"><img '
+        f'src="../../../custom_components/ecoflow_iot/www/devices/{img}.png" '
+        f'alt="{name}" width="240"></p>'
+    )
+
     lines = [
         f"# {name}",
         "",
+        *([img_md, ""] if img else []),
         f"**Category:** {CATEGORY_TITLES.get(category, category)} · "
         f"**Auto-detected by SN prefix:** {prefixes}",
         "",

@@ -1,5 +1,7 @@
 # EcoFlow Delta 2 Max
 
+<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-2-max.png" alt="EcoFlow Delta 2 Max" width="240"></p>
+
 **Category:** Power Stations · **Auto-detected by SN prefix:** `R351`
 
 > Generated from `custom_components/ecoflow_iot/devices/power_stations/delta_2_max.py` by `scripts/gen_device_docs.py` — do not edit by hand.
