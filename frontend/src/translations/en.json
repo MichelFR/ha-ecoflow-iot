@@ -52,13 +52,17 @@
     "forecast_hint": "Choose which solar-forecast providers to use — the same ones set up in Home Assistant's Energy dashboard (Settings → Dashboards → Energy → Solar panels).",
     "forecast_none": "No solar forecast is configured. Add a forecast under Settings → Dashboards → Energy → Solar panels, then it appears here.",
     "forecast_none_short": "Not configured",
-    "forecast_selected": "{n} of {total} providers"
+    "forecast_selected": "{n} of {total} providers",
+    "none": "Not set",
+    "collection_key": "Energy collection key",
+    "collection_hint": "Optional. To follow a date chosen in an Energy period selector card (Energy date selection), enter the same collection key here as on that card — it starts with “energy_”; use “energy” for a selector left on its default key. Leave empty to always show today."
   },
   "page": {
     "appearance": "Appearance",
     "entities": "Entities",
     "panels": "Solar panels",
-    "forecast": "Solar forecast"
+    "forecast": "Solar forecast",
+    "advanced": "Advanced"
   },
   "toggle": {
     "show_image": "Show device image",

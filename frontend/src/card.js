@@ -21,7 +21,6 @@ import {
 import { fmtPower, isEntityId, isTemplate, numState } from "./format.js";
 import { ensureHaComponents } from "./ha-components.js";
 import { localize } from "./localize.js";
-import { fetchTodayWh } from "./statistics.js";
 import { cardStyles } from "./styles.js";
 import { panelData, renderPanels } from "./views/panels.js";
 import { renderForecastGraph } from "./views/forecast-graph.js";
@@ -43,16 +42,19 @@ export class EcoFlowEnergyCard extends LitElement {
     super();
     this._dialog = null; // null | "panels" | "today"
     this._todayWh = undefined; // undefined = not fetched, null = unavailable
+    this._hourly = {}; // {hour: Wh} actual production for the range
     this._forecasts = {}; // raw energy/solar_forecast result
     this._forecastsFetched = false;
-    this._hourly = null; // {hour: Wh} actual, lazily fetched for the graph
+    this._period = null; // {start,end} from an energy period selector, if bound
+    this._collUnsub = null; // energy-collection unsubscribe
+    this._collProp = undefined; // currently-bound connection property
   }
 
   connectedCallback() {
     super.connectedCallback();
     ensureHaComponents();
     this._statsTimer = setInterval(() => {
-      this._refreshToday();
+      this._refreshData();
       this._refreshForecast();
     }, STATS_REFRESH_MS);
   }
@@ -60,6 +62,9 @@ export class EcoFlowEnergyCard extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     clearInterval(this._statsTimer);
+    if (this._collUnsub) this._collUnsub();
+    this._collUnsub = null;
+    this._collProp = undefined;
     for (const unsub of Object.values(this._tmplUnsub || {})) {
       if (typeof unsub === "function") unsub();
     }
@@ -134,7 +139,8 @@ export class EcoFlowEnergyCard extends LitElement {
     super.updated(changed);
     if (changed.has("hass") || changed.has("_config")) {
       this._syncTemplates();
-      if (this._todayWh === undefined) this._refreshToday();
+      this._bindEnergyCollection();
+      if (this._todayWh === undefined) this._refreshData();
       if (!this._forecastsFetched) {
         this._forecastsFetched = true;
         this._refreshForecast();
@@ -142,20 +148,63 @@ export class EcoFlowEnergyCard extends LitElement {
     }
   }
 
-  async _refreshToday() {
+  async _refreshData() {
     const id = this._entityId("sensor.solar_energy");
     if (!id || !this.hass) return;
-    const wh = await fetchTodayWh(this.hass, id);
-    if (wh !== this._todayWh) {
-      this._todayWh = wh;
-      this.requestUpdate();
-    }
+    const { start, end } = this._dataRange();
+    const hours = await fetchHourlyWh(this.hass, id, start, end);
+    this._hourly = hours || {};
+    this._todayWh = hours
+      ? Object.values(hours).reduce((sum, wh) => sum + (wh || 0), 0)
+      : null;
+    this.requestUpdate();
   }
 
   async _refreshForecast() {
     if (!this.hass) return;
     this._forecasts = await fetchSolarForecasts(this.hass);
     this.requestUpdate();
+  }
+
+  /* The date range to show: a hui-energy-period-selector's selection when a
+   * collection_key is configured, otherwise today. */
+  _dataRange() {
+    if (this._period?.start instanceof Date) {
+      return {
+        start: this._period.start,
+        end: this._period.end instanceof Date ? this._period.end : new Date(),
+        ref: this._period.start,
+      };
+    }
+    const now = new Date();
+    return {
+      start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      end: now,
+      ref: now,
+    };
+  }
+
+  /* Follow an Energy-dashboard date selection: when collection_key is set, join
+   * the shared energy collection (the same one a hui-energy-period-selector
+   * drives) and re-fetch for its selected period. */
+  _bindEnergyCollection() {
+    const key = this._config.collection_key;
+    const prop = key ? `_${key}` : null;
+    if (prop !== this._collProp) {
+      if (this._collUnsub) this._collUnsub();
+      this._collUnsub = null;
+      this._collProp = prop;
+      this._period = null;
+    }
+    if (!prop || this._collUnsub || !this.hass?.connection) return;
+    const coll = this.hass.connection[prop];
+    if (!coll || typeof coll.subscribe !== "function") return; // not ready yet
+    const apply = () => {
+      this._period = { start: coll.start, end: coll.end };
+      this._refreshData();
+    };
+    this._collUnsub = coll.subscribe(() => apply());
+    apply();
   }
 
   _mergedForecast() {
@@ -166,20 +215,24 @@ export class EcoFlowEnergyCard extends LitElement {
   }
 
   _forecastTodayKWh() {
-    const wh = forecastTodayWh(this._mergedForecast());
+    const wh = forecastTodayWh(this._mergedForecast(), this._dataRange().ref);
     return wh != null ? wh / 1000 : null;
   }
 
-  async _openToday() {
-    this._dialog = "today";
-    const id = this._entityId("sensor.solar_energy");
-    if (id && this.hass) {
-      const hours = await fetchHourlyWh(this.hass, id);
-      if (hours) {
-        this._hourly = hours;
-        this.requestUpdate();
-      }
-    }
+  /* "Solar today", or the selected date when an energy period is active. */
+  _periodLabel() {
+    const ref = this._dataRange().ref;
+    const now = new Date();
+    const isToday =
+      ref.getFullYear() === now.getFullYear() &&
+      ref.getMonth() === now.getMonth() &&
+      ref.getDate() === now.getDate();
+    if (isToday) return this._t("card.today");
+    return ref.toLocaleDateString(this.hass?.locale?.language || undefined, {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    });
   }
 
   /* -- live template rendering for overrides -- */
@@ -256,10 +309,14 @@ export class EcoFlowEnergyCard extends LitElement {
         : ""}
       ${this._dialog === "today"
         ? this._dialogFrame(
-            this._t("card.today"),
+            this._periodLabel(),
             renderForecastGraph(this, {
+              title: this._periodLabel(),
               actual: this._hourly || {},
-              forecast: forecastHourly(this._mergedForecast()),
+              forecast: forecastHourly(
+                this._mergedForecast(),
+                this._dataRange().ref
+              ),
               totalWh: this._todayWh,
               showForecast:
                 this._show("show_forecast") &&
@@ -546,10 +603,13 @@ export class EcoFlowEnergyCard extends LitElement {
         : null;
     const met = pct != null && pct >= 100;
 
-    return html`<div class="today clickable" @click=${() => this._openToday()}>
+    return html`<div
+      class="today clickable"
+      @click=${() => (this._dialog = "today")}
+    >
       <div class="today-head">
         <ha-icon icon="mdi:white-balance-sunny"></ha-icon>
-        <span class="today-label">${this._t("card.today")}</span>
+        <span class="today-label">${this._periodLabel()}</span>
         <ha-icon class="today-more" icon="mdi:chart-bar"></ha-icon>
         <span class="today-value">
           ${todayKWh != null ? todayKWh.toFixed(1) : "–"}<span class="today-unit"

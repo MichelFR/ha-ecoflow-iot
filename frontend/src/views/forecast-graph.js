@@ -10,7 +10,10 @@ const W = 1000;
 const H = 340;
 const PAD = { l: 46, r: 14, t: 16, b: 28 };
 
-export function renderForecastGraph(card, { actual, forecast, totalWh, showForecast }) {
+export function renderForecastGraph(
+  card,
+  { actual, forecast, totalWh, showForecast, title }
+) {
   const t = (key, vars) => localize(card.hass, key, vars);
   const plotW = W - PAD.l - PAD.r;
   const plotH = H - PAD.t - PAD.b;
@@ -67,7 +70,7 @@ export function renderForecastGraph(card, { actual, forecast, totalWh, showForec
 
   return html`<div class="fc-graph">
     <div class="fc-graph-head">
-      <span class="fc-graph-title">${t("card.today")}</span>
+      <span class="fc-graph-title">${title || t("card.today")}</span>
       <span class="fc-graph-total"
         >${(totalWh != null ? totalWh / 1000 : 0).toFixed(2)} kWh</span
       >

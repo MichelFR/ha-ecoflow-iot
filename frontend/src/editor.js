@@ -7,6 +7,7 @@
 import { LitElement, html, css } from "lit";
 import { CARD_TYPE, PLATFORM } from "./const.js";
 import { entityMap, streamDevices } from "./entities.js";
+import { brandIconUrl } from "./brands.js";
 import { fetchForecastConfigEntries } from "./energy.js";
 import { isEntityId, isTemplate } from "./format.js";
 import { ensureHaComponents } from "./ha-components.js";
@@ -58,6 +59,7 @@ const PAGES = [
   { id: "entities", icon: "mdi:tune-variant" },
   { id: "panels", icon: "mdi:solar-panel" },
   { id: "forecast", icon: "mdi:weather-partly-cloudy" },
+  { id: "advanced", icon: "mdi:cog-outline" },
 ];
 
 const MAX_PANELS = 4;
@@ -165,6 +167,9 @@ export class EcoFlowEnergyCardEditor extends LitElement {
       const n = sel === undefined ? providers.length : sel.length;
       return this._t("editor.forecast_selected", { n, total: providers.length });
     }
+    if (pageId === "advanced") {
+      return this._config.collection_key || this._t("editor.none");
+    }
     const overridden = (PAGE_SLOTS[pageId] || []).filter(
       ([key]) => this._config.entities?.[key]
     ).length;
@@ -198,9 +203,34 @@ export class EcoFlowEnergyCardEditor extends LitElement {
         ? this._renderPanelsPage()
         : page.id === "forecast"
           ? this._renderForecastPage()
-          : (PAGE_SLOTS[page.id] || []).map(([key, icon]) =>
-              this._renderSlot(key, icon)
-            )}`;
+          : page.id === "advanced"
+            ? this._renderAdvancedPage()
+            : (PAGE_SLOTS[page.id] || []).map(([key, icon]) =>
+                this._renderSlot(key, icon)
+              )}`;
+  }
+
+  /* -- advanced page: energy date-selection (collection) key -- */
+
+  _renderAdvancedPage() {
+    return html`<div class="hint top-hint">${this._t("editor.collection_hint")}</div>
+      <ha-form
+        .hass=${this.hass}
+        .data=${{ value: this._config.collection_key || "" }}
+        .schema=${[{ name: "value", selector: { text: {} } }]}
+        .computeLabel=${() => this._t("editor.collection_key")}
+        @value-changed=${(ev) => {
+          ev.stopPropagation();
+          this._setCollectionKey(ev.detail.value.value || "");
+        }}
+      ></ha-form>`;
+  }
+
+  _setCollectionKey(value) {
+    const config = { ...this._config, type: `custom:${CARD_TYPE}` };
+    if (value) config.collection_key = value;
+    else delete config.collection_key;
+    this._dispatch(config);
   }
 
   /* -- solar forecast page: pick which Energy-dashboard providers to use -- */
@@ -213,21 +243,43 @@ export class EcoFlowEnergyCardEditor extends LitElement {
     if (!providers.length) {
       return html`<div class="hint top-hint">${this._t("editor.forecast_none")}</div>`;
     }
+    const enabled = this._config.show_forecast ?? true;
     const sel = this._config.forecast_config_entries;
     const isOn = (id) => (sel === undefined ? true : sel.includes(id));
     return html`<div class="hint top-hint">${this._t("editor.forecast_hint")}</div>
-      ${providers.map(
-        (p) => html`<div class="row">
-          <ha-icon icon="mdi:weather-sunny"></ha-icon>
-          <span class="row-label"
-            >${p.title}<span class="row-sub">${p.domain}</span></span
-          >
-          <ha-switch
-            .checked=${isOn(p.id)}
-            @change=${(ev) => this._toggleProvider(p.id, ev.target.checked)}
-          ></ha-switch>
-        </div>`
-      )}`;
+      <div class=${enabled ? "" : "dim"}>
+        ${providers.map(
+          (p) => html`<div class="row">
+            ${this._renderBrand(p.domain)}
+            <span class="row-label"
+              >${p.title}<span class="row-sub">${p.domain}</span></span
+            >
+            <ha-switch
+              .checked=${isOn(p.id)}
+              .disabled=${!enabled}
+              @change=${(ev) => this._toggleProvider(p.id, ev.target.checked)}
+            ></ha-switch>
+          </div>`
+        )}
+      </div>`;
+  }
+
+  /* Provider icon: the integration's brand image, falling back to a sun glyph
+   * if the brand has no icon (the image hides itself on error). */
+  _renderBrand(domain) {
+    const url = brandIconUrl(this.hass, domain);
+    return html`<span class="provider-icon">
+      <ha-icon icon="mdi:weather-sunny"></ha-icon>
+      ${url
+        ? html`<img
+            class="brand"
+            src=${url}
+            @error=${(ev) => {
+              ev.target.style.display = "none";
+            }}
+          />`
+        : ""}
+    </span>`;
   }
 
   _toggleProvider(id, checked) {
@@ -534,6 +586,29 @@ export class EcoFlowEnergyCardEditor extends LitElement {
         display: block;
         font-size: 0.8em;
         color: var(--secondary-text-color);
+      }
+      .dim {
+        opacity: 0.45;
+        pointer-events: none;
+      }
+      .provider-icon {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        flex: 0 0 auto;
+      }
+      .provider-icon ha-icon {
+        position: absolute;
+        inset: 0;
+        --mdc-icon-size: 24px;
+        color: var(--secondary-text-color);
+      }
+      .provider-icon img.brand {
+        position: absolute;
+        inset: 0;
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
       }
       .section {
         display: flex;

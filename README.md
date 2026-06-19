@@ -138,9 +138,15 @@ common case you just add it from the dashboard's card picker.
   production card).
 - **Solar forecast:** uses the **same forecast configured in Home Assistant's Energy
   dashboard** (Settings → Dashboards → Energy → Solar panels). The card's editor lists
-  those forecast providers so you can choose which to include; the dashed forecast curve
-  and the "X / Y kWh" comparison are drawn from them. If no Energy-dashboard forecast is
-  set up, the card simply omits the comparison.
+  those forecast providers (with their integration brand icons, like HA does) so you can
+  choose which to include; the dashed forecast curve and the "X / Y kWh" comparison are
+  drawn from them. Turning off **Compare today's production with the forecast** disables
+  the whole forecast section, including the provider options. If no Energy-dashboard
+  forecast is set up, the card simply omits the comparison.
+- **Follow a date selection:** set an **Energy collection key** (Advanced page in the
+  editor) matching a `hui-energy-period-selector` (Energy date selection) card's
+  `collection_key`, and the card shows the selected day's production and graph instead of
+  today's — so a period selector on the same view drives the card's date.
 - **Editor:** an ABRP-style visual editor — Appearance toggles, an Entities page for
   overriding any auto-detected entity (Auto / Entity / Custom-template), a **Solar
   panels** page to rename, re-map or hide each panel, and a **Solar forecast** page to

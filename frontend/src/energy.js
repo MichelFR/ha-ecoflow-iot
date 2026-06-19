@@ -77,20 +77,25 @@ export function forecastTodayWh(whHours, ref = new Date()) {
   return keys.reduce((sum, h) => sum + hours[h], 0);
 }
 
-/* Hourly produced energy (Wh per local hour) for today, from the recorder's
- * statistics for a cumulative energy sensor. */
-export async function fetchHourlyWh(hass, statisticId) {
+/* Hourly produced energy (Wh per local hour) over [start, end] (default today),
+ * from the recorder's statistics for a cumulative energy sensor. */
+export async function fetchHourlyWh(hass, statisticId, start, end) {
   if (!hass?.callWS || !statisticId) return null;
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const from =
+    start instanceof Date
+      ? start
+      : new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msg = {
+    type: "recorder/statistics_during_period",
+    start_time: from.toISOString(),
+    statistic_ids: [statisticId],
+    period: "hour",
+    types: ["change"],
+  };
+  if (end instanceof Date) msg.end_time = end.toISOString();
   try {
-    const res = await hass.callWS({
-      type: "recorder/statistics_during_period",
-      start_time: start.toISOString(),
-      statistic_ids: [statisticId],
-      period: "hour",
-      types: ["change"],
-    });
+    const res = await hass.callWS(msg);
     const rows = res?.[statisticId];
     if (!Array.isArray(rows)) return null;
     const hours = {};
