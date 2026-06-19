@@ -662,8 +662,11 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
         key="feed_in",
         mqtt_key="feedGridMode",
         name="Grid feed-in",
-        value_fn=lambda v: v == 2,
-        command_fn=lambda value, _q: {"cfgFeedGridMode": 2 if value else 1},
+        # EcoFlow's doc claims feedGridMode is "1-off, 2-on", but real Stream
+        # firmware is the OPPOSITE (1 = feed-in ON, 2 = OFF), confirmed on
+        # hardware -- same unreliable-docs pattern as gridConnectionPower's sign.
+        value_fn=lambda v: v == 1,
+        command_fn=lambda value, _q: {"cfgFeedGridMode": 1 if value else 2},
     ),
 )
 
