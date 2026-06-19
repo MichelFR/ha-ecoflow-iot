@@ -1,6 +1,6 @@
 # EcoFlow Smart Home Panel 2
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/smart-home-panel-2.png" alt="EcoFlow Smart Home Panel 2" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/smart-home-panel-2.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/smart-home-panel-2.png" alt="EcoFlow Smart Home Panel 2" width="240"></picture></p>
 
 **Category:** Whole-Home Backup · **Auto-detected by SN prefix:** `HD31`
 

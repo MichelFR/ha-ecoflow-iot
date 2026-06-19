@@ -204,10 +204,12 @@ def render_device(cls, category) -> str:
         return dev.entity_descriptions(Auto(f"Platform.{p}"))
 
     img = image_key(name)
+    img_base = f"../../../custom_components/ecoflow_iot/www/devices/{img}"
     img_md = (
-        f'<p align="center"><img '
-        f'src="../../../custom_components/ecoflow_iot/www/devices/{img}.png" '
-        f'alt="{name}" width="240"></p>'
+        f'<p align="center"><picture>'
+        f'<source srcset="{img_base}.webp" type="image/webp">'
+        f'<img src="{img_base}.png" alt="{name}" width="240">'
+        f"</picture></p>"
     )
 
     lines = [

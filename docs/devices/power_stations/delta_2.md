@@ -1,6 +1,6 @@
 # EcoFlow Delta 2
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-2.png" alt="EcoFlow Delta 2" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/delta-2.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-2.png" alt="EcoFlow Delta 2" width="240"></picture></p>
 
 **Category:** Power Stations · **Auto-detected by SN prefix:** `R331`
 

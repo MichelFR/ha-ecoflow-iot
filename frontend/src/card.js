@@ -9,7 +9,7 @@
 
 import { LitElement, html, svg } from "lit";
 import { CARD_TYPE } from "./const.js";
-import { deviceImageUrl, imageUrlForKey } from "./device-image.js";
+import { deviceImageUrl, imageUrlForKey, webpVariant } from "./device-image.js";
 import { entityMap, streamDevices } from "./entities.js";
 import {
   fetchHourlyWh,
@@ -463,7 +463,14 @@ export class EcoFlowEnergyCard extends LitElement {
           </svg>`
         : ""}
       ${showImg
-        ? html`<img class="device-img" src="${imageSrc}" alt="${name}" />`
+        ? html`<picture
+            >${webpVariant(imageSrc)
+              ? html`<source
+                  srcset=${webpVariant(imageSrc)}
+                  type="image/webp"
+                />`
+              : ""}<img class="device-img" src="${imageSrc}" alt="${name}"
+          /></picture>`
         : socState
           ? html`<ha-state-icon
               class="batt-icon"

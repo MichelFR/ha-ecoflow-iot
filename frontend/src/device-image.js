@@ -40,6 +40,16 @@ export function imageUrlForKey(key) {
     : null;
 }
 
+/* The WebP variant of a bundled device PNG (served via <picture> with the PNG
+ * as fallback), or null for non-bundled / custom image URLs. */
+export function webpVariant(url) {
+  return typeof url === "string" &&
+    url.startsWith(ASSET_BASE) &&
+    url.endsWith(".png")
+    ? `${url.slice(0, -4)}.webp`
+    : null;
+}
+
 /* The image auto-selected for a device model, or null. */
 export function deviceImageUrl(model) {
   const key = autoImageKey(model);

@@ -1,6 +1,6 @@
 # EcoFlow Delta Pro 3
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-pro-3.png" alt="EcoFlow Delta Pro 3" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/delta-pro-3.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-pro-3.png" alt="EcoFlow Delta Pro 3" width="240"></picture></p>
 
 **Category:** Power Stations · **Auto-detected by SN prefix:** `MR51`
 

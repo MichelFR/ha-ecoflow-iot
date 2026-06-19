@@ -1,6 +1,6 @@
 # EcoFlow Smart Home Panel
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/smart-home-panel.png" alt="EcoFlow Smart Home Panel" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/smart-home-panel.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/smart-home-panel.png" alt="EcoFlow Smart Home Panel" width="240"></picture></p>
 
 **Category:** Whole-Home Backup · **Auto-detected by SN prefix:** `SP10`
 

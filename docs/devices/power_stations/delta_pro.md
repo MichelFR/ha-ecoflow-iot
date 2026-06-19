@@ -1,6 +1,6 @@
 # EcoFlow Delta Pro
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-pro.png" alt="EcoFlow Delta Pro" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/delta-pro.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/delta-pro.png" alt="EcoFlow Delta Pro" width="240"></picture></p>
 
 **Category:** Power Stations · **Auto-detected by SN prefix:** `DCABZ`
 

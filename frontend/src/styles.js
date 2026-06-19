@@ -11,6 +11,10 @@ export const cardStyles = css`
   .clickable {
     cursor: pointer;
   }
+  /* <picture> wrappers shouldn't affect layout; the inner <img> is the box. */
+  picture {
+    display: contents;
+  }
 
   /* header: name + AC on the left, battery/device circle on the right */
   .head {

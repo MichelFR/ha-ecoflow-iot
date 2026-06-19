@@ -1,6 +1,6 @@
 # EcoFlow WAVE
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/wave.png" alt="EcoFlow WAVE" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/wave.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/wave.png" alt="EcoFlow WAVE" width="240"></picture></p>
 
 **Category:** Smart Living · **Auto-detected by SN prefix:** `KT21ZCH2`
 

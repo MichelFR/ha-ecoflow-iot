@@ -1,6 +1,6 @@
 # EcoFlow River 2 Pro
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/river-2-pro.png" alt="EcoFlow River 2 Pro" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/river-2-pro.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/river-2-pro.png" alt="EcoFlow River 2 Pro" width="240"></picture></p>
 
 **Category:** Power Stations · **Auto-detected by SN prefix:** `R621`
 

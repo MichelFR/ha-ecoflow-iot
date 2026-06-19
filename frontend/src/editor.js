@@ -8,7 +8,7 @@ import { LitElement, html, css } from "lit";
 import { CARD_TYPE, PLATFORM } from "./const.js";
 import { entityMap, streamDevices } from "./entities.js";
 import { brandIconUrl } from "./brands.js";
-import { DEVICE_IMAGES, imageUrlForKey } from "./device-image.js";
+import { DEVICE_IMAGES, imageUrlForKey, webpVariant } from "./device-image.js";
 import { fetchForecastConfigEntries } from "./energy.js";
 import { isEntityId, isTemplate } from "./format.js";
 import { ensureHaComponents } from "./ha-components.js";
@@ -234,7 +234,15 @@ export class EcoFlowEnergyCardEditor extends LitElement {
             title=${d.name}
             @click=${() => this._setImage(d.key)}
           >
-            <img src=${imageUrlForKey(d.key)} loading="lazy" alt=${d.name} />
+            <picture
+              ><source
+                srcset=${webpVariant(imageUrlForKey(d.key))}
+                type="image/webp"
+              /><img
+                src=${imageUrlForKey(d.key)}
+                loading="lazy"
+                alt=${d.name} /></picture
+            >
             <span class="img-label">${d.name}</span>
           </button>`
         )}
@@ -649,6 +657,9 @@ export class EcoFlowEnergyCardEditor extends LitElement {
         width: 24px;
         height: 24px;
         object-fit: contain;
+      }
+      picture {
+        display: contents;
       }
       .img-grid {
         display: grid;

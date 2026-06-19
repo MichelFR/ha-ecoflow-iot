@@ -1,6 +1,6 @@
 # EcoFlow Smart Plug
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/smart-plug.png" alt="EcoFlow Smart Plug" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/smart-plug.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/smart-plug.png" alt="EcoFlow Smart Plug" width="240"></picture></p>
 
 **Category:** Smart Living · **Auto-detected by SN prefix:** `HW52`
 

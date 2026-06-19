@@ -1,6 +1,6 @@
 # EcoFlow Stream
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/stream-ultra.png" alt="EcoFlow Stream" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/stream-ultra.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/stream-ultra.png" alt="EcoFlow Stream" width="240"></picture></p>
 
 **Category:** Solar Systems · **Auto-detected by SN prefix:** `BK`
 

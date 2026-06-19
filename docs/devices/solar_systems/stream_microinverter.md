@@ -1,6 +1,6 @@
 # EcoFlow Stream Microinverter
 
-<p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/stream-microinverter.png" alt="EcoFlow Stream Microinverter" width="240"></p>
+<p align="center"><picture><source srcset="../../../custom_components/ecoflow_iot/www/devices/stream-microinverter.webp" type="image/webp"><img src="../../../custom_components/ecoflow_iot/www/devices/stream-microinverter.png" alt="EcoFlow Stream Microinverter" width="240"></picture></p>
 
 **Category:** Solar Systems · **Auto-detected by SN prefix:** `BK`
 
