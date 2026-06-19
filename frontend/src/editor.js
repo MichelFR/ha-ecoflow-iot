@@ -23,6 +23,7 @@ const TOGGLES = {
   appearance: [
     ["show_image", true, "mdi:image-outline"],
     ["show_battery", true, "mdi:battery-high"],
+    ["battery_value_left", true, "mdi:format-horizontal-align-left"],
     ["show_battery_limits", true, "mdi:battery-lock"],
     ["show_today", true, "mdi:white-balance-sunny"],
     ["show_grid", true, "mdi:transmission-tower"],

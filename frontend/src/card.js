@@ -387,58 +387,31 @@ export class EcoFlowEnergyCard extends LitElement {
       ? numState(this._state("number.backup_reserve"))
       : null;
 
-    return html`<div class="battery">
-      <div
-        class="batt-row clickable"
-        @click=${() => this._moreInfo("sensor.cms_batt_soc")}
-      >
-        <ha-state-icon .hass=${this.hass} .stateObj=${socState}></ha-state-icon>
-        <span class="soc">${soc != null ? Math.round(soc) : "–"}%</span>
-        ${charging && batPower != null
-          ? html`<span class="chip charge"
-              ><ha-icon icon="mdi:flash"></ha-icon>${fmtPower(
+    const valueLeft = this._show("battery_value_left");
+
+    const value = html`<div
+      class="batt-value clickable"
+      @click=${() => this._moreInfo("sensor.cms_batt_soc")}
+    >
+      <ha-state-icon .hass=${this.hass} .stateObj=${socState}></ha-state-icon>
+      <span class="soc">${soc != null ? Math.round(soc) : "–"}%</span>
+      ${charging && batPower != null
+        ? html`<span class="chip charge"
+            ><ha-icon icon="mdi:flash"></ha-icon>${fmtPower(
+              Math.abs(batPower)
+            )}</span
+          >`
+        : discharging && batPower != null
+          ? html`<span class="chip discharge"
+              ><ha-icon icon="mdi:battery-arrow-down"></ha-icon>${fmtPower(
                 Math.abs(batPower)
               )}</span
             >`
-          : discharging && batPower != null
-            ? html`<span class="chip discharge"
-                ><ha-icon icon="mdi:battery-arrow-down"></ha-icon>${fmtPower(
-                  Math.abs(batPower)
-                )}</span
-              >`
-            : ""}
-      </div>
-      ${limits && (reserve != null || charge != null || discharge != null)
-        ? html`<div class="batt-flags">
-            ${reserve != null
-              ? this._flag(
-                  "reserve",
-                  "mdi:shield-home",
-                  reserve,
-                  this._t("card.reserve"),
-                  "number.backup_reserve"
-                )
-              : ""}
-            ${charge != null
-              ? this._flag(
-                  "charge",
-                  "mdi:arrow-up-bold",
-                  charge,
-                  this._t("card.charge_limit"),
-                  "number.max_charge_soc"
-                )
-              : ""}
-            ${discharge != null
-              ? this._flag(
-                  "discharge",
-                  "mdi:arrow-down-bold",
-                  discharge,
-                  this._t("card.discharge_limit"),
-                  "number.min_discharge_soc"
-                )
-              : ""}
-          </div>`
-        : ""}
+          : ""}
+    </div>`;
+
+    const track = html`<div class="batt-track">
+      ${limits ? this._renderFlags(reserve, charge, discharge) : ""}
       <div class="bar">
         ${discharge != null && discharge > 0
           ? html`<div class="zone floor" style="width:${discharge}%"></div>`
@@ -466,21 +439,76 @@ export class EcoFlowEnergyCard extends LitElement {
           : ""}
       </div>
     </div>`;
+
+    return html`<div class="battery ${valueLeft ? "value-left" : ""}">
+      ${value}${track}
+    </div>`;
   }
 
-  /* A limit label floating above the bar, centred over its position (clamped so
-   * it doesn't overflow the ends), tapping through to adjust the entity. */
-  _flag(cls, icon, value, label, slot) {
-    const pos = Math.max(0, Math.min(100, value));
-    const tx = pos <= 12 ? "0" : pos >= 88 ? "-100%" : "-50%";
-    return html`<span
-      class="flag ${cls} clickable"
-      style="left:${pos}%;transform:translateX(${tx})"
-      title="${label} ${Math.round(value)}%"
-      @click=${() => this._moreInfo(slot)}
-    >
-      <ha-icon icon=${icon}></ha-icon>${Math.round(value)}%
-    </span>`;
+  /* Limit labels floating above the bar. Labels whose positions are within
+   * THRESHOLD% are grouped into one cluster so they sit next to each other
+   * instead of overlapping; each cluster is centred over its mean position
+   * (clamped at the ends). Each label taps through to adjust its entity. */
+  _renderFlags(reserve, charge, discharge) {
+    const flags = [];
+    if (discharge != null)
+      flags.push({
+        cls: "discharge",
+        icon: "mdi:arrow-down-bold",
+        value: discharge,
+        label: this._t("card.discharge_limit"),
+        slot: "number.min_discharge_soc",
+      });
+    if (reserve != null)
+      flags.push({
+        cls: "reserve",
+        icon: "mdi:shield-home",
+        value: reserve,
+        label: this._t("card.reserve"),
+        slot: "number.backup_reserve",
+      });
+    if (charge != null)
+      flags.push({
+        cls: "charge",
+        icon: "mdi:arrow-up-bold",
+        value: charge,
+        label: this._t("card.charge_limit"),
+        slot: "number.max_charge_soc",
+      });
+    if (!flags.length) return "";
+
+    flags.sort((a, b) => a.value - b.value);
+    const THRESHOLD = 15;
+    const clusters = [];
+    for (const f of flags) {
+      const last = clusters[clusters.length - 1];
+      const prev = last && last.items[last.items.length - 1];
+      if (prev && f.value - prev.value < THRESHOLD) last.items.push(f);
+      else clusters.push({ items: [f] });
+    }
+
+    return html`<div class="batt-flags">
+      ${clusters.map((c) => {
+        const pos = Math.max(
+          0,
+          Math.min(100, c.items.reduce((s, i) => s + i.value, 0) / c.items.length)
+        );
+        const tx = pos <= 12 ? "0" : pos >= 88 ? "-100%" : "-50%";
+        return html`<span
+          class="flag-cluster"
+          style="left:${pos}%;transform:translateX(${tx})"
+        >
+          ${c.items.map(
+            (f) => html`<span
+              class="flag ${f.cls} clickable"
+              title="${f.label} ${Math.round(f.value)}%"
+              @click=${() => this._moreInfo(f.slot)}
+              ><ha-icon icon=${f.icon}></ha-icon>${Math.round(f.value)}%</span
+            >`
+          )}
+        </span>`;
+      })}
+    </div>`;
   }
 
   _renderAc() {

@@ -47,13 +47,26 @@ export const cardStyles = css`
   .battery {
     margin-top: 6px;
   }
-  .batt-row {
+  /* default: battery value to the left of the bar */
+  .battery.value-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .battery.value-left .batt-value {
+    flex: 0 0 auto;
+  }
+  .battery.value-left .batt-track {
+    flex: 1;
+    min-width: 0;
+  }
+  .batt-value {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .batt-row ha-icon,
-  .batt-row ha-state-icon {
+  .batt-value ha-icon,
+  .batt-value ha-state-icon {
     --mdc-icon-size: 26px;
     color: var(--state-icon-color, var(--primary-text-color));
   }
@@ -168,15 +181,21 @@ export const cardStyles = css`
     background: var(--primary-text-color);
     opacity: 0.7;
   }
-  /* limit labels floating above their position on the bar */
+  /* limit labels floating above their position on the bar; close ones are
+   * grouped into a cluster so they sit next to each other */
   .batt-flags {
     position: relative;
     height: 19px;
     margin-top: 8px;
   }
-  .flag {
+  .flag-cluster {
     position: absolute;
     bottom: 0;
+    display: inline-flex;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .flag {
     display: inline-flex;
     align-items: center;
     gap: 2px;
@@ -186,6 +205,7 @@ export const cardStyles = css`
     white-space: nowrap;
     padding: 2px 4px;
     border-radius: 6px;
+    cursor: pointer;
     transition: background-color 0.15s ease;
   }
   .flag:hover {
@@ -204,27 +224,32 @@ export const cardStyles = css`
     color: var(--primary-text-color);
   }
 
-  /* AC sockets (stacked in the header's left column) */
+  /* AC sockets (stacked, compact, in the header's left column) */
   .ac {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 14px;
+    gap: 6px;
+    margin-top: 12px;
   }
   .ac-socket {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
     background: var(--secondary-background-color);
-    border-radius: 14px;
-    padding: 10px 12px;
+    border-radius: 10px;
+    padding: 5px 10px;
     transition: filter 0.15s ease;
   }
   .ac-socket:hover {
     filter: brightness(1.08);
   }
+  .ac-socket ha-switch {
+    --mdc-switch-track-width: 32px;
+    transform: scale(0.85);
+    transform-origin: right center;
+  }
   .ac-icon {
-    --mdc-icon-size: 24px;
+    --mdc-icon-size: 19px;
     color: var(--secondary-text-color);
   }
   .ac-icon.on {
@@ -238,10 +263,12 @@ export const cardStyles = css`
   }
   .ac-name {
     color: var(--secondary-text-color);
-    font-size: 0.82em;
+    font-size: 0.76em;
+    line-height: 1.2;
   }
   .ac-power {
     font-weight: 700;
+    font-size: 0.95em;
     color: var(--primary-text-color);
   }
 
