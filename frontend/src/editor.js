@@ -8,6 +8,7 @@ import { LitElement, html, css } from "lit";
 import { CARD_TYPE, PLATFORM } from "./const.js";
 import { entityMap, streamDevices } from "./entities.js";
 import { brandIconUrl } from "./brands.js";
+import { DEVICE_IMAGES, imageUrlForKey } from "./device-image.js";
 import { fetchForecastConfigEntries } from "./energy.js";
 import { isEntityId, isTemplate } from "./format.js";
 import { ensureHaComponents } from "./ha-components.js";
@@ -194,15 +195,59 @@ export class EcoFlowEnergyCardEditor extends LitElement {
       ${(TOGGLES[page.id] || []).map(([key, def, icon]) =>
         this._renderToggle(key, def, icon)
       )}
-      ${page.id === "panels"
-        ? this._renderPanelsPage()
-        : page.id === "forecast"
-          ? this._renderForecastPage()
-          : page.id === "advanced"
-            ? this._renderAdvancedPage()
-            : (PAGE_SLOTS[page.id] || []).map(([key, icon]) =>
-                this._renderSlot(key, icon)
-              )}`;
+      ${page.id === "appearance"
+        ? this._renderImagePicker()
+        : page.id === "panels"
+          ? this._renderPanelsPage()
+          : page.id === "forecast"
+            ? this._renderForecastPage()
+            : page.id === "advanced"
+              ? this._renderAdvancedPage()
+              : (PAGE_SLOTS[page.id] || []).map(([key, icon]) =>
+                  this._renderSlot(key, icon)
+                )}`;
+  }
+
+  /* -- appearance: device-image picker (Auto + bundled options) -- */
+
+  _renderImagePicker() {
+    const current = this._config.image;
+    const custom = this._config.image_url;
+    const enabled = this._config.show_image ?? true;
+    return html`<div class="section">
+        <ha-icon icon="mdi:image-multiple-outline"></ha-icon>${this._t(
+          "editor.image"
+        )}
+      </div>
+      <div class=${enabled ? "img-grid" : "img-grid dim"}>
+        <button
+          class="img-opt ${!current && !custom ? "on" : ""}"
+          title=${this._t("editor.automatic")}
+          @click=${() => this._setImage(null)}
+        >
+          <span class="img-auto"><ha-icon icon="mdi:auto-fix"></ha-icon></span>
+          <span class="img-label">${this._t("editor.automatic")}</span>
+        </button>
+        ${DEVICE_IMAGES.map(
+          (d) => html`<button
+            class="img-opt ${current === d.key ? "on" : ""}"
+            title=${d.name}
+            @click=${() => this._setImage(d.key)}
+          >
+            <img src=${imageUrlForKey(d.key)} loading="lazy" alt=${d.name} />
+            <span class="img-label">${d.name}</span>
+          </button>`
+        )}
+      </div>`;
+  }
+
+  _setImage(key) {
+    const config = { ...this._config, type: `custom:${CARD_TYPE}` };
+    // A gallery choice (or Auto) takes over any custom image_url.
+    delete config.image_url;
+    if (key) config.image = key;
+    else delete config.image;
+    this._dispatch(config);
   }
 
   /* -- advanced page: energy date-selection (collection) key -- */
@@ -604,6 +649,55 @@ export class EcoFlowEnergyCardEditor extends LitElement {
         width: 24px;
         height: 24px;
         object-fit: contain;
+      }
+      .img-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .img-opt {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        background: var(--secondary-background-color);
+        padding: 8px 4px;
+        cursor: pointer;
+        transition: border-color 0.15s ease, filter 0.15s ease;
+      }
+      .img-opt:hover {
+        filter: brightness(1.12);
+      }
+      .img-opt.on {
+        border-color: var(--primary-color);
+      }
+      .img-opt img,
+      .img-auto {
+        width: 56px;
+        height: 56px;
+        object-fit: contain;
+      }
+      .img-auto {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--secondary-text-color);
+      }
+      .img-auto ha-icon {
+        --mdc-icon-size: 30px;
+      }
+      .img-label {
+        font-size: 0.72em;
+        text-align: center;
+        line-height: 1.1;
+        color: var(--secondary-text-color);
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .section {
         display: flex;

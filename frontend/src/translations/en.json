@@ -37,6 +37,7 @@
   "editor": {
     "device": "EcoFlow device",
     "automatic": "Automatic",
+    "image": "Device image",
     "entity": "Entity",
     "value_template": "Value / template",
     "mode_auto": "Auto",

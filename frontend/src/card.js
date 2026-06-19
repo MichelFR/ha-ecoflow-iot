@@ -9,7 +9,7 @@
 
 import { LitElement, html, svg } from "lit";
 import { CARD_TYPE } from "./const.js";
-import { deviceImageUrl } from "./device-image.js";
+import { deviceImageUrl, imageUrlForKey } from "./device-image.js";
 import { entityMap, streamDevices } from "./entities.js";
 import {
   fetchHourlyWh,
@@ -351,7 +351,11 @@ export class EcoFlowEnergyCard extends LitElement {
       device.device?.name ||
       model ||
       this._t("card.device");
-    const imageSrc = this._config.image_url || deviceImageUrl(model);
+    const imageSrc =
+      this._config.image_url ||
+      (this._config.image
+        ? imageUrlForKey(this._config.image)
+        : deviceImageUrl(model));
 
     return html`<div class="head">
       <div class="head-left">
@@ -453,7 +457,16 @@ export class EcoFlowEnergyCard extends LitElement {
         : ""}
       ${showImg
         ? html`<img class="device-img" src="${imageSrc}" alt="${name}" />`
-        : ""}
+        : socState
+          ? html`<ha-state-icon
+              class="batt-icon"
+              .hass=${this.hass}
+              .stateObj=${socState}
+            ></ha-state-icon>`
+          : html`<ha-icon
+              class="batt-icon"
+              icon="mdi:home-lightning-bolt"
+            ></ha-icon>`}
       ${socState && (charging || discharging) && batPower != null
         ? html`<span class="batt-speed ${active}">
             <ha-icon

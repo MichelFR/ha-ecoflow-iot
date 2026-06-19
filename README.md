@@ -150,10 +150,13 @@ common case you just add it from the dashboard's card picker.
   editor) matching a `hui-energy-period-selector` (Energy date selection) card's
   `collection_key`, and the card shows the selected day's production and graph instead of
   today's — so a period selector on the same view drives the card's date.
-- **Editor:** an ABRP-style visual editor — Appearance toggles, an Entities page for
-  overriding any auto-detected entity (Auto / Entity / Custom-template), a **Solar
-  panels** page to rename, re-map or hide each panel, and a **Solar forecast** page to
-  pick which forecast providers to use.
+- **Device image:** auto-selected from the device model, or pick one from a gallery of
+  bundled EcoFlow product images (the whole supported fleet) in the editor. When the image
+  is turned off, the gauge shows a battery icon instead.
+- **Editor:** an ABRP-style visual editor — Appearance toggles + the device-image picker,
+  an Entities page for overriding any auto-detected entity (Auto / Entity / Custom-template),
+  a **Solar panels** page to rename, re-map or hide each panel, and a **Solar forecast** page
+  to pick which forecast providers to use.
 - **Today's total** is read from the recorder's statistics for the cumulative Solar
   energy sensor (the same source as the Energy Dashboard), so the **recorder** must be
   enabled (it is by default).

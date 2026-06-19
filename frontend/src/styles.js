@@ -116,6 +116,14 @@ export const cardStyles = css`
     object-fit: contain;
     filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
   }
+  .batt-icon {
+    position: absolute;
+    top: 47%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    --mdc-icon-size: 56px;
+    color: var(--state-icon-color, var(--primary-text-color));
+  }
   .batt-badge {
     position: absolute;
     left: 50%;
