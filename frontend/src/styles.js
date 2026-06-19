@@ -90,8 +90,8 @@ export const cardStyles = css`
     );
   }
   .bar {
-    height: 8px;
-    border-radius: 4px;
+    height: 12px;
+    border-radius: 6px;
     background: var(--divider-color);
     margin: 10px 0 4px;
     overflow: hidden;
@@ -99,10 +99,11 @@ export const cardStyles = css`
   }
   .fill {
     height: 100%;
-    border-radius: 4px;
+    border-radius: 6px;
     background: var(--state-sensor-battery-high-color, #43a047);
     transition: width 0.4s ease;
     position: relative;
+    z-index: 1;
     overflow: hidden;
   }
   .fill.low {
@@ -129,13 +130,125 @@ export const cardStyles = css`
       transform: translateX(330%);
     }
   }
-  .reserve {
+  /* limit zones (behind the fill) and marker lines (on top) */
+  .zone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
+  }
+  .zone.floor {
+    left: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(127, 127, 127, 0.4) 0 4px,
+      transparent 4px 8px
+    );
+  }
+  .zone.cap {
+    background: rgba(127, 127, 127, 0.28);
+  }
+  .mark {
     position: absolute;
     top: -2px;
     bottom: -2px;
     width: 2px;
+    margin-left: -1px;
+    z-index: 2;
+    border-radius: 1px;
+  }
+  .mark.charge {
+    background: var(--energy-solar-color, #ff9800);
+  }
+  .mark.discharge {
+    background: var(--error-color, #db4437);
+  }
+  .mark.reserve {
     background: var(--primary-text-color);
-    opacity: 0.55;
+    opacity: 0.7;
+  }
+  .batt-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin: 8px 0 2px;
+    font-size: 0.82em;
+    color: var(--secondary-text-color);
+  }
+  .bl {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 8px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    transition: background-color 0.15s ease;
+  }
+  .bl:hover {
+    background: var(--secondary-background-color);
+  }
+  .bl ha-icon {
+    --mdc-icon-size: 15px;
+  }
+  .bl b {
+    color: var(--primary-text-color);
+    font-weight: 700;
+  }
+  .bl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+  }
+  .bl-dot.charge {
+    background: var(--energy-solar-color, #ff9800);
+  }
+  .bl-dot.discharge {
+    background: var(--error-color, #db4437);
+  }
+  .bl-dot.reserve {
+    background: var(--primary-text-color);
+    opacity: 0.7;
+  }
+
+  /* AC sockets */
+  .ac {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .ac-socket {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--secondary-background-color);
+    border-radius: 14px;
+    padding: 10px 12px;
+    transition: filter 0.15s ease;
+  }
+  .ac-socket:hover {
+    filter: brightness(1.08);
+  }
+  .ac-icon {
+    --mdc-icon-size: 24px;
+    color: var(--secondary-text-color);
+  }
+  .ac-icon.on {
+    color: var(--state-switch-active-color, var(--primary-color));
+  }
+  .ac-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+  .ac-name {
+    color: var(--secondary-text-color);
+    font-size: 0.82em;
+  }
+  .ac-power {
+    font-weight: 700;
+    color: var(--primary-text-color);
   }
 
   /* power stats */

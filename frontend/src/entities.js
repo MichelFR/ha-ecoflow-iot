@@ -18,8 +18,12 @@ export const KNOWN_KEYS = {
     "pv2_power",
     "pv3_power",
     "pv4_power",
+    "schuko1_power",
+    "schuko2_power",
   ],
   binary_sensor: ["battery_charging"],
+  number: ["max_charge_soc", "min_discharge_soc", "backup_reserve"],
+  switch: ["ac1", "ac2"],
 };
 
 export function ecoflowEntities(hass) {

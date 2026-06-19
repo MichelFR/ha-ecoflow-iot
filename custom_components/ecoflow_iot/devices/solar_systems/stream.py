@@ -512,6 +512,7 @@ _AC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="schuko1_power",
         mqtt_key="powGetSchuko1",
+        translation_key="schuko1_power",
         name="AC socket 1 power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -521,6 +522,7 @@ _AC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="schuko2_power",
         mqtt_key="powGetSchuko2",
+        translation_key="schuko2_power",
         name="AC socket 2 power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -647,6 +649,7 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     EcoFlowSwitchEntityDescription(
         key="ac1",
         mqtt_key="relay2Onoff",
+        translation_key="ac1",
         name="AC socket 1",
         value_fn=bool,
         command_fn=lambda value, _q: {"cfgRelay2Onoff": bool(value)},
@@ -654,6 +657,7 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     EcoFlowSwitchEntityDescription(
         key="ac2",
         mqtt_key="relay3Onoff",
+        translation_key="ac2",
         name="AC socket 2",
         value_fn=bool,
         command_fn=lambda value, _q: {"cfgRelay3Onoff": bool(value)},
@@ -685,6 +689,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
     EcoFlowNumberEntityDescription(
         key="max_charge_soc",
         mqtt_key="cmsMaxChgSoc",
+        translation_key="max_charge_soc",
         name="Charge limit",
         device_class=NumberDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
@@ -697,6 +702,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
     EcoFlowNumberEntityDescription(
         key="min_discharge_soc",
         mqtt_key="cmsMinDsgSoc",
+        translation_key="min_discharge_soc",
         name="Discharge limit",
         device_class=NumberDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
@@ -709,6 +715,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
     EcoFlowNumberEntityDescription(
         key="backup_reserve",
         mqtt_key="backupReverseSoc",
+        translation_key="backup_reserve",
         name="Backup reserve",
         device_class=NumberDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,

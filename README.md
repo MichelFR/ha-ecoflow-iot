@@ -129,11 +129,13 @@ common case you just add it from the dashboard's card picker.
 - **Add it:** edit a dashboard → **+ Add Card** → search for **EcoFlow Energy**. With a
   single Stream it auto-detects everything; with more than one, pick the device in the
   card's visual editor.
-- **Shows:** the device photo, an animated battery bar (with charge/discharge rate),
-  **Solar power**, **Grid power** (import/export), and **today's solar production** with
-  an optional forecast comparison. Tap **Solar power** for a per-panel (per-MPPT)
-  breakdown; tap **Solar today** for an hourly production graph with the forecast curve
-  overlaid (like the Energy dashboard's Solar production card).
+- **Shows:** the device photo, an animated battery bar (with charge/discharge rate and
+  **Charge limit / Discharge limit / Backup reserve** markers + a tap-to-adjust legend),
+  **Solar power**, **Grid power** (import/export), the **AC sockets** (live draw + on/off
+  toggle), and **today's solar production** with an optional forecast comparison. Tap
+  **Solar power** for a per-panel (per-MPPT) breakdown; tap **Solar today** for an hourly
+  production graph with the forecast curve overlaid (like the Energy dashboard's Solar
+  production card).
 - **Solar forecast:** uses the **same forecast configured in Home Assistant's Energy
   dashboard** (Settings → Dashboards → Energy → Solar panels). The card's editor lists
   those forecast providers so you can choose which to include; the dashed forecast curve

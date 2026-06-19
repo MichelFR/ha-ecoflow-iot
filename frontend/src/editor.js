@@ -22,8 +22,10 @@ const TOGGLES = {
   appearance: [
     ["show_image", true, "mdi:image-outline"],
     ["show_battery", true, "mdi:battery-high"],
+    ["show_battery_limits", true, "mdi:battery-lock"],
     ["show_today", true, "mdi:white-balance-sunny"],
     ["show_grid", true, "mdi:transmission-tower"],
+    ["show_ac", true, "mdi:power-socket-de"],
     ["show_panels", true, "mdi:solar-panel"],
   ],
   forecast: [["show_forecast", true, "mdi:chart-line"]],
@@ -33,9 +35,17 @@ const TOGGLES = {
 const PAGE_SLOTS = {
   entities: [
     ["sensor.cms_batt_soc", "mdi:battery-high"],
+    ["sensor.bat_power", "mdi:battery-charging"],
     ["sensor.pv_total", "mdi:solar-power-variant"],
     ["sensor.grid_power", "mdi:transmission-tower"],
     ["sensor.solar_energy", "mdi:lightning-bolt"],
+    ["number.max_charge_soc", "mdi:arrow-up-bold"],
+    ["number.min_discharge_soc", "mdi:arrow-down-bold"],
+    ["number.backup_reserve", "mdi:shield-home"],
+    ["switch.ac1", "mdi:power-socket-de"],
+    ["switch.ac2", "mdi:power-socket-de"],
+    ["sensor.schuko1_power", "mdi:flash"],
+    ["sensor.schuko2_power", "mdi:flash"],
   ],
   // Per-panel slots live on the dedicated "panels" page (see _renderPanelsPage);
   // the forecast page (provider multi-select) is rendered by _renderForecastPage.

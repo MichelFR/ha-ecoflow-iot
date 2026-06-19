@@ -14,7 +14,13 @@
     "produced": "produced",
     "forecast": "Forecast",
     "of_forecast": "{pct}% of forecast",
-    "exceeded": "Forecast reached"
+    "exceeded": "Forecast reached",
+    "reserve": "Reserve",
+    "charge_limit": "Charge ≤",
+    "discharge_limit": "Discharge ≥",
+    "ac1": "AC 1",
+    "ac2": "AC 2",
+    "off": "Off"
   },
   "panels": {
     "title": "Solar panels",
@@ -57,22 +63,27 @@
   "toggle": {
     "show_image": "Show device image",
     "show_battery": "Show battery bar",
+    "show_battery_limits": "Show charge / discharge / reserve limits",
     "show_today": "Show today's production",
     "show_grid": "Show grid power",
+    "show_ac": "Show AC sockets",
     "show_panels": "Tap solar power for per-panel breakdown",
     "show_forecast": "Compare today's production with the forecast"
   },
   "short": {
     "show_image": "Image",
     "show_battery": "Battery",
+    "show_battery_limits": "Limits",
     "show_today": "Today",
     "show_grid": "Grid",
+    "show_ac": "AC sockets",
     "show_panels": "Panels",
     "show_forecast": "Forecast"
   },
   "slot": {
     "sensor": {
       "cms_batt_soc": "Battery level",
+      "bat_power": "Battery power (charge/discharge speed)",
       "pv_total": "Solar power",
       "grid_power": "Grid power",
       "solar_energy": "Solar energy (source for today's total)",
@@ -80,7 +91,18 @@
       "pv2_power": "Solar panel 2",
       "pv3_power": "Solar panel 3",
       "pv4_power": "Solar panel 4",
+      "schuko1_power": "AC socket 1 power",
+      "schuko2_power": "AC socket 2 power",
       "forecast_today": "Forecast entity (expected production today)"
+    },
+    "number": {
+      "max_charge_soc": "Charge limit",
+      "min_discharge_soc": "Discharge limit",
+      "backup_reserve": "Backup reserve"
+    },
+    "switch": {
+      "ac1": "AC socket 1",
+      "ac2": "AC socket 2"
     }
   }
 }

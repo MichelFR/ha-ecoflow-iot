@@ -249,6 +249,7 @@ export class EcoFlowEnergyCard extends LitElement {
       ${this._renderHead(device)}
       ${this._show("show_battery") ? this._renderBattery() : ""}
       ${this._renderStats()}
+      ${this._show("show_ac") ? this._renderAc() : ""}
       ${this._show("show_today") ? this._renderToday() : ""}
       ${this._dialog === "panels"
         ? this._dialogFrame(this._t("panels.title"), renderPanels(this))
@@ -317,6 +318,15 @@ export class EcoFlowEnergyCard extends LitElement {
       (batPower != null && batPower > 1);
     const discharging = !charging && batPower != null && batPower < -1;
 
+    const limits = this._show("show_battery_limits");
+    const charge = limits ? numState(this._state("number.max_charge_soc")) : null;
+    const discharge = limits
+      ? numState(this._state("number.min_discharge_soc"))
+      : null;
+    const reserve = limits
+      ? numState(this._state("number.backup_reserve"))
+      : null;
+
     return html`<div class="battery">
       <div
         class="batt-row clickable"
@@ -339,14 +349,127 @@ export class EcoFlowEnergyCard extends LitElement {
             : ""}
       </div>
       <div class="bar">
+        ${discharge != null && discharge > 0
+          ? html`<div class="zone floor" style="width:${discharge}%"></div>`
+          : ""}
+        ${charge != null && charge < 100
+          ? html`<div
+              class="zone cap"
+              style="left:${charge}%;width:${100 - charge}%"
+            ></div>`
+          : ""}
         <div
           class="fill ${charging ? "charging" : ""} ${soc != null && soc <= 15
             ? "low"
             : ""}"
           style="width:${soc ?? 0}%"
         ></div>
+        ${discharge != null
+          ? html`<div class="mark discharge" style="left:${discharge}%"></div>`
+          : ""}
+        ${charge != null
+          ? html`<div class="mark charge" style="left:${charge}%"></div>`
+          : ""}
+        ${reserve != null
+          ? html`<div class="mark reserve" style="left:${reserve}%"></div>`
+          : ""}
       </div>
+      ${limits && (reserve != null || charge != null || discharge != null)
+        ? html`<div class="batt-legend">
+            ${reserve != null
+              ? this._legendItem(
+                  "reserve",
+                  "mdi:shield-home",
+                  this._t("card.reserve"),
+                  `${Math.round(reserve)}%`,
+                  "number.backup_reserve"
+                )
+              : ""}
+            ${charge != null
+              ? this._legendItem(
+                  "charge",
+                  "mdi:arrow-up-bold",
+                  this._t("card.charge_limit"),
+                  `${Math.round(charge)}%`,
+                  "number.max_charge_soc"
+                )
+              : ""}
+            ${discharge != null
+              ? this._legendItem(
+                  "discharge",
+                  "mdi:arrow-down-bold",
+                  this._t("card.discharge_limit"),
+                  `${Math.round(discharge)}%`,
+                  "number.min_discharge_soc"
+                )
+              : ""}
+          </div>`
+        : ""}
     </div>`;
+  }
+
+  _legendItem(cls, icon, label, value, slot) {
+    return html`<span
+      class="bl clickable"
+      @click=${() => this._moreInfo(slot)}
+    >
+      <span class="bl-dot ${cls}"></span>
+      <ha-icon icon=${icon}></ha-icon>${label}
+      <b>${value}</b>
+    </span>`;
+  }
+
+  _renderAc() {
+    const sockets = [
+      { sw: "switch.ac1", pw: "sensor.schuko1_power", label: this._t("card.ac1") },
+      { sw: "switch.ac2", pw: "sensor.schuko2_power", label: this._t("card.ac2") },
+    ]
+      .map((s) => ({
+        ...s,
+        swState: this._state(s.sw),
+        pwState: this._state(s.pw),
+      }))
+      .filter((s) => s.swState || s.pwState);
+    if (!sockets.length) return "";
+
+    return html`<div class="ac">
+      ${sockets.map((s) => {
+        const on = s.swState?.state === "on";
+        const power = numState(s.pwState);
+        return html`<div
+          class="ac-socket clickable"
+          @click=${() => this._moreInfoId(this._entityId(s.pw) || this._entityId(s.sw))}
+        >
+          <ha-icon class="ac-icon ${on ? "on" : ""}" icon="mdi:power-socket-de"></ha-icon>
+          <div class="ac-info">
+            <span class="ac-name">${s.label}</span>
+            <span class="ac-power">
+              ${s.swState && !on
+                ? this._t("card.off")
+                : (fmtPower(power) ?? (s.pwState ? "—" : ""))}
+            </span>
+          </div>
+          ${s.swState
+            ? html`<ha-switch
+                .checked=${on}
+                @click=${(ev) => ev.stopPropagation()}
+                @change=${() => this._toggleSwitch(s.sw)}
+              ></ha-switch>`
+            : ""}
+        </div>`;
+      })}
+    </div>`;
+  }
+
+  _toggleSwitch(slot) {
+    const id = this._entityId(slot);
+    const st = id ? this.hass.states[id] : null;
+    if (!id || !st) return;
+    this.hass.callService(
+      "switch",
+      st.state === "on" ? "turn_off" : "turn_on",
+      { entity_id: id }
+    );
   }
 
   _renderStats() {

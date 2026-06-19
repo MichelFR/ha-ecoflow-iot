@@ -74,10 +74,21 @@
       "pv1_power": { "name": "Solar string 1 power" },
       "pv2_power": { "name": "Solar string 2 power" },
       "pv3_power": { "name": "Solar string 3 power" },
-      "pv4_power": { "name": "Solar string 4 power" }
+      "pv4_power": { "name": "Solar string 4 power" },
+      "schuko1_power": { "name": "AC socket 1 power" },
+      "schuko2_power": { "name": "AC socket 2 power" }
     },
     "binary_sensor": {
       "battery_charging": { "name": "Battery charging" }
+    },
+    "number": {
+      "max_charge_soc": { "name": "Charge limit" },
+      "min_discharge_soc": { "name": "Discharge limit" },
+      "backup_reserve": { "name": "Backup reserve" }
+    },
+    "switch": {
+      "ac1": { "name": "AC socket 1" },
+      "ac2": { "name": "AC socket 2" }
     },
     "select": {
       "operating_mode": {
