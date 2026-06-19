@@ -126,6 +126,12 @@ The integration bundles a custom Lovelace card, **EcoFlow Energy**, tailored to 
 devices (Ultra / Ultra X / AC / AC Pro / Pro). It serves and registers itself, so in the
 common case you just add it from the dashboard's card picker.
 
+<p align="center">
+  <img src="docs/images/energy-card.png" alt="EcoFlow Energy card" width="460">
+  &nbsp;&nbsp;
+  <img src="docs/images/energy-card-solar-today.png" alt="Solar today graph" width="520">
+</p>
+
 - **Add it:** edit a dashboard → **+ Add Card** → search for **EcoFlow Energy**. With a
   single Stream it auto-detects everything; with more than one, pick the device in the
   card's visual editor.
