@@ -22,6 +22,12 @@
     "ac2": "AC 2",
     "off": "Off"
   },
+  "confirm": {
+    "title": "Turn off socket?",
+    "ac_off": "Turn off {name}? Anything plugged into it will lose power.",
+    "cancel": "Cancel",
+    "turn_off": "Turn off"
+  },
   "panels": {
     "title": "Solar panels",
     "panel": "Panel {n}",

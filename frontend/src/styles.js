@@ -18,12 +18,13 @@ export const cardStyles = css`
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
-    min-height: 132px;
   }
   .head-left {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+    min-width: 0;
   }
   .name {
     font-size: 1.5em;
@@ -210,12 +211,12 @@ export const cardStyles = css`
     opacity: 0.7;
   }
 
-  /* AC sockets */
+  /* AC sockets (stacked in the header's left column) */
   .ac {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
   }
   .ac-socket {
     display: flex;
@@ -381,6 +382,49 @@ export const cardStyles = css`
   /* dialog */
   .dlg-body {
     padding: 4px 4px 8px;
+  }
+  .confirm-body {
+    padding: 4px 4px 0;
+  }
+  .confirm-text {
+    color: var(--secondary-text-color);
+    font-size: 0.95em;
+    line-height: 1.45;
+  }
+  .confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+  }
+  .text-btn,
+  .filled-btn {
+    border: none;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s ease, background-color 0.15s ease;
+  }
+  .text-btn {
+    background: transparent;
+    color: var(--primary-color);
+  }
+  .text-btn:hover {
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  }
+  .filled-btn {
+    background: var(--primary-color);
+    color: var(--text-primary-color, #fff);
+    padding: 10px 24px;
+  }
+  .filled-btn.danger {
+    background: var(--error-color, #db4437);
+    color: #fff;
+  }
+  .filled-btn:hover {
+    filter: brightness(1.08);
   }
   .panels {
     display: flex;

@@ -35,12 +35,14 @@ export class EcoFlowEnergyCard extends LitElement {
       hass: {},
       _config: {},
       _dialog: { state: true },
+      _confirmAc: { state: true },
     };
   }
 
   constructor() {
     super();
     this._dialog = null; // null | "panels" | "today"
+    this._confirmAc = null; // {slot,label} awaiting turn-off confirmation
     this._todayWh = undefined; // undefined = not fetched, null = unavailable
     this._hourly = {}; // {hour: Wh} actual production for the range
     this._forecasts = {}; // raw energy/solar_forecast result
@@ -302,7 +304,6 @@ export class EcoFlowEnergyCard extends LitElement {
       ${this._renderHead(device)}
       ${this._show("show_battery") ? this._renderBattery() : ""}
       ${this._renderStats()}
-      ${this._show("show_ac") ? this._renderAc() : ""}
       ${this._show("show_today") ? this._renderToday() : ""}
       ${this._dialog === "panels"
         ? this._dialogFrame(this._t("panels.title"), renderPanels(this))
@@ -324,6 +325,7 @@ export class EcoFlowEnergyCard extends LitElement {
             })
           )
         : ""}
+      ${this._confirmAc ? this._renderConfirmAc() : ""}
     </ha-card>`;
   }
 
@@ -358,6 +360,7 @@ export class EcoFlowEnergyCard extends LitElement {
         ${model && model !== name
           ? html`<div class="subtitle">${model}</div>`
           : ""}
+        ${this._show("show_ac") ? this._renderAc() : ""}
       </div>
       ${this._show("show_image") && imageSrc
         ? html`<img class="device-img" src="${imageSrc}" alt="${name}" />`
@@ -510,7 +513,7 @@ export class EcoFlowEnergyCard extends LitElement {
             ? html`<ha-switch
                 .checked=${on}
                 @click=${(ev) => ev.stopPropagation()}
-                @change=${() => this._toggleSwitch(s.sw)}
+                @change=${() => this._toggleSwitch(s.sw, s.label)}
               ></ha-switch>`
             : ""}
         </div>`;
@@ -518,15 +521,49 @@ export class EcoFlowEnergyCard extends LitElement {
     </div>`;
   }
 
-  _toggleSwitch(slot) {
+  _toggleSwitch(slot, label) {
     const id = this._entityId(slot);
     const st = id ? this.hass.states[id] : null;
     if (!id || !st) return;
-    this.hass.callService(
-      "switch",
-      st.state === "on" ? "turn_off" : "turn_on",
-      { entity_id: id }
-    );
+    if (st.state === "on") {
+      // Two-step: confirm before cutting power to a socket.
+      this._confirmAc = { slot, label };
+    } else {
+      this.hass.callService("switch", "turn_on", { entity_id: id });
+    }
+  }
+
+  _renderConfirmAc() {
+    const { label } = this._confirmAc;
+    const close = () => (this._confirmAc = null);
+    return html`<ha-dialog
+      open
+      header-title=${this._t("confirm.title")}
+      @closed=${close}
+    >
+      <div class="confirm-body">
+        <div class="confirm-text">
+          ${this._t("confirm.ac_off", { name: label })}
+        </div>
+        <div class="confirm-actions">
+          <button class="text-btn" @click=${close}>
+            ${this._t("confirm.cancel")}
+          </button>
+          <button
+            class="filled-btn danger"
+            @click=${() => {
+              const id = this._entityId(this._confirmAc.slot);
+              if (id) {
+                this.hass.callService("switch", "turn_off", { entity_id: id });
+              }
+              this._confirmAc = null;
+            }}
+          >
+            ${this._t("confirm.turn_off")}
+          </button>
+        </div>
+      </div>
+    </ha-dialog>`;
   }
 
   _renderStats() {
