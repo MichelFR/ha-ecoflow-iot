@@ -129,11 +129,11 @@ common case you just add it from the dashboard's card picker.
 - **Add it:** edit a dashboard → **+ Add Card** → search for **EcoFlow Energy**. With a
   single Stream it auto-detects everything; with more than one, pick the device in the
   card's visual editor.
-- **Shows:** the device photo, an animated battery bar (with charge/discharge rate and
-  **Charge limit / Discharge limit / Backup reserve** markers, each with a tap-to-adjust
-  label floating above its position on the bar),
+- **Shows:** the device photo inside a **circular battery gauge** — a state-of-charge ring
+  that changes colour and animates (a travelling spark) while charging/discharging, with the
+  level as a badge and the charge/discharge speed as a chip —
   **Solar power**, **Grid power** (import/export), the **AC sockets** (shown beside the
-  device image, with live draw + an on/off toggle that asks for confirmation before
+  gauge, with live draw + an on/off toggle that asks for confirmation before
   switching a socket off), and **today's solar production** with an optional forecast
   comparison. Tap
   **Solar power** for a per-panel (per-MPPT) breakdown; tap **Solar today** for an hourly

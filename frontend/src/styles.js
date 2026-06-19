@@ -12,12 +12,12 @@ export const cardStyles = css`
     cursor: pointer;
   }
 
-  /* header: name + device image */
+  /* header: name + AC on the left, battery/device circle on the right */
   .head {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    gap: 14px;
   }
   .head-left {
     display: flex;
@@ -35,193 +35,110 @@ export const cardStyles = css`
     color: var(--secondary-text-color);
     font-size: 0.95em;
   }
-  .device-img {
-    max-width: 46%;
-    max-height: 150px;
-    object-fit: contain;
-    margin: -10px -6px 0 0;
-    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.28));
-  }
-
-  /* battery */
-  .battery {
-    margin-top: 6px;
-  }
-  /* default: battery value to the left of the bar */
-  .battery.value-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .battery.value-left .batt-value {
+  /* battery / device circle (right of the header, vertically centred) */
+  .batt-circle {
+    position: relative;
+    width: 152px;
+    height: 152px;
     flex: 0 0 auto;
-  }
-  .battery.value-left .batt-track {
-    flex: 1;
-    min-width: 0;
-  }
-  .batt-value {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .batt-value ha-icon,
-  .batt-value ha-state-icon {
-    --mdc-icon-size: 26px;
-    color: var(--state-icon-color, var(--primary-text-color));
-  }
-  .soc {
-    font-size: 1.9em;
-    font-weight: 700;
-  }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: auto;
-    padding: 4px 10px;
-    border-radius: 14px;
-    font-weight: 600;
-    font-size: 0.9em;
-  }
-  .chip ha-icon {
-    --mdc-icon-size: 16px;
-  }
-  .chip.charge {
-    color: var(--energy-solar-color, #ff9800);
-    background: color-mix(
-      in srgb,
-      var(--energy-solar-color, #ff9800) 18%,
-      transparent
-    );
-  }
-  .chip.discharge {
-    color: var(--state-sensor-battery-high-color, #43a047);
-    background: color-mix(
-      in srgb,
-      var(--state-sensor-battery-high-color, #43a047) 18%,
-      transparent
-    );
-  }
-  .bar {
-    height: 12px;
-    border-radius: 6px;
-    background: var(--divider-color);
-    margin: 10px 0 4px;
-    overflow: hidden;
-    position: relative;
-  }
-  .fill {
-    height: 100%;
-    border-radius: 6px;
-    background: var(--state-sensor-battery-high-color, #43a047);
-    transition: width 0.4s ease;
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
-  }
-  .fill.low {
-    background: var(--error-color, #db4437);
-  }
-  .fill.charging::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    width: 45%;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.5) 50%,
-      transparent 100%
-    );
-    animation: sweep 1.6s linear infinite;
-  }
-  @keyframes sweep {
-    from {
-      transform: translateX(-110%);
-    }
-    to {
-      transform: translateX(330%);
-    }
-  }
-  /* limit zones (behind the fill) and marker lines (on top) */
-  .zone {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: 0;
-  }
-  .zone.floor {
-    left: 0;
-    background: repeating-linear-gradient(
-      45deg,
-      rgba(127, 127, 127, 0.4) 0 4px,
-      transparent 4px 8px
-    );
-  }
-  .zone.cap {
-    background: rgba(127, 127, 127, 0.28);
-  }
-  .mark {
-    position: absolute;
-    top: -2px;
-    bottom: -2px;
-    width: 2px;
-    margin-left: -1px;
-    z-index: 2;
-    border-radius: 1px;
-  }
-  .mark.charge {
-    background: var(--energy-solar-color, #ff9800);
-  }
-  .mark.discharge {
-    background: var(--error-color, #db4437);
-  }
-  .mark.reserve {
-    background: var(--primary-text-color);
-    opacity: 0.7;
-  }
-  /* limit labels floating above their position on the bar; close ones are
-   * grouped into a cluster so they sit next to each other */
-  .batt-flags {
-    position: relative;
-    height: 19px;
-    margin-top: 8px;
-  }
-  .flag-cluster {
-    position: absolute;
-    bottom: 0;
-    display: inline-flex;
-    gap: 6px;
-    white-space: nowrap;
-  }
-  .flag {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    font-size: 0.78em;
-    font-weight: 700;
-    line-height: 1;
-    white-space: nowrap;
-    padding: 2px 4px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-  }
-  .flag:hover {
+    border-radius: 50%;
     background: var(--secondary-background-color);
   }
-  .flag ha-icon {
+  .batt-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .ring-track {
+    fill: none;
+    stroke: var(--divider-color);
+    stroke-width: 5;
+  }
+  .ring-fill {
+    fill: none;
+    stroke: var(--state-sensor-battery-high-color, #43a047);
+    stroke-width: 5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+  }
+  .ring-fill.low {
+    stroke: var(--error-color, #db4437);
+  }
+  .ring-fill.charge {
+    stroke: var(--energy-solar-color, #ff9800);
+  }
+  .ring-fill.discharge {
+    stroke: var(--info-color, #2196f3);
+  }
+  /* a spark that travels around the ring while charging / discharging */
+  .ring-spin {
+    fill: none;
+    stroke-width: 5;
+    stroke-linecap: round;
+    transform-origin: 50% 50%;
+    transform-box: fill-box;
+  }
+  .ring-spin.charge {
+    stroke: var(--energy-solar-color, #ff9800);
+    animation: ring-spin 1.5s linear infinite;
+  }
+  .ring-spin.discharge {
+    stroke: var(--info-color, #2196f3);
+    animation: ring-spin 1.9s linear infinite reverse;
+  }
+  @keyframes ring-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .batt-circle .device-img {
+    position: absolute;
+    top: 47%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 58%;
+    max-height: 58%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+  }
+  .batt-badge {
+    position: absolute;
+    left: 50%;
+    bottom: -3px;
+    transform: translateX(-50%);
+    background: var(--card-background-color, var(--ha-card-background));
+    border: 1px solid var(--divider-color);
+    border-radius: 13px;
+    padding: 1px 11px;
+    font-weight: 800;
+    font-size: 1.05em;
+    color: var(--primary-text-color);
+  }
+  .batt-speed {
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border-radius: 13px;
+    padding: 2px 9px;
+    font-size: 0.78em;
+    font-weight: 700;
+    white-space: nowrap;
+    background: var(--card-background-color, var(--ha-card-background));
+    border: 1px solid var(--divider-color);
+  }
+  .batt-speed ha-icon {
     --mdc-icon-size: 14px;
   }
-  .flag.charge {
+  .batt-speed.charge {
     color: var(--energy-solar-color, #ff9800);
   }
-  .flag.discharge {
-    color: var(--error-color, #db4437);
-  }
-  .flag.reserve {
-    color: var(--primary-text-color);
+  .batt-speed.discharge {
+    color: var(--info-color, #2196f3);
   }
 
   /* AC sockets (stacked, compact, in the header's left column) */

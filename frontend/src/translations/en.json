@@ -72,9 +72,6 @@
   },
   "toggle": {
     "show_image": "Show device image",
-    "show_battery": "Show battery bar",
-    "battery_value_left": "Battery level beside the bar",
-    "show_battery_limits": "Show charge / discharge / reserve limits",
     "show_today": "Show today's production",
     "show_grid": "Show grid power",
     "show_ac": "Show AC sockets",
@@ -83,9 +80,6 @@
   },
   "short": {
     "show_image": "Image",
-    "show_battery": "Battery",
-    "battery_value_left": "Level left",
-    "show_battery_limits": "Limits",
     "show_today": "Today",
     "show_grid": "Grid",
     "show_ac": "AC sockets",

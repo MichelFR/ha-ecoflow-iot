@@ -302,7 +302,6 @@ export class EcoFlowEnergyCard extends LitElement {
 
     return html`<ha-card>
       ${this._renderHead(device)}
-      ${this._show("show_battery") ? this._renderBattery() : ""}
       ${this._renderStats()}
       ${this._show("show_today") ? this._renderToday() : ""}
       ${this._dialog === "panels"
@@ -362,152 +361,80 @@ export class EcoFlowEnergyCard extends LitElement {
           : ""}
         ${this._show("show_ac") ? this._renderAc() : ""}
       </div>
-      ${this._show("show_image") && imageSrc
-        ? html`<img class="device-img" src="${imageSrc}" alt="${name}" />`
-        : ""}
+      ${this._renderBatteryCircle(imageSrc, name)}
     </div>`;
   }
 
-  _renderBattery() {
+  /* Circular battery + device gauge: a SoC ring around the device image that
+   * changes colour and shows a travelling spark while charging / discharging,
+   * with the level as a badge and the charge/discharge speed as a chip. */
+  _renderBatteryCircle(imageSrc, name) {
     const socState = this._state("sensor.cms_batt_soc");
-    if (!socState) return "";
+    const showImg = this._show("show_image") && imageSrc;
+    if (!socState && !showImg) return "";
+
     const soc = numState(socState);
     const batPower = numState(this._state("sensor.bat_power"));
     const charging =
       this._state("binary_sensor.battery_charging")?.state === "on" ||
       (batPower != null && batPower > 1);
     const discharging = !charging && batPower != null && batPower < -1;
+    const ringState = charging
+      ? "charge"
+      : discharging
+        ? "discharge"
+        : soc != null && soc <= 15
+          ? "low"
+          : "";
+    const active = charging ? "charge" : discharging ? "discharge" : "";
 
-    const limits = this._show("show_battery_limits");
-    const charge = limits ? numState(this._state("number.max_charge_soc")) : null;
-    const discharge = limits
-      ? numState(this._state("number.min_discharge_soc"))
-      : null;
-    const reserve = limits
-      ? numState(this._state("number.backup_reserve"))
-      : null;
+    const C = 2 * Math.PI * 44; // ring circumference (r=44 in the 100x100 viewBox)
+    const pct = soc != null ? Math.max(0, Math.min(100, soc)) : 0;
 
-    const valueLeft = this._show("battery_value_left");
-
-    const value = html`<div
-      class="batt-value clickable"
+    return html`<div
+      class="batt-circle clickable"
       @click=${() => this._moreInfo("sensor.cms_batt_soc")}
     >
-      <ha-state-icon .hass=${this.hass} .stateObj=${socState}></ha-state-icon>
-      <span class="soc">${soc != null ? Math.round(soc) : "–"}%</span>
-      ${charging && batPower != null
-        ? html`<span class="chip charge"
-            ><ha-icon icon="mdi:flash"></ha-icon>${fmtPower(
-              Math.abs(batPower)
-            )}</span
+      ${socState
+        ? html`<svg class="batt-ring" viewBox="0 0 100 100">
+            <circle class="ring-track" cx="50" cy="50" r="44"></circle>
+            <circle
+              class="ring-fill ${ringState}"
+              cx="50"
+              cy="50"
+              r="44"
+              transform="rotate(-90 50 50)"
+              style="stroke-dasharray:${C.toFixed(1)};stroke-dashoffset:${(
+                C *
+                (1 - pct / 100)
+              ).toFixed(1)}"
+            ></circle>
+            ${active
+              ? html`<circle
+                  class="ring-spin ${active}"
+                  cx="50"
+                  cy="50"
+                  r="44"
+                  stroke-dasharray="16 261"
+                ></circle>`
+              : ""}
+          </svg>`
+        : ""}
+      ${showImg
+        ? html`<img class="device-img" src="${imageSrc}" alt="${name}" />`
+        : ""}
+      ${socState && (charging || discharging) && batPower != null
+        ? html`<span class="batt-speed ${active}">
+            <ha-icon
+              icon=${charging ? "mdi:flash" : "mdi:battery-arrow-down"}
+            ></ha-icon>${fmtPower(Math.abs(batPower))}
+          </span>`
+        : ""}
+      ${socState
+        ? html`<span class="batt-badge"
+            >${soc != null ? Math.round(soc) : "–"}%</span
           >`
-        : discharging && batPower != null
-          ? html`<span class="chip discharge"
-              ><ha-icon icon="mdi:battery-arrow-down"></ha-icon>${fmtPower(
-                Math.abs(batPower)
-              )}</span
-            >`
-          : ""}
-    </div>`;
-
-    const track = html`<div class="batt-track">
-      ${limits ? this._renderFlags(reserve, charge, discharge) : ""}
-      <div class="bar">
-        ${discharge != null && discharge > 0
-          ? html`<div class="zone floor" style="width:${discharge}%"></div>`
-          : ""}
-        ${charge != null && charge < 100
-          ? html`<div
-              class="zone cap"
-              style="left:${charge}%;width:${100 - charge}%"
-            ></div>`
-          : ""}
-        <div
-          class="fill ${charging ? "charging" : ""} ${soc != null && soc <= 15
-            ? "low"
-            : ""}"
-          style="width:${soc ?? 0}%"
-        ></div>
-        ${discharge != null
-          ? html`<div class="mark discharge" style="left:${discharge}%"></div>`
-          : ""}
-        ${charge != null
-          ? html`<div class="mark charge" style="left:${charge}%"></div>`
-          : ""}
-        ${reserve != null
-          ? html`<div class="mark reserve" style="left:${reserve}%"></div>`
-          : ""}
-      </div>
-    </div>`;
-
-    return html`<div class="battery ${valueLeft ? "value-left" : ""}">
-      ${value}${track}
-    </div>`;
-  }
-
-  /* Limit labels floating above the bar. Labels whose positions are within
-   * THRESHOLD% are grouped into one cluster so they sit next to each other
-   * instead of overlapping; each cluster is centred over its mean position
-   * (clamped at the ends). Each label taps through to adjust its entity. */
-  _renderFlags(reserve, charge, discharge) {
-    const flags = [];
-    if (discharge != null)
-      flags.push({
-        cls: "discharge",
-        icon: "mdi:arrow-down-bold",
-        value: discharge,
-        label: this._t("card.discharge_limit"),
-        slot: "number.min_discharge_soc",
-      });
-    if (reserve != null)
-      flags.push({
-        cls: "reserve",
-        icon: "mdi:shield-home",
-        value: reserve,
-        label: this._t("card.reserve"),
-        slot: "number.backup_reserve",
-      });
-    if (charge != null)
-      flags.push({
-        cls: "charge",
-        icon: "mdi:arrow-up-bold",
-        value: charge,
-        label: this._t("card.charge_limit"),
-        slot: "number.max_charge_soc",
-      });
-    if (!flags.length) return "";
-
-    flags.sort((a, b) => a.value - b.value);
-    const THRESHOLD = 15;
-    const clusters = [];
-    for (const f of flags) {
-      const last = clusters[clusters.length - 1];
-      const prev = last && last.items[last.items.length - 1];
-      if (prev && f.value - prev.value < THRESHOLD) last.items.push(f);
-      else clusters.push({ items: [f] });
-    }
-
-    return html`<div class="batt-flags">
-      ${clusters.map((c) => {
-        const pos = Math.max(
-          0,
-          Math.min(100, c.items.reduce((s, i) => s + i.value, 0) / c.items.length)
-        );
-        const tx = pos <= 12 ? "0" : pos >= 88 ? "-100%" : "-50%";
-        return html`<span
-          class="flag-cluster"
-          style="left:${pos}%;transform:translateX(${tx})"
-        >
-          ${c.items.map(
-            (f) => html`<span
-              class="flag ${f.cls} clickable"
-              title="${f.label} ${Math.round(f.value)}%"
-              @click=${() => this._moreInfo(f.slot)}
-              ><ha-icon icon=${f.icon}></ha-icon>${Math.round(f.value)}%</span
-            >`
-          )}
-        </span>`;
-      })}
+        : ""}
     </div>`;
   }
 
