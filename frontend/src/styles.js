@@ -168,47 +168,40 @@ export const cardStyles = css`
     background: var(--primary-text-color);
     opacity: 0.7;
   }
-  .batt-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 14px;
-    margin: 8px 0 2px;
-    font-size: 0.82em;
-    color: var(--secondary-text-color);
+  /* limit labels floating above their position on the bar */
+  .batt-flags {
+    position: relative;
+    height: 19px;
+    margin-top: 8px;
   }
-  .bl {
+  .flag {
+    position: absolute;
+    bottom: 0;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    border-radius: 8px;
+    gap: 2px;
+    font-size: 0.78em;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
     padding: 2px 4px;
-    margin: -2px -4px;
+    border-radius: 6px;
     transition: background-color 0.15s ease;
   }
-  .bl:hover {
+  .flag:hover {
     background: var(--secondary-background-color);
   }
-  .bl ha-icon {
-    --mdc-icon-size: 15px;
+  .flag ha-icon {
+    --mdc-icon-size: 14px;
   }
-  .bl b {
+  .flag.charge {
+    color: var(--energy-solar-color, #ff9800);
+  }
+  .flag.discharge {
+    color: var(--error-color, #db4437);
+  }
+  .flag.reserve {
     color: var(--primary-text-color);
-    font-weight: 700;
-  }
-  .bl-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-  }
-  .bl-dot.charge {
-    background: var(--energy-solar-color, #ff9800);
-  }
-  .bl-dot.discharge {
-    background: var(--error-color, #db4437);
-  }
-  .bl-dot.reserve {
-    background: var(--primary-text-color);
-    opacity: 0.7;
   }
 
   /* AC sockets (stacked in the header's left column) */

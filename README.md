@@ -130,7 +130,8 @@ common case you just add it from the dashboard's card picker.
   single Stream it auto-detects everything; with more than one, pick the device in the
   card's visual editor.
 - **Shows:** the device photo, an animated battery bar (with charge/discharge rate and
-  **Charge limit / Discharge limit / Backup reserve** markers + a tap-to-adjust legend),
+  **Charge limit / Discharge limit / Backup reserve** markers, each with a tap-to-adjust
+  label floating above its position on the bar),
   **Solar power**, **Grid power** (import/export), the **AC sockets** (shown beside the
   device image, with live draw + an on/off toggle that asks for confirmation before
   switching a socket off), and **today's solar production** with an optional forecast

@@ -408,6 +408,37 @@ export class EcoFlowEnergyCard extends LitElement {
               >`
             : ""}
       </div>
+      ${limits && (reserve != null || charge != null || discharge != null)
+        ? html`<div class="batt-flags">
+            ${reserve != null
+              ? this._flag(
+                  "reserve",
+                  "mdi:shield-home",
+                  reserve,
+                  this._t("card.reserve"),
+                  "number.backup_reserve"
+                )
+              : ""}
+            ${charge != null
+              ? this._flag(
+                  "charge",
+                  "mdi:arrow-up-bold",
+                  charge,
+                  this._t("card.charge_limit"),
+                  "number.max_charge_soc"
+                )
+              : ""}
+            ${discharge != null
+              ? this._flag(
+                  "discharge",
+                  "mdi:arrow-down-bold",
+                  discharge,
+                  this._t("card.discharge_limit"),
+                  "number.min_discharge_soc"
+                )
+              : ""}
+          </div>`
+        : ""}
       <div class="bar">
         ${discharge != null && discharge > 0
           ? html`<div class="zone floor" style="width:${discharge}%"></div>`
@@ -434,48 +465,21 @@ export class EcoFlowEnergyCard extends LitElement {
           ? html`<div class="mark reserve" style="left:${reserve}%"></div>`
           : ""}
       </div>
-      ${limits && (reserve != null || charge != null || discharge != null)
-        ? html`<div class="batt-legend">
-            ${reserve != null
-              ? this._legendItem(
-                  "reserve",
-                  "mdi:shield-home",
-                  this._t("card.reserve"),
-                  `${Math.round(reserve)}%`,
-                  "number.backup_reserve"
-                )
-              : ""}
-            ${charge != null
-              ? this._legendItem(
-                  "charge",
-                  "mdi:arrow-up-bold",
-                  this._t("card.charge_limit"),
-                  `${Math.round(charge)}%`,
-                  "number.max_charge_soc"
-                )
-              : ""}
-            ${discharge != null
-              ? this._legendItem(
-                  "discharge",
-                  "mdi:arrow-down-bold",
-                  this._t("card.discharge_limit"),
-                  `${Math.round(discharge)}%`,
-                  "number.min_discharge_soc"
-                )
-              : ""}
-          </div>`
-        : ""}
     </div>`;
   }
 
-  _legendItem(cls, icon, label, value, slot) {
+  /* A limit label floating above the bar, centred over its position (clamped so
+   * it doesn't overflow the ends), tapping through to adjust the entity. */
+  _flag(cls, icon, value, label, slot) {
+    const pos = Math.max(0, Math.min(100, value));
+    const tx = pos <= 12 ? "0" : pos >= 88 ? "-100%" : "-50%";
     return html`<span
-      class="bl clickable"
+      class="flag ${cls} clickable"
+      style="left:${pos}%;transform:translateX(${tx})"
+      title="${label} ${Math.round(value)}%"
       @click=${() => this._moreInfo(slot)}
     >
-      <span class="bl-dot ${cls}"></span>
-      <ha-icon icon=${icon}></ha-icon>${label}
-      <b>${value}</b>
+      <ha-icon icon=${icon}></ha-icon>${Math.round(value)}%
     </span>`;
   }
 
