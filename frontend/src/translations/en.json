@@ -22,6 +22,17 @@
     "ac2": "AC 2",
     "off": "Off"
   },
+  "battery": {
+    "title": "Battery",
+    "idle": "Idle",
+    "health": "Health",
+    "calendar_health": "Calendar health",
+    "temperature": "Temperature",
+    "time_to_full": "Time to full",
+    "time_to_empty": "Time to empty",
+    "capacity": "Capacity",
+    "cycles": "Cycles"
+  },
   "confirm": {
     "title": "Turn off socket?",
     "ac_off": "Turn off {name}? Anything plugged into it will lose power.",

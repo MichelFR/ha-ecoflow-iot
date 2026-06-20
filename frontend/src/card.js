@@ -19,6 +19,8 @@ import {
   mergeForecastWhHours,
 } from "./energy.js";
 import {
+  fmtDuration,
+  fmtEnergyWh,
   fmtPower,
   isEntityId,
   isTemplate,
@@ -48,7 +50,7 @@ export class EcoFlowEnergyCard extends LitElement {
 
   constructor() {
     super();
-    this._dialog = null; // null | "panels" | "today"
+    this._dialog = null; // null | "panels" | "today" | "battery"
     this._confirmAc = null; // {slot,label} awaiting turn-off confirmation
     this._todayWh = undefined; // undefined = not fetched, null = unavailable
     this._hourly = {}; // {hour: Wh} actual production for the range
@@ -328,21 +330,39 @@ export class EcoFlowEnergyCard extends LitElement {
               showForecast:
                 this._show("show_forecast") &&
                 Object.keys(this._forecasts || {}).length > 0,
-            })
+            }),
+            "large"
           )
+        : ""}
+      ${this._dialog === "battery"
+        ? this._dialogFrame(this._t("battery.title"), this._renderBatteryDetail())
         : ""}
       ${this._confirmAc ? this._renderConfirmAc() : ""}
     </ha-card>`;
   }
 
-  _dialogFrame(title, body) {
-    return html`<ha-dialog
+  /* All card dialogs use ha-adaptive-dialog: a centered dialog on desktop and a
+   * bottom sheet on mobile (HA 2026.3+). width: small | medium | large | full. */
+  _dialogFrame(title, body, width = "medium") {
+    return html`<ha-adaptive-dialog
       open
+      width=${width}
       header-title=${title}
       @closed=${() => (this._dialog = null)}
     >
       <div class="dlg-body">${body}</div>
-    </ha-dialog>`;
+    </ha-adaptive-dialog>`;
+  }
+
+  /* Resolved device image URL: explicit override, configured key, else auto. */
+  _imageSrc(device) {
+    const model = device?.device?.model;
+    return (
+      this._config.image_url ||
+      (this._config.image
+        ? imageUrlForKey(this._config.image)
+        : deviceImageUrl(model))
+    );
   }
 
   _renderHead(device) {
@@ -358,11 +378,7 @@ export class EcoFlowEnergyCard extends LitElement {
       device.device?.name ||
       model ||
       this._t("card.device");
-    const imageSrc =
-      this._config.image_url ||
-      (this._config.image
-        ? imageUrlForKey(this._config.image)
-        : deviceImageUrl(model));
+    const imageSrc = this._imageSrc(device);
 
     return html`<div class="head">
       <div class="head-left">
@@ -423,7 +439,7 @@ export class EcoFlowEnergyCard extends LitElement {
 
     return html`<div
       class="batt-circle clickable ${active}"
-      @click=${() => this._moreInfo("sensor.cms_batt_soc")}
+      @click=${() => (this._dialog = "battery")}
     >
       ${socState
         ? html`<svg class="batt-ring" viewBox="0 0 100 100">
@@ -496,6 +512,105 @@ export class EcoFlowEnergyCard extends LitElement {
     </div>`;
   }
 
+  /* Battery detail dialog: device image + SoC hero, then a grid of battery
+   * metric tiles (each opens its own more-info on tap). */
+  _renderBatteryDetail() {
+    const device = this._device;
+    const imageSrc = this._show("show_image") && this._imageSrc(device);
+    const name = device?.device?.name || device?.device?.model || this._t("card.device");
+    const soc = numState(this._state("sensor.cms_batt_soc"));
+    const batPower = numState(this._state("sensor.bat_power"));
+    const charging =
+      this._state("binary_sensor.battery_charging")?.state === "on" ||
+      (batPower != null && batPower > 1);
+    const discharging = !charging && batPower != null && batPower < -1;
+    const active = charging ? "charge" : discharging ? "discharge" : "";
+    const statusIcon = charging
+      ? "mdi:flash"
+      : discharging
+        ? "mdi:battery-arrow-down"
+        : "mdi:battery";
+    const statusLabel = charging
+      ? this._t("card.charging")
+      : discharging
+        ? this._t("card.discharging")
+        : this._t("battery.idle");
+    const speed =
+      (charging || discharging) && batPower != null
+        ? fmtPower(Math.abs(batPower))
+        : null;
+
+    const tiles = [
+      { slot: "sensor.soh", icon: "mdi:heart-pulse", label: this._t("battery.health") },
+      { slot: "sensor.calendar_soh", icon: "mdi:calendar-heart", label: this._t("battery.calendar_health") },
+      { slot: "sensor.bat_temp", icon: "mdi:thermometer", label: this._t("battery.temperature") },
+      ...(charging
+        ? [{ slot: "sensor.chg_rem_time", icon: "mdi:battery-clock", label: this._t("battery.time_to_full") }]
+        : []),
+      ...(discharging
+        ? [{ slot: "sensor.dsg_rem_time", icon: "mdi:battery-clock", label: this._t("battery.time_to_empty") }]
+        : []),
+      { slot: "sensor.full_energy", icon: "mdi:battery-high", label: this._t("battery.capacity") },
+      { slot: "sensor.cycles", icon: "mdi:battery-sync", label: this._t("battery.cycles") },
+    ]
+      .map((t) => ({ ...t, value: this._battTileValue(t.slot) }))
+      .filter((t) => t.value != null);
+
+    return html`<div class="batt-detail">
+      <div class="batt-hero">
+        ${imageSrc
+          ? html`<picture
+              >${webpVariant(imageSrc)
+                ? html`<source srcset=${webpVariant(imageSrc)} type="image/webp" />`
+                : ""}<img class="batt-hero-img" src=${imageSrc} alt=${name}
+            /></picture>`
+          : html`<ha-icon class="batt-hero-img" icon="mdi:home-battery"></ha-icon>`}
+        <div class="batt-hero-info">
+          <span class="batt-hero-pct"
+            >${soc != null ? Math.round(soc) : "–"}<span class="batt-hero-u">%</span></span
+          >
+          <span class="batt-hero-status ${active}">
+            <ha-icon icon=${statusIcon}></ha-icon>${statusLabel}${speed
+              ? ` · ${speed}`
+              : ""}
+          </span>
+        </div>
+      </div>
+      ${tiles.length
+        ? html`<div class="batt-grid">
+            ${tiles.map((t) => {
+              const id = this._entityId(t.slot);
+              return html`<div
+                class="batt-tile ${id ? "clickable" : ""}"
+                @click=${id ? () => this._moreInfoId(id) : null}
+              >
+                <ha-icon icon=${t.icon}></ha-icon>
+                <div class="batt-tile-text">
+                  <span class="batt-tile-val">${t.value}</span>
+                  <span class="batt-tile-label">${t.label}</span>
+                </div>
+              </div>`;
+            })}
+          </div>`
+        : ""}
+    </div>`;
+  }
+
+  /* A battery metric formatted for a tile, using the entity's unit, or null. */
+  _battTileValue(slot) {
+    const st = this._state(slot);
+    const v = numState(st);
+    if (v == null) return null;
+    const unit = st.attributes?.unit_of_measurement || "";
+    if (unit === "W") return fmtPower(v);
+    if (unit === "Wh") return fmtEnergyWh(v);
+    if (unit === "kWh") return fmtEnergyWh(v * 1000);
+    if (unit === "min") return fmtDuration(v);
+    if (unit === "%") return `${Math.round(v)}%`;
+    if (unit) return `${Math.round(v)} ${unit}`;
+    return String(Math.round(v));
+  }
+
   _renderAc() {
     const sockets = [
       { sw: "switch.ac1", pw: "sensor.schuko1_power", label: this._t("card.ac1") },
@@ -557,8 +672,9 @@ export class EcoFlowEnergyCard extends LitElement {
   _renderConfirmAc() {
     const { label } = this._confirmAc;
     const close = () => (this._confirmAc = null);
-    return html`<ha-dialog
+    return html`<ha-adaptive-dialog
       open
+      width="small"
       header-title=${this._t("confirm.title")}
       @closed=${close}
     >
@@ -584,7 +700,7 @@ export class EcoFlowEnergyCard extends LitElement {
           </button>
         </div>
       </div>
-    </ha-dialog>`;
+    </ha-adaptive-dialog>`;
   }
 
   /* A value as a large number + a smaller muted unit, used uniformly. */

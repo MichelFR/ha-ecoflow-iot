@@ -392,6 +392,105 @@ export const cardStyles = css`
   .dlg-body {
     padding: 4px 4px 8px;
   }
+
+  /* battery detail dialog */
+  .batt-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 4px 2px 6px;
+  }
+  .batt-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  img.batt-hero-img {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+  }
+  ha-icon.batt-hero-img {
+    --mdc-icon-size: 72px;
+    color: var(--secondary-text-color);
+  }
+  .batt-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .batt-hero-pct {
+    font-size: 2.6em;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--primary-text-color);
+  }
+  .batt-hero-u {
+    font-size: 0.45em;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+    margin-left: 2px;
+  }
+  .batt-hero-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+  }
+  .batt-hero-status ha-icon {
+    --mdc-icon-size: 18px;
+  }
+  .batt-hero-status.charge {
+    color: var(--state-sensor-battery-high-color, #43a047);
+  }
+  .batt-hero-status.discharge {
+    color: var(--info-color, #2196f3);
+  }
+  .batt-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .batt-tile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--secondary-background-color);
+  }
+  .batt-tile.clickable {
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+  .batt-tile.clickable:hover {
+    filter: brightness(1.06);
+  }
+  .batt-tile > ha-icon {
+    --mdc-icon-size: 22px;
+    color: var(--primary-color);
+    flex: 0 0 auto;
+  }
+  .batt-tile-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .batt-tile-val {
+    font-size: 1.05em;
+    font-weight: 700;
+    color: var(--primary-text-color);
+    white-space: nowrap;
+  }
+  .batt-tile-label {
+    font-size: 0.8em;
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .confirm-body {
     padding: 4px 4px 0;
   }

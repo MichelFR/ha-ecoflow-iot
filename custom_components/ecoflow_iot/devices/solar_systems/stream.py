@@ -136,6 +136,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="bms_batt_soc",
+        translation_key="bms_batt_soc",
         mqtt_key="bmsBattSoc",
         name="Battery (BMS)",
         device_class=SensorDeviceClass.BATTERY,
@@ -147,6 +148,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="soh",
         mqtt_key="cmsBattSoh",
+        translation_key="soh",
         name="Battery health",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -155,6 +157,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="bat_vol",
+        translation_key="bat_vol",
         mqtt_key="vol",
         name="Battery voltage",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -165,6 +168,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="bat_amp",
+        translation_key="bat_amp",
         mqtt_key="amp",
         name="Battery current",
         device_class=SensorDeviceClass.CURRENT,
@@ -176,6 +180,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bat_temp",
         mqtt_key="temp",
+        translation_key="bat_temp",
         name="Battery temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -184,6 +189,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="full_energy",
         mqtt_key="cmsBattFullEnergy",
+        translation_key="full_energy",
         name="Battery capacity",
         device_class=SensorDeviceClass.ENERGY_STORAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -193,6 +199,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="cycles",
         mqtt_key="cycles",
+        translation_key="cycles",
         name="Battery cycles",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -200,6 +207,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="chg_rem_time",
         mqtt_key="cmsChgRemTime",
+        translation_key="chg_rem_time",
         name="Time to full",
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
@@ -208,6 +216,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="dsg_rem_time",
         mqtt_key="cmsDsgRemTime",
+        translation_key="dsg_rem_time",
         name="Time to empty",
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
@@ -220,6 +229,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     # the powGetBpCms-derived charge/discharge energy below.
     EcoFlowSensorEntityDescription(
         key="accu_chg_energy",
+        translation_key="accu_chg_energy",
         mqtt_key="accuChgEnergy",
         name="Total charged",
         device_class=SensorDeviceClass.ENERGY,
@@ -229,6 +239,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="accu_dsg_energy",
+        translation_key="accu_dsg_energy",
         mqtt_key="accuDsgEnergy",
         name="Total discharged",
         device_class=SensorDeviceClass.ENERGY,
@@ -241,6 +252,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="calendar_soh",
         mqtt_key="calendarSoh",
+        translation_key="calendar_soh",
         name="Battery calendar health",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -251,6 +263,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="cell_vol_delta",
+        translation_key="cell_vol_delta",
         mqtt_key="maxVolDiff",
         name="Cell voltage delta",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -263,6 +276,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="mos_temp",
+        translation_key="mos_temp",
         mqtt_key="maxMosTemp",
         name="MOSFET temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -274,6 +288,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="max_cell_temp",
+        translation_key="max_cell_temp",
         mqtt_key="maxCellTemp",
         name="Battery max cell temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -286,6 +301,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="min_cell_temp",
+        translation_key="min_cell_temp",
         mqtt_key="minCellTemp",
         name="Battery min cell temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -311,6 +327,7 @@ _POWERFLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="sys_load",
+        translation_key="sys_load",
         mqtt_key="powGetSysLoad",
         name="Load power",
         device_class=SensorDeviceClass.POWER,
@@ -320,6 +337,7 @@ _POWERFLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="load_from_bat",
+        translation_key="load_from_bat",
         mqtt_key="powGetSysLoadFromBp",
         name="Load from battery",
         device_class=SensorDeviceClass.POWER,
@@ -330,6 +348,7 @@ _POWERFLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="load_from_grid",
+        translation_key="load_from_grid",
         mqtt_key="powGetSysLoadFromGrid",
         name="Load from grid",
         device_class=SensorDeviceClass.POWER,
@@ -340,6 +359,7 @@ _POWERFLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="load_from_pv",
+        translation_key="load_from_pv",
         mqtt_key="powGetSysLoadFromPv",
         name="Load from solar",
         device_class=SensorDeviceClass.POWER,
@@ -366,6 +386,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="sys_grid_power",
+        translation_key="sys_grid_power",
         mqtt_key="sysGridConnectionPower",
         name="System grid power",
         device_class=SensorDeviceClass.POWER,
@@ -376,6 +397,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="grid_voltage",
+        translation_key="grid_voltage",
         mqtt_key="gridConnectionVol",
         name="Grid voltage",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -386,6 +408,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="grid_freq",
+        translation_key="grid_freq",
         mqtt_key="gridConnectionFreq",
         name="Grid frequency",
         device_class=SensorDeviceClass.FREQUENCY,
@@ -396,6 +419,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="inv_temp",
+        translation_key="inv_temp",
         mqtt_key="invNtcTemp3",
         name="Inverter temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -408,6 +432,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="ac_total_power",
+        translation_key="ac_total_power",
         mqtt_key="acTotalActivePower",
         name="Total AC power",
         device_class=SensorDeviceClass.POWER,
@@ -419,6 +444,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="grid_connection_status",
+        translation_key="grid_connection_status",
         mqtt_key="gridConnectionSta",
         name="Grid connection status",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -427,6 +453,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="meter_phase_a",
+        translation_key="meter_phase_a",
         mqtt_key="cloudMetter.phaseAPower",
         name="Meter phase A power",
         device_class=SensorDeviceClass.POWER,
@@ -484,6 +511,7 @@ def _battery_discharge_power(quota: Mapping[str, Any]) -> float | None:
 _BATTERY_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
     EcoFlowIntegralSensorEntityDescription(
         key="battery_charge_energy",
+        translation_key="battery_charge_energy",
         name="Battery charge energy",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -494,6 +522,7 @@ _BATTERY_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
     ),
     EcoFlowIntegralSensorEntityDescription(
         key="battery_discharge_energy",
+        translation_key="battery_discharge_energy",
         name="Battery discharge energy",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -519,6 +548,7 @@ _ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
     ),
     EcoFlowIntegralSensorEntityDescription(
         key="grid_import_energy",
+        translation_key="grid_import_energy",
         name="Grid import energy",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -530,6 +560,7 @@ _ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
     ),
     EcoFlowIntegralSensorEntityDescription(
         key="grid_export_energy",
+        translation_key="grid_export_energy",
         name="Grid export energy",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -565,6 +596,7 @@ def _pv_string_sensors(count: int) -> tuple[EcoFlowSensorEntityDescription, ...]
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"pv{i}_voltage",
+                translation_key=f"pv{i}_voltage",
                 mqtt_key=vol_key,
                 name=f"Solar string {i} voltage",
                 device_class=SensorDeviceClass.VOLTAGE,
@@ -578,6 +610,7 @@ def _pv_string_sensors(count: int) -> tuple[EcoFlowSensorEntityDescription, ...]
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"pv{i}_current",
+                translation_key=f"pv{i}_current",
                 mqtt_key=amp_key,
                 name=f"Solar string {i} current",
                 device_class=SensorDeviceClass.CURRENT,
@@ -630,6 +663,7 @@ def _socket_power(key: str):
 _AC_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
     EcoFlowIntegralSensorEntityDescription(
         key="schuko1_energy",
+        translation_key="schuko1_energy",
         name="AC socket 1 energy",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -640,6 +674,7 @@ _AC_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
     ),
     EcoFlowIntegralSensorEntityDescription(
         key="schuko2_energy",
+        translation_key="schuko2_energy",
         name="AC socket 2 energy",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -653,6 +688,7 @@ _AC_ENERGY_SENSORS: tuple[EcoFlowIntegralSensorEntityDescription, ...] = (
 _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="wifi_rssi",
+        translation_key="wifi_rssi",
         mqtt_key="moduleWifiRssi",
         name="Wi-Fi signal",
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
@@ -663,6 +699,7 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     ),
     EcoFlowSensorEntityDescription(
         key="feed_grid_limit",
+        translation_key="feed_grid_limit",
         mqtt_key="feedGridModePowLimit",
         name="Feed-in power limit",
         device_class=SensorDeviceClass.POWER,
@@ -716,6 +753,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     ),
     EcoFlowBinarySensorEntityDescription(
         key="batt_heating",
+        translation_key="batt_heating",
         mqtt_key="bmsBattHeating",
         name="Battery heater",
         device_class=BinarySensorDeviceClass.HEAT,
@@ -723,6 +761,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     ),
     EcoFlowBinarySensorEntityDescription(
         key="has_meter",
+        translation_key="has_meter",
         mqtt_key="cloudMetter.hasMeter",
         name="Smart meter connected",
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
@@ -730,6 +769,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     ),
     EcoFlowBinarySensorEntityDescription(
         key="storm_guard",
+        translation_key="storm_guard",
         mqtt_key="stormPatternEnable",
         name="Storm guard",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -739,6 +779,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     ),
     EcoFlowBinarySensorEntityDescription(
         key="off_grid",
+        translation_key="off_grid",
         mqtt_key="sysOffgrid",
         name="Off-grid mode",
         # On while islanded (running on battery during a grid outage).
@@ -748,6 +789,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     ),
     EcoFlowBinarySensorEntityDescription(
         key="water_ingress",
+        translation_key="water_ingress",
         mqtt_key="waterInFlag",
         name="Water ingress",
         device_class=BinarySensorDeviceClass.PROBLEM,
@@ -758,6 +800,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     ),
     EcoFlowBinarySensorEntityDescription(
         key="problem",
+        translation_key="problem",
         name="Problem",
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -776,6 +819,7 @@ def _pv_flag_binary_sensors(count: int) -> tuple[EcoFlowBinarySensorEntityDescri
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"pv{i}_connected",
+                translation_key=f"pv{i}_connected",
                 mqtt_key=key,
                 name=f"Solar string {i} connected",
                 device_class=BinarySensorDeviceClass.CONNECTIVITY,
@@ -807,6 +851,7 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     ),
     EcoFlowSwitchEntityDescription(
         key="self_powered",
+        translation_key="self_powered",
         mqtt_key="energyStrategyOperateMode.operateSelfPoweredOpen",
         name="Self-powered mode",
         value_fn=bool,
@@ -816,6 +861,7 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     ),
     EcoFlowSwitchEntityDescription(
         key="feed_in",
+        translation_key="feed_in",
         mqtt_key="feedGridMode",
         name="Grid feed-in",
         # EcoFlow's doc claims feedGridMode is "1-off, 2-on", but real Stream
@@ -870,6 +916,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
     ),
     EcoFlowNumberEntityDescription(
         key="feed_in_limit",
+        translation_key="feed_in_limit",
         mqtt_key="feedGridModePowLimit",
         name="Feed-in power limit",
         device_class=NumberDeviceClass.POWER,
@@ -890,6 +937,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
 _LIGHTS: tuple[EcoFlowLightEntityDescription, ...] = (
     EcoFlowLightEntityDescription(
         key="led",
+        translation_key="led",
         mqtt_key="brightness",
         name="LED",
         command_fn=lambda pct, _q: {"cfgBrightness": int(pct)},
@@ -981,6 +1029,8 @@ def _base_load_numbers(quota: Mapping[str, Any]) -> list[EcoFlowNumberEntityDesc
         descs.append(
             EcoFlowNumberEntityDescription(
                 key=f"base_load_{start}_{end}",
+                translation_key="base_load",
+                translation_placeholders={"window": window},
                 name=f"Base load {window}",
                 device_class=NumberDeviceClass.POWER,
                 native_unit_of_measurement=UnitOfPower.WATT,

@@ -1,0 +1,126 @@
+{
+  "card": {
+    "no_device": "Kein EcoFlow Stream-Gerät gefunden. Richten Sie zuerst die EcoFlow IoT-Integration ein.",
+    "device": "EcoFlow Stream",
+    "solar": "Solar",
+    "grid": "Netz",
+    "grid_import": "Bezug",
+    "grid_export": "Einspeisung",
+    "grid_idle": "Netz inaktiv",
+    "battery": "Batterie",
+    "charging": "Lädt",
+    "discharging": "Entlädt",
+    "today": "Solar heute",
+    "produced": "erzeugt",
+    "forecast": "Prognose",
+    "of_forecast": "{pct}% der Prognose",
+    "exceeded": "Prognose erreicht",
+    "reserve": "Reserve",
+    "charge_limit": "Laden ≤",
+    "discharge_limit": "Entladen ≥",
+    "ac1": "AC 1",
+    "ac2": "AC 2",
+    "off": "Aus"
+  },
+  "battery": {
+    "title": "Batterie",
+    "idle": "Inaktiv",
+    "health": "Zustand",
+    "calendar_health": "Kalenderzustand",
+    "temperature": "Temperatur",
+    "time_to_full": "Zeit bis voll",
+    "time_to_empty": "Zeit bis leer",
+    "capacity": "Kapazität",
+    "cycles": "Zyklen"
+  },
+  "confirm": {
+    "title": "Steckdose ausschalten?",
+    "ac_off": "{name} ausschalten? Alles, was daran angeschlossen ist, verliert die Stromversorgung.",
+    "cancel": "Abbrechen",
+    "turn_off": "Ausschalten"
+  },
+  "panels": {
+    "title": "Solarmodule",
+    "panel": "Modul {n}",
+    "total": "Gesamt",
+    "none": "Für dieses Gerät sind keine Daten je Solarmodul verfügbar."
+  },
+  "editor": {
+    "device": "EcoFlow-Gerät",
+    "automatic": "Automatisch",
+    "image": "Gerätebild",
+    "entity": "Entität",
+    "value_template": "Wert / Vorlage",
+    "mode_auto": "Auto",
+    "mode_entity": "Entität",
+    "mode_custom": "Benutzerdefiniert",
+    "auto_value": "Automatisch erkannt: {value}",
+    "not_found": "nicht gefunden",
+    "overridden": "{n} überschrieben",
+    "shown": "Angezeigt",
+    "nothing_shown": "Nichts angezeigt",
+    "panel": "Modul {n}",
+    "panel_name": "Modulname",
+    "panel_entity": "Leistungssensor",
+    "panel_hidden": "Auf der Karte ausgeblendet.",
+    "panels_hint": "Benennen Sie ein Modul um, weisen Sie ihm einen anderen Sensor zu oder blenden Sie es aus der Aufschlüsselung aus. Mit dem Schalter zeigen oder verbergen Sie jedes Modul.",
+    "panels_count": "{n} Module",
+    "panels_hidden": "{n} ausgeblendet",
+    "loading": "Lädt…",
+    "forecast_hint": "Wählen Sie, welche Solarprognose-Anbieter verwendet werden — dieselben, die im Energie-Dashboard von Home Assistant eingerichtet sind (Einstellungen → Dashboards → Energie → Solarmodule).",
+    "forecast_none": "Keine Solarprognose konfiguriert. Fügen Sie unter Einstellungen → Dashboards → Energie → Solarmodule eine Prognose hinzu, dann erscheint sie hier.",
+    "forecast_none_short": "Nicht konfiguriert",
+    "forecast_selected": "{n} von {total} Anbietern",
+    "none": "Nicht festgelegt",
+    "collection_key": "Energie-Sammlungsschlüssel",
+    "collection_hint": "Optional. Um einem in einer Energie-Zeitraumauswahl-Karte gewählten Datum zu folgen (Energie-Datumsauswahl), geben Sie hier denselben Sammlungsschlüssel ein wie auf jener Karte — er beginnt mit „energy_“; verwenden Sie „energy“ für eine Auswahl, die auf ihrem Standardschlüssel belassen wurde. Leer lassen, um immer heute anzuzeigen."
+  },
+  "page": {
+    "appearance": "Darstellung",
+    "entities": "Entitäten",
+    "panels": "Solarmodule",
+    "forecast": "Solarprognose",
+    "advanced": "Erweitert"
+  },
+  "toggle": {
+    "show_image": "Gerätebild anzeigen",
+    "show_today": "Heutige Erzeugung anzeigen",
+    "show_grid": "Netzleistung anzeigen",
+    "show_ac": "AC-Steckdosen anzeigen",
+    "show_panels": "Für Aufschlüsselung je Modul auf Solarleistung tippen",
+    "show_forecast": "Heutige Erzeugung mit der Prognose vergleichen"
+  },
+  "short": {
+    "show_image": "Bild",
+    "show_today": "Heute",
+    "show_grid": "Netz",
+    "show_ac": "AC-Steckdosen",
+    "show_panels": "Module",
+    "show_forecast": "Prognose"
+  },
+  "slot": {
+    "sensor": {
+      "cms_batt_soc": "Batteriestand",
+      "bat_power": "Batterieleistung (Lade-/Entladegeschwindigkeit)",
+      "pv_total": "Solarleistung",
+      "grid_power": "Netzleistung",
+      "solar_energy": "Solarenergie (Quelle für Tagessumme)",
+      "pv1_power": "Solarmodul 1",
+      "pv2_power": "Solarmodul 2",
+      "pv3_power": "Solarmodul 3",
+      "pv4_power": "Solarmodul 4",
+      "schuko1_power": "AC-Steckdose 1 Leistung",
+      "schuko2_power": "AC-Steckdose 2 Leistung",
+      "forecast_today": "Prognose-Entität (erwartete Erzeugung heute)"
+    },
+    "number": {
+      "max_charge_soc": "Ladelimit",
+      "min_discharge_soc": "Entladelimit",
+      "backup_reserve": "Notstromreserve"
+    },
+    "switch": {
+      "ac1": "AC-Steckdose 1",
+      "ac2": "AC-Steckdose 2"
+    }
+  }
+}

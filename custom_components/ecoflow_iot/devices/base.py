@@ -69,6 +69,9 @@ class _EcoFlowDescription:
     # documented API; may change or stop working after a firmware/app update.
     # Surfaced with a ⚠️ flag and a warning in the generated device docs.
     undocumented: bool = False
+    # Placeholder values for a translated entity name (e.g. the time window of a
+    # dynamic base-load period); applied as _attr_translation_placeholders.
+    translation_placeholders: Mapping[str, str] | None = None
     # When set, the entity derives its value from the signed grid-power field
     # ``mqtt_key`` (normalised via the ``invert_grid_sign`` option) per the role.
     grid_role: GridRole | None = None

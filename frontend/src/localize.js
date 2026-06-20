@@ -3,8 +3,9 @@
  * translations/<lang>.json and registering it here. */
 
 import en from "./translations/en.json";
+import de from "./translations/de.json";
 
-const TRANSLATIONS = { en };
+const TRANSLATIONS = { en, de };
 
 export function language(hass) {
   return (hass?.locale?.language || hass?.language || "en").split("-")[0];

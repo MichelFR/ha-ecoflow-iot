@@ -1,0 +1,173 @@
+{
+  "issues": {
+    "unsupported_device": {
+      "title": "Nicht unterstütztes EcoFlow-Gerät ({prefix})",
+      "description": "Ein EcoFlow-Gerät mit dem Seriennummern-Präfix `{prefix}` ist mit Ihrem Konto verknüpft, wird von dieser Integration aber noch nicht unterstützt, daher wurden keine Entitäten dafür erstellt. Aus Datenschutzgründen wird nur das Präfix angezeigt. Bitte erstellen Sie ein Issue im GitHub-Repository des Projekts und geben Sie dieses Präfix an, damit Unterstützung hinzugefügt werden kann."
+    }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "title": "EcoFlow IoT",
+        "description": "Geben Sie den Access Key und Secret Key aus dem EcoFlow-Entwicklerportal (developer.ecoflow.com → Security) ein.",
+        "data": {
+          "region": "Region",
+          "access_key": "Access Key",
+          "secret_key": "Secret Key"
+        }
+      },
+      "reauth_confirm": {
+        "title": "EcoFlow IoT erneut authentifizieren",
+        "description": "Ihre EcoFlow-API-Zugangsdaten sind nicht mehr gültig. Geben Sie aktualisierte Schlüssel ein.",
+        "data": {
+          "region": "Region",
+          "access_key": "Access Key",
+          "secret_key": "Secret Key"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ungültiger Access Key oder Secret Key.",
+      "cannot_connect": "Verbindung zur EcoFlow-API fehlgeschlagen.",
+      "unknown": "Unerwarteter Fehler."
+    },
+    "abort": {
+      "already_configured": "Diese Zugangsdaten sind bereits konfiguriert.",
+      "reauth_successful": "Die erneute Authentifizierung war erfolgreich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "EcoFlow IoT Optionen",
+        "data": {
+          "enable_mqtt": "MQTT für Live-Daten verwenden",
+          "poll_interval": "HTTP-Abrufintervall (Sekunden)",
+          "mqtt_stale_seconds": "MQTT-Veralterungsschwelle (Sekunden)",
+          "invert_grid_sign": "Vorzeichen der Stream-Netzleistung umkehren",
+          "reset_grid_energy": "Netz-Import/Export-Energiezähler & Verlauf zurücksetzen"
+        },
+        "data_description": {
+          "poll_interval": "Wie oft die HTTP-API abgefragt wird (Fallback, wenn MQTT nicht verfügbar ist, sowie der Takt zum Aktualisieren reiner HTTP-Werte).",
+          "mqtt_stale_seconds": "Trifft innerhalb dieses Zeitfensters keine MQTT-Nachricht ein, fragt die Integration die HTTP-API ab.",
+          "invert_grid_sign": "Manche Stream-Geräte melden die Netzleistung mit umgekehrtem Vorzeichen — sie zeigen ins Netz eingespeiste Leistung als positiv statt negativ an, also entgegengesetzt zur Konvention von Home Assistant. Das hängt von Modell und Firmware ab und lässt sich nicht automatisch erkennen. Lassen Sie diese Option aktiviert (Standard), wird das Vorzeichen korrigiert: Die Netzleistung ist beim Einspeisen negativ, und die Sensoren für Netzbezug/-einspeisung zählen in die richtige Richtung. Deaktivieren Sie sie nur, wenn Ihr Gerät bereits der Konvention von Home Assistant entspricht — d. h. beim Einspeisen ins Netz zeigt die Netzleistung bereits negativ an (Bezug positiv, Einspeisung negativ). Wenn Sie diese Einstellung ändern, aktivieren Sie unten auch „Netz-Import/Export-Energiezähler zurücksetzen“ — die bestehenden Werte wurden in die falsche Richtung aufgebaut und korrigieren sich nicht von selbst.",
+          "reset_grid_energy": "Einmalige Aktion: Aktivieren und speichern Sie dies, um die Sensoren für Netzbezugs- und Netzeinspeise-Energie vollständig zurückzusetzen. Es setzt die Live-Zähler auf null und löscht deren aufgezeichneten Verlauf sowie die Statistiken des Energie-Dashboards, sodass die alten Daten mit falscher Richtung verschwinden und bei null neu beginnen. Empfohlen nach dem Ändern der Vorzeichen-Einstellung oben. Für den normalen Betrieb deaktiviert lassen."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "name": "Verbindung",
+        "state": {
+          "connected": "Verbunden",
+          "connecting": "Verbinde…",
+          "disconnected": "Getrennt"
+        }
+      },
+      "data_source": {
+        "name": "Datenquelle",
+        "state": {
+          "mqtt": "MQTT",
+          "http": "HTTP",
+          "unknown": "Unbekannt"
+        }
+      },
+      "cms_batt_soc": { "name": "Batterie" },
+      "bat_power": { "name": "Batterieleistung" },
+      "pv_total": { "name": "Solarleistung" },
+      "grid_power": { "name": "Netzleistung" },
+      "solar_energy": { "name": "Solarenergie" },
+      "pv1_power": { "name": "Solarstrang 1 Leistung" },
+      "pv2_power": { "name": "Solarstrang 2 Leistung" },
+      "pv3_power": { "name": "Solarstrang 3 Leistung" },
+      "pv4_power": { "name": "Solarstrang 4 Leistung" },
+      "schuko1_power": { "name": "AC-Steckdose 1 Leistung" },
+      "schuko2_power": { "name": "AC-Steckdose 2 Leistung" },
+      "soh": { "name": "Batteriezustand" },
+      "bat_temp": { "name": "Batterietemperatur" },
+      "chg_rem_time": { "name": "Zeit bis voll" },
+      "dsg_rem_time": { "name": "Zeit bis leer" },
+      "full_energy": { "name": "Batteriekapazität" },
+      "cycles": { "name": "Ladezyklen" },
+      "bms_batt_soc": { "name": "Batterie (BMS)" },
+      "bat_vol": { "name": "Batteriespannung" },
+      "bat_amp": { "name": "Batteriestrom" },
+      "accu_chg_energy": { "name": "Gesamt geladen" },
+      "accu_dsg_energy": { "name": "Gesamt entladen" },
+      "cell_vol_delta": { "name": "Zellspannungsdifferenz" },
+      "mos_temp": { "name": "MOSFET-Temperatur" },
+      "max_cell_temp": { "name": "Max. Zelltemperatur" },
+      "min_cell_temp": { "name": "Min. Zelltemperatur" },
+      "sys_load": { "name": "Lastleistung" },
+      "load_from_bat": { "name": "Last aus Batterie" },
+      "load_from_grid": { "name": "Last aus Netz" },
+      "load_from_pv": { "name": "Last aus Solar" },
+      "sys_grid_power": { "name": "System-Netzleistung" },
+      "grid_voltage": { "name": "Netzspannung" },
+      "grid_freq": { "name": "Netzfrequenz" },
+      "inv_temp": { "name": "Wechselrichter-Temperatur" },
+      "ac_total_power": { "name": "AC-Gesamtleistung" },
+      "grid_connection_status": { "name": "Netzanschluss-Status" },
+      "meter_phase_a": { "name": "Zähler Phase A Leistung" },
+      "pv1_voltage": { "name": "Solarstrang 1 Spannung" },
+      "pv2_voltage": { "name": "Solarstrang 2 Spannung" },
+      "pv3_voltage": { "name": "Solarstrang 3 Spannung" },
+      "pv4_voltage": { "name": "Solarstrang 4 Spannung" },
+      "pv1_current": { "name": "Solarstrang 1 Strom" },
+      "pv2_current": { "name": "Solarstrang 2 Strom" },
+      "pv3_current": { "name": "Solarstrang 3 Strom" },
+      "pv4_current": { "name": "Solarstrang 4 Strom" },
+      "grid_import_energy": { "name": "Netzbezug Energie" },
+      "grid_export_energy": { "name": "Netzeinspeisung Energie" },
+      "battery_charge_energy": { "name": "Batterie-Ladeenergie" },
+      "battery_discharge_energy": { "name": "Batterie-Entladeenergie" },
+      "schuko1_energy": { "name": "AC-Steckdose 1 Energie" },
+      "schuko2_energy": { "name": "AC-Steckdose 2 Energie" },
+      "wifi_rssi": { "name": "WLAN-Signal" },
+      "feed_grid_limit": { "name": "Einspeise-Leistungslimit" },
+      "calendar_soh": { "name": "Kalendarischer Batteriezustand" }
+    },
+    "binary_sensor": {
+      "batt_heating": { "name": "Batterieheizung" },
+      "has_meter": { "name": "Smart Meter verbunden" },
+      "storm_guard": { "name": "Sturmschutz" },
+      "off_grid": { "name": "Inselbetrieb" },
+      "water_ingress": { "name": "Wassereintritt" },
+      "problem": { "name": "Problem" },
+      "pv1_connected": { "name": "Solarstrang 1 verbunden" },
+      "pv2_connected": { "name": "Solarstrang 2 verbunden" },
+      "pv3_connected": { "name": "Solarstrang 3 verbunden" },
+      "pv4_connected": { "name": "Solarstrang 4 verbunden" },
+      "battery_charging": { "name": "Batterie lädt" }
+    },
+    "number": {
+      "max_charge_soc": { "name": "Ladelimit" },
+      "min_discharge_soc": { "name": "Entladelimit" },
+      "feed_in_limit": { "name": "Einspeise-Leistungslimit" },
+      "base_load": { "name": "Grundlast {window}" },
+      "backup_reserve": { "name": "Notstromreserve" }
+    },
+    "switch": {
+      "ac1": { "name": "AC-Steckdose 1" },
+      "self_powered": { "name": "Eigenversorgungsmodus" },
+      "feed_in": { "name": "Netzeinspeisung" },
+      "ac2": { "name": "AC-Steckdose 2" }
+    },
+    "light": {
+      "led": { "name": "LED" }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Betriebsmodus",
+        "state": {
+          "self_powered": "Eigenversorgung",
+          "scheduled": "Geplant",
+          "time_of_use": "Nutzungszeit",
+          "intelligent": "Intelligent"
+        }
+      }
+    }
+  }
+}

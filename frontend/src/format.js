@@ -44,6 +44,21 @@ export function fmtEnergyWh(wh, digits = 1) {
   return `${Math.round(wh)} Wh`;
 }
 
+/* Minutes -> compact duration string ("45 min", "2 h 10 min", "3 d 4 h"). */
+export function fmtDuration(min) {
+  if (min == null || !Number.isFinite(min)) return null;
+  const total = Math.round(min);
+  if (total < 60) return `${total} min`;
+  const hours = Math.floor(total / 60);
+  if (hours < 24) {
+    const m = total % 60;
+    return m ? `${hours} h ${m} min` : `${hours} h`;
+  }
+  const days = Math.floor(hours / 24);
+  const h = hours % 24;
+  return h ? `${days} d ${h} h` : `${days} d`;
+}
+
 /* A state value normalised to kWh (handles Wh / kWh / MWh units). */
 export function stateToKWh(state) {
   const v = Number(state?.state);

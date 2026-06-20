@@ -34,6 +34,10 @@ class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
         self._sn = sn
         self.entity_description = description  # type: ignore[assignment]
         self._attr_unique_id = f"{sn}_{description.key}"
+        if description.translation_placeholders is not None:
+            self._attr_translation_placeholders = dict(
+                description.translation_placeholders
+            )
         device = coordinator.devices[sn]
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, sn)},
