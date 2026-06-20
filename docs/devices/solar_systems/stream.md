@@ -25,6 +25,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Time to empty | duration | min | `cmsDsgRemTime` | 🔧 |
 | Total charged | energy | Wh | `accuChgEnergy` | 💤 |
 | Total discharged | energy | Wh | `accuDsgEnergy` | 💤 |
+| Battery calendar health | — | % | `calendarSoh` | 🔧 |
+| Cell voltage delta | voltage | mV | `maxVolDiff` | 🔧 💤 |
+| MOSFET temperature | temperature | °C | `maxMosTemp` | 🔧 |
 | Battery charge energy | energy | Wh | _integrated_ |  |
 | Battery discharge energy | energy | Wh | _integrated_ |  |
 | Battery power | power | W | `powGetBpCms` |  |
@@ -37,6 +40,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Grid voltage | voltage | V | `gridConnectionVol` | 🔧 |
 | Grid frequency | frequency | Hz | `gridConnectionFreq` | 🔧 |
 | Inverter temperature | temperature | °C | `invNtcTemp3` | 🔧 |
+| Total AC power | power | W | `acTotalActivePower` |  |
+| Grid connection status | — | — | `gridConnectionSta` | 🔧 |
 | Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 |
 | Solar power | power | W | `powGetPvSum` |  |
 | Solar string 1 power | power | W | _computed_ |  |
@@ -69,6 +74,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery heater | heat | `bmsBattHeating` | 🔧 |
 | Smart meter connected | connectivity | `cloudMetter.hasMeter` | 🔧 |
 | Storm guard | — | `stormPatternEnable` | 🔧 |
+| Off-grid mode | — | `sysOffgrid` |  |
+| Water ingress | problem | `waterInFlag` | 🔧 |
+| Problem | problem | _computed_ | 🔧 |
 | Solar string 1 connected | connectivity | `plugInInfoPvFlag` | 🔧 💤 |
 | Solar string 2 connected | connectivity | `plugInInfoPv2Flag` | 🔧 💤 |
 | Solar string 3 connected | connectivity | `plugInInfoPv3Flag` | 🔧 💤 |
@@ -100,4 +108,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 64 — 47 sensor, 8 binary_sensor, 4 switch, 4 number, 1 select._
+_Entity totals: 72 — 52 sensor, 11 binary_sensor, 4 switch, 4 number, 1 select._

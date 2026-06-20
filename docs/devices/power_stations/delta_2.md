@@ -58,8 +58,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery output power | power | W | `bms_bmsStatus.outputWatts` |  |
 | Battery max cell temperature | temperature | °C | `bms_bmsStatus.maxCellTemp` | 🔧 💤 |
 | Battery min cell temperature | temperature | °C | `bms_bmsStatus.minCellTemp` | 🔧 💤 |
-| Battery max cell voltage | voltage | MILLIVOLT | `bms_bmsStatus.maxCellVol` | 🔧 💤 |
-| Battery min cell voltage | voltage | MILLIVOLT | `bms_bmsStatus.minCellVol` | 🔧 💤 |
+| Battery max cell voltage | voltage | mV | `bms_bmsStatus.maxCellVol` | 🔧 💤 |
+| Battery min cell voltage | voltage | mV | `bms_bmsStatus.minCellVol` | 🔧 💤 |
 | Battery max MOS temperature | temperature | °C | `bms_bmsStatus.maxMosTemp` | 🔧 💤 |
 | Battery min MOS temperature | temperature | °C | `bms_bmsStatus.minMosTemp` | 🔧 💤 |
 | Battery error code | — | — | `bms_bmsStatus.errCode` | 🔧 💤 |
@@ -69,7 +69,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Discharge lower limit | battery | % | `bms_emsStatus.minDsgSoc` | 🔧 |
 | Time to full | duration | min | `bms_emsStatus.chgRemainTime` | 🔧 |
 | Time to empty | duration | min | `bms_emsStatus.dsgRemainTime` | 🔧 |
-| EMS charging voltage | voltage | MILLIVOLT | `bms_emsStatus.chgVol` | 🔧 💤 |
+| EMS charging voltage | voltage | mV | `bms_emsStatus.chgVol` | 🔧 💤 |
 | EMS charging current | current | mA | `bms_emsStatus.chgAmp` | 🔧 💤 |
 | EMS charging status | — | — | `bms_emsStatus.chgState` | 🔧 |
 | Fan level | — | — | `bms_emsStatus.fanLevel` | 🔧 |

@@ -235,6 +235,39 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
         entity_registry_enabled_default=False,
     ),
+    # Calendar-aging health, distinct from cmsBattSoh (cycle health); often
+    # already below 100% while the cycle SoH still reads full.
+    EcoFlowSensorEntityDescription(
+        key="calendar_soh",
+        mqtt_key="calendarSoh",
+        name="Battery calendar health",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_round2,
+        available_fn=lambda q: "calendarSoh" in q,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="cell_vol_delta",
+        mqtt_key="maxVolDiff",
+        name="Cell voltage delta",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfElectricPotential.MILLIVOLT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        available_fn=lambda q: "maxVolDiff" in q,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="mos_temp",
+        mqtt_key="maxMosTemp",
+        name="MOSFET temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        available_fn=lambda q: "maxMosTemp" in q,
+    ),
 )
 
 _POWERFLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
@@ -341,6 +374,26 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         entity_category=EntityCategory.DIAGNOSTIC,
+        # Firmware varies: some report invNtcTemp3, others invTempNtc.
+        quota_value_fn=lambda q: q.get("invNtcTemp3", q.get("invTempNtc")),
+        available_fn=lambda q: "invNtcTemp3" in q or "invTempNtc" in q,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="ac_total_power",
+        mqtt_key="acTotalActivePower",
+        name="Total AC power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=_round2,
+        available_fn=lambda q: "acTotalActivePower" in q,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="grid_connection_status",
+        mqtt_key="gridConnectionSta",
+        name="Grid connection status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        available_fn=lambda q: "gridConnectionSta" in q,
     ),
     EcoFlowSensorEntityDescription(
         key="meter_phase_a",
@@ -590,6 +643,35 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
 
 # --- Binary sensors ----------------------------------------------------------
 
+# Fields that report a non-zero code when something is wrong. Deliberately
+# conservative (canonical error/fault codes only) to avoid false positives from
+# status fields that are non-zero in normal operation; mpptPv*Fault is excluded
+# because it reads non-zero simply when a PV string is unplugged.
+_FAULT_FIELDS = ("errCode", "allErrCode", "bmsFault", "allBmsFault", "bmsFaultState")
+
+
+def _has_fault(quota: Mapping[str, Any]) -> bool | None:
+    """True if any fault code is set, False if all clear, None if unknown."""
+    present = False
+    for key in _FAULT_FIELDS:
+        value = quota.get(key)
+        if value is None:
+            continue
+        present = True
+        try:
+            if int(value) != 0:
+                return True
+        except (TypeError, ValueError):
+            pass
+    err_list = quota.get("devErrcodeList")
+    if isinstance(err_list, Mapping):
+        present = True
+        codes = err_list.get("devErrcode")
+        if isinstance(codes, list) and any(codes):
+            return True
+    return False if present else None
+
+
 _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="battery_charging",
@@ -621,6 +703,34 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         mqtt_key="stormPatternEnable",
         name="Storm guard",
         entity_category=EntityCategory.DIAGNOSTIC,
+        # Only present when the feature is reported; hide it otherwise rather
+        # than showing a misleading "off".
+        available_fn=lambda q: "stormPatternEnable" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="off_grid",
+        mqtt_key="sysOffgrid",
+        name="Off-grid mode",
+        # On while islanded (running on battery during a grid outage).
+        value_fn=bool,
+        available_fn=lambda q: "sysOffgrid" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="water_ingress",
+        mqtt_key="waterInFlag",
+        name="Water ingress",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=bool,
+        available_fn=lambda q: "waterInFlag" in q,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="problem",
+        name="Problem",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        quota_value_fn=_has_fault,
+        available_fn=lambda q: _has_fault(q) is not None,
     ),
 )
 
@@ -739,6 +849,104 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
     ),
 )
 
+# --- Base load schedule (Grundlastleistung) ----------------------------------
+#
+# The app's "Base load power" schedule arrives in the (undocumented) quota field
+# ``dayResidentLoadList`` as a list of periods, each a minutes-from-midnight
+# window with a watt setpoint:
+#
+#     "dayResidentLoadList": {"load": [{"startMin": 0, "endMin": 1440, "loadPower": 230}]}
+#
+# It is NOT in the documented HTTP quota/all response -- it only arrives over
+# MQTT -- so the number platform discovers these entities at runtime via
+# dynamic_entity_descriptions (which also picks up periods added in the app
+# later, without a reload). One Number per period exposes its loadPower; the
+# whole list is written back via ``cfgDayResidentLoadList`` (mirrors the quota
+# field, same shape). Periods are matched by their time window so the entities
+# stay stable when the schedule is reordered or its power changed.
+
+_BASE_LOAD_KEY = "dayResidentLoadList"
+_BASE_LOAD_MAX_DEFAULT = 800
+
+
+def _base_load_periods(quota: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """Return the configured base-load periods, or an empty list."""
+    container = quota.get(_BASE_LOAD_KEY)
+    load = container.get("load") if isinstance(container, Mapping) else None
+    if not isinstance(load, list):
+        return []
+    return [p for p in load if isinstance(p, Mapping)]
+
+
+def _fmt_minutes(minutes: Any) -> str:
+    """Format minutes-from-midnight as HH:MM (e.g. 1440 -> '24:00')."""
+    try:
+        total = int(minutes)
+    except (TypeError, ValueError):
+        return "??:??"
+    return f"{total // 60:02d}:{total % 60:02d}"
+
+
+def _find_period(quota: Mapping[str, Any], start: Any, end: Any) -> Mapping[str, Any] | None:
+    for period in _base_load_periods(quota):
+        if period.get("startMin") == start and period.get("endMin") == end:
+            return period
+    return None
+
+
+def _base_load_value_fn(start: Any, end: Any):
+    def _fn(quota: Mapping[str, Any]) -> float | None:
+        period = _find_period(quota, start, end)
+        if period is None:
+            return None
+        power = period.get("loadPower")
+        return None if power is None else float(power)
+
+    return _fn
+
+
+def _base_load_command_fn(start: Any, end: Any):
+    def _fn(value: Any, quota: Mapping[str, Any]) -> dict[str, Any]:
+        # Resend the whole schedule with just this window's power changed.
+        load = [dict(p) for p in _base_load_periods(quota)]
+        for period in load:
+            if period.get("startMin") == start and period.get("endMin") == end:
+                period["loadPower"] = int(value)
+        return {"cfgDayResidentLoadList": {"load": load}}
+
+    return _fn
+
+
+def _base_load_numbers(quota: Mapping[str, Any]) -> list[EcoFlowNumberEntityDescription]:
+    """Build one Number per configured base-load period, from live quota."""
+    pow_max = (
+        quota.get("powSysAcOutMax")
+        or quota.get("feedGridModePowMax")
+        or _BASE_LOAD_MAX_DEFAULT
+    )
+    descs: list[EcoFlowNumberEntityDescription] = []
+    for period in _base_load_periods(quota):
+        start = period.get("startMin")
+        end = period.get("endMin")
+        window = f"{_fmt_minutes(start)}–{_fmt_minutes(end)}"
+        descs.append(
+            EcoFlowNumberEntityDescription(
+                key=f"base_load_{start}_{end}",
+                name=f"Base load {window}",
+                device_class=NumberDeviceClass.POWER,
+                native_unit_of_measurement=UnitOfPower.WATT,
+                native_min_value=0,
+                native_max_value=float(pow_max),
+                native_step=10,
+                mode=NumberMode.BOX,
+                quota_value_fn=_base_load_value_fn(start, end),
+                command_fn=_base_load_command_fn(start, end),
+                available_fn=lambda q, s=start, e=end: _find_period(q, s, e) is not None,
+            )
+        )
+    return descs
+
+
 # --- Selects -----------------------------------------------------------------
 
 _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
@@ -796,6 +1004,14 @@ class StreamDevice(EcoFlowDevice):
             return list(_NUMBERS)
         if platform == Platform.SELECT:
             return list(_SELECTS)
+        return []
+
+    def dynamic_entity_descriptions(
+        self, platform: Platform, quota: Mapping[str, Any]
+    ) -> list[_EcoFlowDescription]:
+        # One Number per configured base-load period (discovered from quota).
+        if platform == Platform.NUMBER:
+            return list(_base_load_numbers(quota))
         return []
 
 

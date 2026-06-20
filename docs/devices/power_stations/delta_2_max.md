@@ -83,8 +83,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery full capacity | — | mAh | `bms_bmsStatus.fullCap` | 🔧 💤 |
 | Battery input power | power | W | `bms_bmsStatus.inputWatts` | 💤 |
 | Battery output power | power | W | `bms_bmsStatus.outputWatts` | 💤 |
-| Max cell voltage | voltage | MILLIVOLT | `bms_bmsStatus.maxCellVol` | 🔧 💤 |
-| Min cell voltage | voltage | MILLIVOLT | `bms_bmsStatus.minCellVol` | 🔧 💤 |
+| Max cell voltage | voltage | mV | `bms_bmsStatus.maxCellVol` | 🔧 💤 |
+| Min cell voltage | voltage | mV | `bms_bmsStatus.minCellVol` | 🔧 💤 |
 | Max cell temperature | temperature | °C | `bms_bmsStatus.maxCellTemp` | 🔧 💤 |
 | Min cell temperature | temperature | °C | `bms_bmsStatus.minCellTemp` | 🔧 💤 |
 | Battery remaining time | duration | min | `bms_bmsStatus.remainTime` | 🔧 💤 |

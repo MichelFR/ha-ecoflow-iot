@@ -18,6 +18,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Grid voltage | voltage | V | `gridConnectionVol` | 🔧 |
 | Grid frequency | frequency | Hz | `gridConnectionFreq` | 🔧 |
 | Inverter temperature | temperature | °C | `invNtcTemp3` | 🔧 |
+| Total AC power | power | W | `acTotalActivePower` |  |
+| Grid connection status | — | — | `gridConnectionSta` | 🔧 |
 | Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 |
 | Solar power | power | W | `powGetPvSum` |  |
 | Solar string 1 power | power | W | _computed_ |  |
@@ -41,4 +43,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 20 — 18 sensor, 2 binary_sensor, 0 switch, 0 number, 0 select._
+_Entity totals: 22 — 20 sensor, 2 binary_sensor, 0 switch, 0 number, 0 select._

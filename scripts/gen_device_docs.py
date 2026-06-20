@@ -33,7 +33,8 @@ CATEGORY_TITLES = {
 }
 UNIT_SYMBOLS = {
     "WATT": "W", "WATT_HOUR": "Wh", "KILO_WATT_HOUR": "kWh", "VOLT": "V",
-    "AMPERE": "A", "MILLIAMPERE": "mA", "CELSIUS": "°C", "HERTZ": "Hz",
+    "MILLIVOLT": "mV", "AMPERE": "A", "MILLIAMPERE": "mA", "CELSIUS": "°C",
+    "HERTZ": "Hz",
     "PERCENTAGE": "%", "MINUTES": "min", "SECONDS": "s", "HOURS": "h",
 }
 

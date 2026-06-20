@@ -157,6 +157,18 @@ class EcoFlowDevice:
         """Return the entity descriptions for a platform (empty by default)."""
         return []
 
+    def dynamic_entity_descriptions(
+        self, platform: Platform, quota: Mapping[str, Any]
+    ) -> list[_EcoFlowDescription]:
+        """Return descriptions discovered from live ``quota`` (none by default).
+
+        Unlike :meth:`entity_descriptions`, these depend on runtime data (e.g. a
+        variable-length schedule) that may only arrive over MQTT after setup, so
+        the platform adds them as the data appears rather than fixing them at
+        setup time.
+        """
+        return []
+
     def has_http_only_entities(self) -> bool:
         """Whether any entity on any platform is marked ``http_only``.
 

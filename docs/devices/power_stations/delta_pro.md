@@ -24,8 +24,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery remaining capacity | energy_storage | — | `bmsMaster.remainCap` | 🔧 💤 |
 | Battery full capacity | energy_storage | — | `bmsMaster.fullCap` | 🔧 💤 |
 | Battery time remaining | duration | min | `bmsMaster.remainTime` | 🔧 |
-| Battery max cell voltage | voltage | MILLIVOLT | `bmsMaster.maxCellVol` | 🔧 💤 |
-| Battery min cell voltage | voltage | MILLIVOLT | `bmsMaster.minCellVol` | 🔧 💤 |
+| Battery max cell voltage | voltage | mV | `bmsMaster.maxCellVol` | 🔧 💤 |
+| Battery min cell voltage | voltage | mV | `bmsMaster.minCellVol` | 🔧 💤 |
 | Battery max cell temperature | temperature | °C | `bmsMaster.maxCellTemp` | 🔧 💤 |
 | Battery min cell temperature | temperature | °C | `bmsMaster.minCellTemp` | 🔧 💤 |
 | Battery target charge current | current | mA | `bmsMaster.tagChgAmp` | 🔧 💤 |
