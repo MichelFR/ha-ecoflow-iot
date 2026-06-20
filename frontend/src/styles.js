@@ -48,6 +48,40 @@ export const cardStyles = css`
     border-radius: 50%;
     background: var(--secondary-background-color);
   }
+  .batt-circle.charge {
+    animation: battery-glow 1.8s ease-in-out infinite;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 36%, transparent);
+  }
+  .batt-circle.discharge {
+    animation: battery-discharge-glow 1.8s ease-in-out infinite;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--info-color, #2196f3) 36%, transparent);
+  }
+  @keyframes battery-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 0 color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 20%, transparent),
+        0 0 16px color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 28%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 0 0 7px color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 11%, transparent),
+        0 0 26px color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 48%, transparent);
+    }
+  }
+  @keyframes battery-discharge-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 0 color-mix(in srgb, var(--info-color, #2196f3) 20%, transparent),
+        0 0 16px color-mix(in srgb, var(--info-color, #2196f3) 28%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 0 0 7px color-mix(in srgb, var(--info-color, #2196f3) 11%, transparent),
+        0 0 26px color-mix(in srgb, var(--info-color, #2196f3) 48%, transparent);
+    }
+  }
   .batt-ring {
     position: absolute;
     inset: 0;
@@ -70,7 +104,7 @@ export const cardStyles = css`
     stroke: var(--error-color, #db4437);
   }
   .ring-fill.charge {
-    stroke: var(--energy-solar-color, #ff9800);
+    stroke: var(--state-sensor-battery-high-color, #43a047);
   }
   .ring-fill.discharge {
     stroke: var(--info-color, #2196f3);
@@ -84,7 +118,7 @@ export const cardStyles = css`
     transform-box: fill-box;
   }
   .ring-spin.charge {
-    stroke: var(--energy-solar-color, #ff9800);
+    stroke: var(--state-sensor-battery-high-color, #43a047);
     animation: ring-spin 1.5s linear infinite;
   }
   .ring-spin.discharge {
@@ -102,7 +136,7 @@ export const cardStyles = css`
     stroke-linecap: round;
   }
   .ring-tick.charge {
-    stroke: var(--energy-solar-color, #ff9800);
+    stroke: var(--state-sensor-battery-high-color, #43a047);
   }
   .ring-tick.discharge {
     stroke: var(--error-color, #db4437);
@@ -161,7 +195,7 @@ export const cardStyles = css`
     --mdc-icon-size: 14px;
   }
   .batt-speed.charge {
-    color: var(--energy-solar-color, #ff9800);
+    color: var(--state-sensor-battery-high-color, #43a047);
   }
   .batt-speed.discharge {
     color: var(--info-color, #2196f3);

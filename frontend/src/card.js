@@ -422,7 +422,7 @@ export class EcoFlowEnergyCard extends LitElement {
     ].filter((t) => t.v != null);
 
     return html`<div
-      class="batt-circle clickable"
+      class="batt-circle clickable ${active}"
       @click=${() => this._moreInfo("sensor.cms_batt_soc")}
     >
       ${socState
