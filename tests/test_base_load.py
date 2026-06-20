@@ -62,7 +62,7 @@ def install_ha_stub():
     comps = types.ModuleType("homeassistant.components")
     comps.__path__ = []
     sys.modules["homeassistant.components"] = comps
-    for c in ("sensor", "binary_sensor", "switch", "number", "select"):
+    for c in ("sensor", "binary_sensor", "switch", "number", "select", "light"):
         sys.modules[f"homeassistant.components.{c}"] = _make_component(
             f"homeassistant.components.{c}"
         )

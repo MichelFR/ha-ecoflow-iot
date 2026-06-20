@@ -33,6 +33,7 @@ from ..base import (
     EcoFlowBinarySensorEntityDescription,
     EcoFlowDevice,
     EcoFlowIntegralSensorEntityDescription,
+    EcoFlowLightEntityDescription,
     EcoFlowNumberEntityDescription,
     EcoFlowSelectEntityDescription,
     EcoFlowSensorEntityDescription,
@@ -269,6 +270,30 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         entity_category=EntityCategory.DIAGNOSTIC,
         available_fn=lambda q: "maxMosTemp" in q,
+        undocumented=True,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="max_cell_temp",
+        mqtt_key="maxCellTemp",
+        name="Battery max cell temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        available_fn=lambda q: "maxCellTemp" in q,
+        undocumented=True,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="min_cell_temp",
+        mqtt_key="minCellTemp",
+        name="Battery min cell temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        available_fn=lambda q: "minCellTemp" in q,
         undocumented=True,
     ),
 )
@@ -855,17 +880,19 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         command_fn=lambda value, _q: {"cfgFeedGridModePowLimit": int(value)},
     ),
-    EcoFlowNumberEntityDescription(
-        key="led_brightness",
+)
+
+# --- Lights ------------------------------------------------------------------
+
+# The LED brightness is a 0-100% quota field (0 = off). Exposed as a light so it
+# can be dimmed and switched off (writing 0%); the write command (cfgBrightness)
+# is reverse-engineered but hardware-confirmed.
+_LIGHTS: tuple[EcoFlowLightEntityDescription, ...] = (
+    EcoFlowLightEntityDescription(
+        key="led",
         mqtt_key="brightness",
-        name="LED brightness",
-        native_unit_of_measurement=PERCENTAGE,
-        native_min_value=0,
-        native_max_value=100,
-        native_step=1,
-        mode=NumberMode.SLIDER,
-        entity_category=EntityCategory.CONFIG,
-        command_fn=lambda value, _q: {"cfgBrightness": int(value)},
+        name="LED",
+        command_fn=lambda pct, _q: {"cfgBrightness": int(pct)},
         available_fn=lambda q: "brightness" in q,
         undocumented=True,
     ),
@@ -1027,6 +1054,8 @@ class StreamDevice(EcoFlowDevice):
             return list(_NUMBERS)
         if platform == Platform.SELECT:
             return list(_SELECTS)
+        if platform == Platform.LIGHT:
+            return list(_LIGHTS)
         return []
 
     def dynamic_entity_descriptions(

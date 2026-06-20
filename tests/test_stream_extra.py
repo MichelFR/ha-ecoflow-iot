@@ -59,7 +59,7 @@ def install_ha_stub():
     comps = types.ModuleType("homeassistant.components")
     comps.__path__ = []
     sys.modules["homeassistant.components"] = comps
-    for c in ("sensor", "binary_sensor", "switch", "number", "select"):
+    for c in ("sensor", "binary_sensor", "switch", "number", "select", "light"):
         sys.modules[f"homeassistant.components.{c}"] = _make_component(
             f"homeassistant.components.{c}"
         )
@@ -106,11 +106,16 @@ dev = StreamDevice("BK11ZE1B2H5K2510")
 SENS = {d.key: d for d in dev.entity_descriptions(Platform.SENSOR)}
 BIN = {d.key: d for d in dev.entity_descriptions(Platform.BINARY_SENSOR)}
 NUM = {d.key: d for d in dev.entity_descriptions(Platform.NUMBER)}
+LIGHTS = {d.key: d for d in dev.entity_descriptions(Platform.LIGHT)}
 
 # --- battery health ---------------------------------------------------------
 check("calendar_soh present", "calendar_soh" in SENS, True)
 check("calendar SoH value", raw_value(SENS["calendar_soh"], {"calendarSoh": 88.0}), 88.0)
 check("mos_temp value", raw_value(SENS["mos_temp"], {"maxMosTemp": 42}), 42)
+check("max cell temp value", raw_value(SENS["max_cell_temp"], {"maxCellTemp": 38}), 38)
+check("min cell temp value", raw_value(SENS["min_cell_temp"], {"minCellTemp": 34}), 34)
+check("cell temps default-disabled", SENS["max_cell_temp"].entity_registry_enabled_default, False)
+check("cell temp flagged undocumented", SENS["min_cell_temp"].undocumented, True)
 check("cell_vol_delta value", raw_value(SENS["cell_vol_delta"], {"maxVolDiff": 1}), 1)
 check("cell_vol_delta default-disabled", SENS["cell_vol_delta"].entity_registry_enabled_default, False)
 
@@ -148,15 +153,16 @@ storm = BIN["storm_guard"]
 check("storm guard hidden when absent", available(storm, {}), False)
 check("storm guard shown when present", available(storm, {"stormPatternEnable": False}), True)
 
-# --- LED brightness (configurable) ------------------------------------------
-led = NUM["led_brightness"]
-check("brightness reads value", raw_value(led, {"brightness": 100}), 100)
-check("brightness write -> cfgBrightness", led.command_fn(40, {}), {"cfgBrightness": 40})
-check("brightness available when present", available(led, {"brightness": 100}), True)
-check("brightness range 0-100", (led.native_min_value, led.native_max_value), (0, 100))
+# --- LED light (was a brightness number; now a light, off = 0%) -------------
+check("led_brightness number removed", "led_brightness" in NUM, False)
+led = LIGHTS["led"]
+check("led reads brightness %", raw_value(led, {"brightness": 100}), 100)
+check("led set 40% -> cfgBrightness", led.command_fn(40, {}), {"cfgBrightness": 40})
+check("led off -> cfgBrightness 0", led.command_fn(0, {}), {"cfgBrightness": 0})
+check("led available when present", available(led, {"brightness": 100}), True)
 
 # --- undocumented flag ------------------------------------------------------
-check("brightness flagged undocumented", led.undocumented, True)
+check("led flagged undocumented", led.undocumented, True)
 check("calendar_soh flagged undocumented", SENS["calendar_soh"].undocumented, True)
 check("problem flagged undocumented", BIN["problem"].undocumented, True)
 # A documented entity stays unflagged.

@@ -13,6 +13,7 @@ from enum import Enum
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
+from homeassistant.components.light import LightEntityDescription
 from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.select import SelectEntityDescription
 from homeassistant.components.sensor import SensorEntityDescription
@@ -133,6 +134,18 @@ class EcoFlowSelectEntityDescription(_EcoFlowDescription, SelectEntityDescriptio
     current_option_fn: Callable[[Mapping[str, Any]], str | None]
 
 
+@dataclass(frozen=True, kw_only=True)
+class EcoFlowLightEntityDescription(_EcoFlowDescription, LightEntityDescription):
+    """Describes a brightness-controllable light.
+
+    The source value (``mqtt_key``) is the device brightness as a percentage
+    (0-100, 0 = off). ``command_fn`` receives the requested device percentage
+    (0-100) and the current quota, and returns the set-command ``params``.
+    """
+
+    command_fn: CommandFn
+
+
 class EcoFlowDevice:
     """Base class for a supported EcoFlow device family."""
 
@@ -187,6 +200,7 @@ class EcoFlowDevice:
                 Platform.SWITCH,
                 Platform.NUMBER,
                 Platform.SELECT,
+                Platform.LIGHT,
             )
             for desc in self.entity_descriptions(platform)
         )

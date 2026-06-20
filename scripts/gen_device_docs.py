@@ -23,7 +23,7 @@ REPO = Path(__file__).resolve().parents[1]
 CC = REPO / "custom_components"
 DOCS = REPO / "docs" / "devices"
 
-PLATFORMS = ["SENSOR", "BINARY_SENSOR", "SWITCH", "NUMBER", "SELECT"]
+PLATFORMS = ["SENSOR", "BINARY_SENSOR", "SWITCH", "NUMBER", "SELECT", "LIGHT"]
 CATEGORY_TITLES = {
     "power_stations": "Power Stations",
     "solar_systems": "Solar Systems",
@@ -109,7 +109,7 @@ def install_stub():
     sys.modules["homeassistant"] = ha
     comps = types.ModuleType("homeassistant.components"); comps.__path__ = []
     sys.modules["homeassistant.components"] = comps
-    for c in ("sensor", "binary_sensor", "switch", "number", "select"):
+    for c in ("sensor", "binary_sensor", "switch", "number", "select", "light"):
         sys.modules[f"homeassistant.components.{c}"] = _component(
             f"homeassistant.components.{c}"
         )
@@ -281,6 +281,12 @@ def render_device(cls, category) -> str:
             rows.append([d.name or d.key, opts, quota_key(d), flags(d)])
         lines += ["## Selects", "",
                   table(rows, ["Entity", "Options", "Quota key", "Flags"]), ""]
+
+    lights = descs("LIGHT")
+    if lights:
+        rows = [[d.name or d.key, quota_key(d), flags(d)] for d in lights]
+        lines += ["## Lights", "",
+                  table(rows, ["Entity", "Quota key (brightness %)", "Flags"]), ""]
 
     counts = {p: len(descs(p)) for p in PLATFORMS}
     total = sum(counts.values())

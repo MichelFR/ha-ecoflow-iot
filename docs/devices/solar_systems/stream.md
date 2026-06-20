@@ -30,6 +30,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery calendar health | — | % | `calendarSoh` | 🔧 ⚠️ |
 | Cell voltage delta | voltage | mV | `maxVolDiff` | 🔧 💤 ⚠️ |
 | MOSFET temperature | temperature | °C | `maxMosTemp` | 🔧 ⚠️ |
+| Battery max cell temperature | temperature | °C | `maxCellTemp` | 🔧 💤 ⚠️ |
+| Battery min cell temperature | temperature | °C | `minCellTemp` | 🔧 💤 ⚠️ |
 | Battery charge energy | energy | Wh | _integrated_ |  |
 | Battery discharge energy | energy | Wh | _integrated_ |  |
 | Battery power | power | W | `powGetBpCms` |  |
@@ -101,7 +103,6 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Discharge limit | % | 0–30 (step 1) | `cmsMinDsgSoc` |  |
 | Backup reserve | % | 3–95 (step 1) | `backupReverseSoc` |  |
 | Feed-in power limit | W | 0–800 (step 10) | `feedGridModePowLimit` |  |
-| LED brightness | % | 0–100 (step 1) | `brightness` | ⚠️ |
 
 ## Selects
 
@@ -109,6 +110,12 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 |---|---|---|---|
 | operating_mode | self_powered, scheduled, time_of_use, intelligent | _derived_ |  |
 
+## Lights
+
+| Entity | Quota key (brightness %) | Flags |
+|---|---|---|
+| LED | `brightness` | ⚠️ |
+
 ---
 
-_Entity totals: 73 — 52 sensor, 11 binary_sensor, 4 switch, 5 number, 1 select._
+_Entity totals: 75 — 54 sensor, 11 binary_sensor, 4 switch, 4 number, 1 select, 1 light._

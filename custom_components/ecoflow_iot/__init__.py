@@ -39,6 +39,7 @@ _STATIC_PATH_KEY = f"{DOMAIN}_card_static_registered"
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
+    Platform.LIGHT,
     Platform.NUMBER,
     Platform.SELECT,
     Platform.SENSOR,

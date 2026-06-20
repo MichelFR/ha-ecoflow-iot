@@ -108,4 +108,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 72 — 46 sensor, 15 binary_sensor, 4 switch, 4 number, 3 select._
+_Entity totals: 72 — 46 sensor, 15 binary_sensor, 4 switch, 4 number, 3 select, 0 light._
