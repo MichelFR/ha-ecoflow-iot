@@ -246,6 +246,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_round2,
         available_fn=lambda q: "calendarSoh" in q,
+        undocumented=True,
     ),
     EcoFlowSensorEntityDescription(
         key="cell_vol_delta",
@@ -257,6 +258,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         available_fn=lambda q: "maxVolDiff" in q,
+        undocumented=True,
     ),
     EcoFlowSensorEntityDescription(
         key="mos_temp",
@@ -267,6 +269,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         entity_category=EntityCategory.DIAGNOSTIC,
         available_fn=lambda q: "maxMosTemp" in q,
+        undocumented=True,
     ),
 )
 
@@ -387,6 +390,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPower.WATT,
         value_fn=_round2,
         available_fn=lambda q: "acTotalActivePower" in q,
+        undocumented=True,
     ),
     EcoFlowSensorEntityDescription(
         key="grid_connection_status",
@@ -394,6 +398,7 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Grid connection status",
         entity_category=EntityCategory.DIAGNOSTIC,
         available_fn=lambda q: "gridConnectionSta" in q,
+        undocumented=True,
     ),
     EcoFlowSensorEntityDescription(
         key="meter_phase_a",
@@ -714,6 +719,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         # On while islanded (running on battery during a grid outage).
         value_fn=bool,
         available_fn=lambda q: "sysOffgrid" in q,
+        undocumented=True,
     ),
     EcoFlowBinarySensorEntityDescription(
         key="water_ingress",
@@ -723,6 +729,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=bool,
         available_fn=lambda q: "waterInFlag" in q,
+        undocumented=True,
     ),
     EcoFlowBinarySensorEntityDescription(
         key="problem",
@@ -731,6 +738,7 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         quota_value_fn=_has_fault,
         available_fn=lambda q: _has_fault(q) is not None,
+        undocumented=True,
     ),
 )
 
@@ -847,6 +855,20 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         command_fn=lambda value, _q: {"cfgFeedGridModePowLimit": int(value)},
     ),
+    EcoFlowNumberEntityDescription(
+        key="led_brightness",
+        mqtt_key="brightness",
+        name="LED brightness",
+        native_unit_of_measurement=PERCENTAGE,
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        entity_category=EntityCategory.CONFIG,
+        command_fn=lambda value, _q: {"cfgBrightness": int(value)},
+        available_fn=lambda q: "brightness" in q,
+        undocumented=True,
+    ),
 )
 
 # --- Base load schedule (Grundlastleistung) ----------------------------------
@@ -942,6 +964,7 @@ def _base_load_numbers(quota: Mapping[str, Any]) -> list[EcoFlowNumberEntityDesc
                 quota_value_fn=_base_load_value_fn(start, end),
                 command_fn=_base_load_command_fn(start, end),
                 available_fn=lambda q, s=start, e=end: _find_period(q, s, e) is not None,
+                undocumented=True,
             )
         )
     return descs

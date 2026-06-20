@@ -7,7 +7,9 @@
 > Generated from `custom_components/ecoflow_iot/devices/solar_systems/stream.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
 
-Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-only (refreshed on a slower HTTP cadence, not via MQTT).
+Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-only (refreshed on a slower HTTP cadence, not via MQTT) · ⚠️ = undocumented (reverse-engineered, may break).
+
+> ⚠️ **Heads-up:** entities flagged ⚠️ are reverse-engineered from live device data and are **not part of EcoFlow's documented API**. They may change behaviour or stop working after a device firmware or EcoFlow app update.
 
 ## Sensors
 
@@ -25,9 +27,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Time to empty | duration | min | `cmsDsgRemTime` | 🔧 |
 | Total charged | energy | Wh | `accuChgEnergy` | 💤 |
 | Total discharged | energy | Wh | `accuDsgEnergy` | 💤 |
-| Battery calendar health | — | % | `calendarSoh` | 🔧 |
-| Cell voltage delta | voltage | mV | `maxVolDiff` | 🔧 💤 |
-| MOSFET temperature | temperature | °C | `maxMosTemp` | 🔧 |
+| Battery calendar health | — | % | `calendarSoh` | 🔧 ⚠️ |
+| Cell voltage delta | voltage | mV | `maxVolDiff` | 🔧 💤 ⚠️ |
+| MOSFET temperature | temperature | °C | `maxMosTemp` | 🔧 ⚠️ |
 | Battery charge energy | energy | Wh | _integrated_ |  |
 | Battery discharge energy | energy | Wh | _integrated_ |  |
 | Battery power | power | W | `powGetBpCms` |  |
@@ -40,8 +42,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Grid voltage | voltage | V | `gridConnectionVol` | 🔧 |
 | Grid frequency | frequency | Hz | `gridConnectionFreq` | 🔧 |
 | Inverter temperature | temperature | °C | `invNtcTemp3` | 🔧 |
-| Total AC power | power | W | `acTotalActivePower` |  |
-| Grid connection status | — | — | `gridConnectionSta` | 🔧 |
+| Total AC power | power | W | `acTotalActivePower` | ⚠️ |
+| Grid connection status | — | — | `gridConnectionSta` | 🔧 ⚠️ |
 | Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 |
 | Solar power | power | W | `powGetPvSum` |  |
 | Solar string 1 power | power | W | _computed_ |  |
@@ -74,9 +76,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery heater | heat | `bmsBattHeating` | 🔧 |
 | Smart meter connected | connectivity | `cloudMetter.hasMeter` | 🔧 |
 | Storm guard | — | `stormPatternEnable` | 🔧 |
-| Off-grid mode | — | `sysOffgrid` |  |
-| Water ingress | problem | `waterInFlag` | 🔧 |
-| Problem | problem | _computed_ | 🔧 |
+| Off-grid mode | — | `sysOffgrid` | ⚠️ |
+| Water ingress | problem | `waterInFlag` | 🔧 ⚠️ |
+| Problem | problem | _computed_ | 🔧 ⚠️ |
 | Solar string 1 connected | connectivity | `plugInInfoPvFlag` | 🔧 💤 |
 | Solar string 2 connected | connectivity | `plugInInfoPv2Flag` | 🔧 💤 |
 | Solar string 3 connected | connectivity | `plugInInfoPv3Flag` | 🔧 💤 |
@@ -99,6 +101,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Discharge limit | % | 0–30 (step 1) | `cmsMinDsgSoc` |  |
 | Backup reserve | % | 3–95 (step 1) | `backupReverseSoc` |  |
 | Feed-in power limit | W | 0–800 (step 10) | `feedGridModePowLimit` |  |
+| LED brightness | % | 0–100 (step 1) | `brightness` | ⚠️ |
 
 ## Selects
 
@@ -108,4 +111,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 72 — 52 sensor, 11 binary_sensor, 4 switch, 4 number, 1 select._
+_Entity totals: 73 — 52 sensor, 11 binary_sensor, 4 switch, 5 number, 1 select._

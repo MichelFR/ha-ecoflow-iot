@@ -7,7 +7,9 @@
 > Generated from `custom_components/ecoflow_iot/devices/solar_systems/stream.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
 
-Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-only (refreshed on a slower HTTP cadence, not via MQTT).
+Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-only (refreshed on a slower HTTP cadence, not via MQTT) · ⚠️ = undocumented (reverse-engineered, may break).
+
+> ⚠️ **Heads-up:** entities flagged ⚠️ are reverse-engineered from live device data and are **not part of EcoFlow's documented API**. They may change behaviour or stop working after a device firmware or EcoFlow app update.
 
 ## Sensors
 
@@ -18,8 +20,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Grid voltage | voltage | V | `gridConnectionVol` | 🔧 |
 | Grid frequency | frequency | Hz | `gridConnectionFreq` | 🔧 |
 | Inverter temperature | temperature | °C | `invNtcTemp3` | 🔧 |
-| Total AC power | power | W | `acTotalActivePower` |  |
-| Grid connection status | — | — | `gridConnectionSta` | 🔧 |
+| Total AC power | power | W | `acTotalActivePower` | ⚠️ |
+| Grid connection status | — | — | `gridConnectionSta` | 🔧 ⚠️ |
 | Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 |
 | Solar power | power | W | `powGetPvSum` |  |
 | Solar string 1 power | power | W | _computed_ |  |

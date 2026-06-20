@@ -105,6 +105,7 @@ def available(desc, quota):
 dev = StreamDevice("BK11ZE1B2H5K2510")
 SENS = {d.key: d for d in dev.entity_descriptions(Platform.SENSOR)}
 BIN = {d.key: d for d in dev.entity_descriptions(Platform.BINARY_SENSOR)}
+NUM = {d.key: d for d in dev.entity_descriptions(Platform.NUMBER)}
 
 # --- battery health ---------------------------------------------------------
 check("calendar_soh present", "calendar_soh" in SENS, True)
@@ -146,6 +147,20 @@ check("problem available when clear", available(prob, {"errCode": 0}), True)
 storm = BIN["storm_guard"]
 check("storm guard hidden when absent", available(storm, {}), False)
 check("storm guard shown when present", available(storm, {"stormPatternEnable": False}), True)
+
+# --- LED brightness (configurable) ------------------------------------------
+led = NUM["led_brightness"]
+check("brightness reads value", raw_value(led, {"brightness": 100}), 100)
+check("brightness write -> cfgBrightness", led.command_fn(40, {}), {"cfgBrightness": 40})
+check("brightness available when present", available(led, {"brightness": 100}), True)
+check("brightness range 0-100", (led.native_min_value, led.native_max_value), (0, 100))
+
+# --- undocumented flag ------------------------------------------------------
+check("brightness flagged undocumented", led.undocumented, True)
+check("calendar_soh flagged undocumented", SENS["calendar_soh"].undocumented, True)
+check("problem flagged undocumented", BIN["problem"].undocumented, True)
+# A documented entity stays unflagged.
+check("battery SoC NOT flagged", SENS["cms_batt_soc"].undocumented, False)
 
 print(f"\nRESULT: {'PASS' if not fails else f'{fails} FAILED'}")
 sys.exit(1 if fails else 0)

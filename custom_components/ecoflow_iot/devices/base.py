@@ -64,6 +64,10 @@ class _EcoFlowDescription:
     quota_value_fn: Callable[[Mapping[str, Any]], Any] | None = None
     available_fn: AvailableFn | None = None
     http_only: bool = False
+    # Reverse-engineered from live device data and NOT part of EcoFlow's
+    # documented API; may change or stop working after a firmware/app update.
+    # Surfaced with a ⚠️ flag and a warning in the generated device docs.
+    undocumented: bool = False
     # When set, the entity derives its value from the signed grid-power field
     # ``mqtt_key`` (normalised via the ``invert_grid_sign`` option) per the role.
     grid_role: GridRole | None = None

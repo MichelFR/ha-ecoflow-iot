@@ -162,6 +162,8 @@ def flags(d) -> str:
         parts.append("💤")
     if getattr(d, "http_only", False):
         parts.append("🌐")
+    if getattr(d, "undocumented", False):
+        parts.append("⚠️")
     return " ".join(parts)
 
 
@@ -204,6 +206,10 @@ def render_device(cls, category) -> str:
     def descs(p):
         return dev.entity_descriptions(Auto(f"Platform.{p}"))
 
+    has_undocumented = any(
+        getattr(d, "undocumented", False) for p in PLATFORMS for d in descs(p)
+    )
+
     img = image_key(name)
     img_base = f"../../../custom_components/ecoflow_iot/www/devices/{img}"
     img_md = (
@@ -227,8 +233,16 @@ def render_device(cls, category) -> str:
         "diagnostic sensor (MQTT state + data source).",
         "",
         "Legend: 🔧 = diagnostic entity · 💤 = disabled by default · "
-        "🌐 = HTTP-only (refreshed on a slower HTTP cadence, not via MQTT).",
+        "🌐 = HTTP-only (refreshed on a slower HTTP cadence, not via MQTT) · "
+        "⚠️ = undocumented (reverse-engineered, may break).",
         "",
+        *([
+            "> ⚠️ **Heads-up:** entities flagged ⚠️ are reverse-engineered from "
+            "live device data and are **not part of EcoFlow's documented API**. "
+            "They may change behaviour or stop working after a device firmware or "
+            "EcoFlow app update.",
+            "",
+        ] if has_undocumented else []),
     ]
 
     sensors = descs("SENSOR")
