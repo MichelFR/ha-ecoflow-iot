@@ -169,22 +169,22 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         await super().async_shutdown()
 
     async def _async_update_data(self) -> dict[str, DeviceState]:
-        """Periodic tick: poll HTTP only when MQTT cannot supply fresh data."""
-        if self._should_poll_http():
-            for sn in self.devices:
-                try:
-                    quota = await self._http.get_all_quota(sn)
-                except EcoFlowError as err:
-                    _LOGGER.debug("HTTP poll failed for %s: %s", sn, err)
-                    continue
-                state = self.data.get(sn)
-                if state is not None:
-                    state.merge_quota(quota, DataSource.HTTP)
-        else:
-            await self._async_refresh_http_only()
+        """Periodic tick: poll HTTP for devices MQTT cannot supply freshly."""
+        stale_sns = self._stale_mqtt_sns()
+        for sn in stale_sns:
+            try:
+                quota = await self._http.get_all_quota(sn)
+            except EcoFlowError as err:
+                _LOGGER.debug("HTTP poll failed for %s: %s", sn, err)
+                continue
+            state = self.data.get(sn)
+            if state is not None:
+                state.merge_quota(quota, DataSource.HTTP)
+
+        await self._async_refresh_http_only(exclude=stale_sns)
         return self.data
 
-    async def _async_refresh_http_only(self) -> None:
+    async def _async_refresh_http_only(self, *, exclude: set[str] | None = None) -> None:
         """While MQTT is the live source, refresh HTTP-only values on each tick.
 
         Runs only for devices that expose an ``http_only`` entity, so the
@@ -192,7 +192,8 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         touching ``data_source``/``last_mqtt_ts`` so MQTT remains the reported
         live source.
         """
-        for sn in self._http_only_sns:
+        excluded = exclude or set()
+        for sn in self._http_only_sns - excluded:
             try:
                 quota = await self._http.get_all_quota(sn)
             except EcoFlowError as err:
@@ -202,17 +203,19 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             if state is not None:
                 state.quota.update(quota)
 
-    def _should_poll_http(self) -> bool:
-        """Decide whether this tick needs an HTTP refresh."""
+    def _stale_mqtt_sns(self) -> set[str]:
+        """Return devices that need HTTP fallback because MQTT is stale."""
         if self._mqtt is None or not self._mqtt.connected:
-            return True
-        newest = max(
-            (s.last_mqtt_ts for s in self.data.values() if s.last_mqtt_ts),
-            default=None,
-        )
-        if newest is None:
-            return True
-        return (time.time() - newest) > self._stale_seconds
+            return set(self.devices)
+
+        now = time.time()
+        stale: set[str] = set()
+        for sn in self.devices:
+            state = self.data.get(sn)
+            last_mqtt_ts = state.last_mqtt_ts if state is not None else None
+            if last_mqtt_ts is None or now - last_mqtt_ts > self._stale_seconds:
+                stale.add(sn)
+        return stale
 
     # ---- MQTT callbacks (run on the event loop) ----
 

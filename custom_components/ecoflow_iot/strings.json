@@ -66,6 +66,14 @@
           "disconnected": "Disconnected"
         }
       },
+      "data_source": {
+        "name": "Data source",
+        "state": {
+          "mqtt": "MQTT",
+          "http": "HTTP",
+          "unknown": "Unknown"
+        }
+      },
       "cms_batt_soc": { "name": "Battery" },
       "bat_power": { "name": "Battery power" },
       "pv_total": { "name": "Solar power" },

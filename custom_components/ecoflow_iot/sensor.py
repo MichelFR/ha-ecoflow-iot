@@ -24,7 +24,7 @@ from .devices.base import (
     GridRole,
 )
 from .entity import EcoFlowEntity
-from .models import ConnectionState
+from .models import ConnectionState, DataSource
 
 _PLATFORM = Platform.SENSOR
 
@@ -39,6 +39,7 @@ async def async_setup_entry(
     entities: list[SensorEntity] = []
     for sn, device in coordinator.devices.items():
         entities.append(EcoFlowConnectionSensor(coordinator, sn))
+        entities.append(EcoFlowDataSourceSensor(coordinator, sn))
         for description in device.entity_descriptions(_PLATFORM):
             if isinstance(description, EcoFlowIntegralSensorEntityDescription):
                 entities.append(EcoFlowIntegralSensor(coordinator, sn, description))
@@ -208,3 +209,31 @@ class EcoFlowConnectionSensor(EcoFlowEntity, SensorEntity):
             "broker": self.coordinator.broker,
             "last_mqtt_update": last_update,
         }
+
+
+class EcoFlowDataSourceSensor(EcoFlowEntity, SensorEntity):
+    """Reports whether the latest device data came from MQTT or HTTP."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    _attr_options = [source.value for source in DataSource]
+
+    def __init__(self, coordinator: EcoFlowCoordinator, sn: str) -> None:
+        """Initialise the data-source sensor."""
+        description = EcoFlowSensorEntityDescription(
+            key="data_source",
+            translation_key="data_source",
+        )
+        super().__init__(coordinator, sn, description)
+
+    @property
+    def available(self) -> bool:
+        """Available whenever the device has coordinator state."""
+        return self._state is not None
+
+    @property
+    def native_value(self) -> str:
+        """Return the source used for the latest data snapshot."""
+        state = self._state
+        return (state.data_source if state else DataSource.UNKNOWN).value
