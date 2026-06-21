@@ -51,13 +51,23 @@ export const cardStyles = css`
   /* energy-flow particles: small dots that stream inward (absorbed into the
      device) while charging and outward while discharging — replaces the old
      pulsing glow. Lives behind the device image so particles visually merge
-     into / emerge from the device near the centre. */
+     into / emerge from the device near the centre.
+
+     State changes are animated, never an instant swap: the whole layer fades
+     via opacity (.show), the dot colour transitions between charge/discharge,
+     and going idle pauses the animation in place (instead of snapping the dots
+     to the centre) so they fade out gracefully. */
   .batt-particles {
     position: absolute;
     inset: 0;
     border-radius: 50%;
     overflow: hidden;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.55s ease;
+  }
+  .batt-particles.show {
+    opacity: 1;
   }
   .batt-particles .particle {
     position: absolute;
@@ -69,16 +79,22 @@ export const cardStyles = css`
     border-radius: 50%;
     opacity: 0;
     will-change: transform, opacity;
+    transition: background-color 0.55s ease, box-shadow 0.55s ease;
   }
   .batt-particles.charge .particle {
-    background: var(--state-sensor-battery-high-color, #43a047);
+    background-color: var(--state-sensor-battery-high-color, #43a047);
     box-shadow: 0 0 5px color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 70%, transparent);
     animation: particle-charge 1.6s linear infinite;
   }
   .batt-particles.discharge .particle {
-    background: var(--info-color, #2196f3);
+    background-color: var(--info-color, #2196f3);
     box-shadow: 0 0 5px color-mix(in srgb, var(--info-color, #2196f3) 70%, transparent);
     animation: particle-discharge 1.6s linear infinite;
+  }
+  /* while fading out (idle) keep the dots frozen where they are rather than
+     letting the animation reset them to the centre. */
+  .batt-particles:not(.show) .particle {
+    animation-play-state: paused;
   }
   @keyframes particle-charge {
     0% {
@@ -129,7 +145,7 @@ export const cardStyles = css`
     stroke: var(--state-sensor-battery-high-color, #43a047);
     stroke-width: 5;
     stroke-linecap: round;
-    transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+    transition: stroke-dashoffset 0.5s ease, stroke 0.55s ease;
   }
   .ring-fill.low {
     stroke: var(--error-color, #db4437);
@@ -140,13 +156,19 @@ export const cardStyles = css`
   .ring-fill.discharge {
     stroke: var(--info-color, #2196f3);
   }
-  /* a spark that travels around the ring while charging / discharging */
+  /* a spark that travels around the ring while charging / discharging; fades
+     in/out (.show) and transitions colour rather than popping on state change */
   .ring-spin {
     fill: none;
     stroke-width: 5;
     stroke-linecap: round;
     transform-origin: 50% 50%;
     transform-box: fill-box;
+    opacity: 0;
+    transition: opacity 0.55s ease, stroke 0.55s ease;
+  }
+  .ring-spin.show {
+    opacity: 1;
   }
   .ring-spin.charge {
     stroke: var(--state-sensor-battery-high-color, #43a047);
@@ -155,6 +177,9 @@ export const cardStyles = css`
   .ring-spin.discharge {
     stroke: var(--info-color, #2196f3);
     animation: ring-spin 1.9s linear infinite reverse;
+  }
+  .ring-spin:not(.show) {
+    animation-play-state: paused;
   }
   @keyframes ring-spin {
     to {

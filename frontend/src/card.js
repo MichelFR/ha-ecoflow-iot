@@ -52,6 +52,8 @@ export class EcoFlowEnergyCard extends LitElement {
     super();
     this._dialog = null; // null | "panels" | "today" | "battery"
     this._confirmAc = null; // {slot,label} awaiting turn-off confirmation
+    this._battDir = ""; // last battery flow ("charge"/"discharge"); kept so the
+    // particle/spark layer can fade out in place instead of snapping when idle
     this._todayWh = undefined; // undefined = not fetched, null = unavailable
     this._hourly = {}; // {hour: Wh} actual production for the range
     this._forecasts = {}; // raw energy/solar_forecast result
@@ -412,6 +414,12 @@ export class EcoFlowEnergyCard extends LitElement {
           ? "low"
           : "";
     const active = charging ? "charge" : discharging ? "discharge" : "";
+    // Keep the last flow direction so the particles/spark keep their colour and
+    // motion while fading out when the battery goes idle (rather than vanishing
+    // or snapping). `flowing` drives the fade; `dir` drives colour + direction.
+    if (active) this._battDir = active;
+    const dir = active || this._battDir;
+    const flowing = !!active;
 
     const C = 2 * Math.PI * 44; // ring circumference (r=44 in the 100x100 viewBox)
     const pct = soc != null ? Math.max(0, Math.min(100, soc)) : 0;
@@ -453,9 +461,9 @@ export class EcoFlowEnergyCard extends LitElement {
                 (1 - pct / 100)
               ).toFixed(1)}"
             ></circle>
-            ${active
-              ? html`<circle
-                  class="ring-spin ${active}"
+            ${dir
+              ? svg`<circle
+                  class="ring-spin ${dir} ${flowing ? "show" : ""}"
                   cx="50"
                   cy="50"
                   r="44"
@@ -476,8 +484,8 @@ export class EcoFlowEnergyCard extends LitElement {
             })}
           </svg>`
         : ""}
-      ${active
-        ? html`<div class="batt-particles ${active}">
+      ${socState && dir
+        ? html`<div class="batt-particles ${dir} ${flowing ? "show" : ""}">
             ${Array.from({ length: 12 }, (_, i) => {
               const angle = i * 30; // evenly spaced around the ring
               // decorrelate phase from angle (5 is coprime with 12) so the
