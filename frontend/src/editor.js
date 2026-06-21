@@ -53,6 +53,7 @@ const ENTITY_ONLY_SLOTS = new Set();
 const PAGES = [
   { id: "appearance", icon: "mdi:palette-outline" },
   { id: "entities", icon: "mdi:tune-variant" },
+  { id: "stats", icon: "mdi:chart-box-outline" },
   { id: "panels", icon: "mdi:solar-panel" },
   { id: "forecast", icon: "mdi:weather-partly-cloudy" },
   { id: "advanced", icon: "mdi:cog-outline" },
@@ -163,6 +164,11 @@ export class EcoFlowEnergyCardEditor extends LitElement {
       const n = sel === undefined ? providers.length : sel.length;
       return this._t("editor.forecast_selected", { n, total: providers.length });
     }
+    if (pageId === "stats") {
+      const stats = this._config.stats;
+      if (!Array.isArray(stats)) return this._t("editor.stats_default");
+      return this._t("editor.stats_count", { n: stats.length });
+    }
     if (pageId === "advanced") {
       return this._config.collection_key || this._t("editor.none");
     }
@@ -197,15 +203,17 @@ export class EcoFlowEnergyCardEditor extends LitElement {
       )}
       ${page.id === "appearance"
         ? this._renderImagePicker()
-        : page.id === "panels"
-          ? this._renderPanelsPage()
-          : page.id === "forecast"
-            ? this._renderForecastPage()
-            : page.id === "advanced"
-              ? this._renderAdvancedPage()
-              : (PAGE_SLOTS[page.id] || []).map(([key, icon]) =>
-                  this._renderSlot(key, icon)
-                )}`;
+        : page.id === "stats"
+          ? this._renderStatsPage()
+          : page.id === "panels"
+            ? this._renderPanelsPage()
+            : page.id === "forecast"
+              ? this._renderForecastPage()
+              : page.id === "advanced"
+                ? this._renderAdvancedPage()
+                : (PAGE_SLOTS[page.id] || []).map(([key, icon]) =>
+                    this._renderSlot(key, icon)
+                  )}`;
   }
 
   /* -- appearance: device-image picker (Auto + bundled options) -- */
@@ -278,6 +286,146 @@ export class EcoFlowEnergyCardEditor extends LitElement {
     const config = { ...this._config, type: `custom:${CARD_TYPE}` };
     if (value) config.collection_key = value;
     else delete config.collection_key;
+    this._dispatch(config);
+  }
+
+  /* -- stats page: configure the Solar/Grid stat tiles (or any entities) --
+
+     With no `stats` key the card shows its built-in Solar + Grid tiles. The
+     "Customize" button seeds an explicit list from those defaults; from then
+     on the list is fully editable (entity, name, icon, native tap action). */
+
+  _renderStatsPage() {
+    const stats = this._config.stats;
+    if (!Array.isArray(stats)) {
+      return html`<div class="hint top-hint">
+          ${this._t("editor.stats_default_hint")}
+        </div>
+        <button class="filled-btn" @click=${() => this._seedDefaultStats()}>
+          ${this._t("editor.stats_customize")}
+        </button>`;
+    }
+    return html`<div class="hint top-hint">${this._t("editor.stats_hint")}</div>
+      ${stats.map((item, i) => this._renderStatBlock(item, i, stats.length))}
+      <div class="stats-actions">
+        <button class="add-btn" @click=${() => this._addStat()}>
+          <ha-icon icon="mdi:plus"></ha-icon>${this._t("editor.stats_add")}
+        </button>
+        <button class="text-btn" @click=${() => this._resetStats()}>
+          ${this._t("editor.stats_reset")}
+        </button>
+      </div>`;
+  }
+
+  _renderStatBlock(item, i, count) {
+    const schema = [
+      { name: "entity", selector: { entity: {} } },
+      { name: "name", selector: { text: {} } },
+      { name: "icon", selector: { icon: {} } },
+      { name: "tap_action", selector: { ui_action: {} } },
+    ];
+    const title = item.name || item.entity || this._t("editor.stat_n", { n: i + 1 });
+    return html`<div class="panel-block">
+      <div class="panel-title-row">
+        <ha-icon icon=${item.icon || "mdi:chart-box-outline"}></ha-icon>
+        <span class="panel-title">${title}</span>
+        <button
+          class="icon-btn"
+          .disabled=${i === 0}
+          title=${this._t("editor.stats_move_up")}
+          @click=${() => this._moveStat(i, -1)}
+        >
+          <ha-icon icon="mdi:arrow-up"></ha-icon>
+        </button>
+        <button
+          class="icon-btn"
+          .disabled=${i === count - 1}
+          title=${this._t("editor.stats_move_down")}
+          @click=${() => this._moveStat(i, 1)}
+        >
+          <ha-icon icon="mdi:arrow-down"></ha-icon>
+        </button>
+        <button
+          class="icon-btn danger"
+          title=${this._t("editor.stats_remove")}
+          @click=${() => this._removeStat(i)}
+        >
+          <ha-icon icon="mdi:delete-outline"></ha-icon>
+        </button>
+      </div>
+      <ha-form
+        .hass=${this.hass}
+        .data=${item}
+        .schema=${schema}
+        .computeLabel=${(s) => this._t(`editor.stat_field_${s.name}`)}
+        @value-changed=${(ev) => {
+          ev.stopPropagation();
+          this._updateStat(i, ev.detail.value);
+        }}
+      ></ha-form>
+    </div>`;
+  }
+
+  _seedDefaultStats() {
+    const map = this._defaults();
+    const resolve = (slot) => {
+      const ov = this._config.entities?.[slot];
+      if (ov && isEntityId(ov) && !isTemplate(ov)) return ov;
+      return map[slot] || "";
+    };
+    this._setStats([
+      {
+        entity: resolve("sensor.pv_total"),
+        name: this._t("card.solar"),
+        icon: "mdi:solar-power-variant",
+      },
+      {
+        entity: resolve("sensor.grid_power"),
+        name: this._t("card.grid"),
+        icon: "mdi:transmission-tower",
+      },
+    ]);
+  }
+
+  _updateStat(i, value) {
+    const stats = [...(this._config.stats || [])];
+    // Only keep populated keys so the stored config stays tidy.
+    const cleaned = {};
+    for (const [key, v] of Object.entries(value)) {
+      if (v === "" || v == null) continue;
+      cleaned[key] = v;
+    }
+    stats[i] = cleaned;
+    this._setStats(stats);
+  }
+
+  _addStat() {
+    this._setStats([...(this._config.stats || []), {}]);
+  }
+
+  _removeStat(i) {
+    const stats = [...(this._config.stats || [])];
+    stats.splice(i, 1);
+    this._setStats(stats);
+  }
+
+  _moveStat(i, dir) {
+    const stats = [...(this._config.stats || [])];
+    const j = i + dir;
+    if (j < 0 || j >= stats.length) return;
+    [stats[i], stats[j]] = [stats[j], stats[i]];
+    this._setStats(stats);
+  }
+
+  _setStats(stats) {
+    // An explicit (even empty) list is persisted; that's how the card knows to
+    // use custom tiles instead of the built-in Solar + Grid defaults.
+    this._dispatch({ ...this._config, stats, type: `custom:${CARD_TYPE}` });
+  }
+
+  _resetStats() {
+    const config = { ...this._config, type: `custom:${CARD_TYPE}` };
+    delete config.stats;
     this._dispatch(config);
   }
 
@@ -778,6 +926,88 @@ export class EcoFlowEnergyCardEditor extends LitElement {
       ha-form {
         display: block;
         margin-bottom: 12px;
+      }
+      .icon-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        flex: 0 0 auto;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+      .icon-btn ha-icon {
+        --mdc-icon-size: 20px;
+        color: inherit;
+      }
+      .icon-btn:hover:not([disabled]) {
+        background: var(--secondary-background-color);
+      }
+      .icon-btn[disabled] {
+        opacity: 0.3;
+        cursor: default;
+      }
+      .icon-btn.danger:hover:not([disabled]) {
+        color: var(--error-color, #db4437);
+      }
+      .stats-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px dashed var(--divider-color);
+        background: transparent;
+        color: var(--primary-color);
+        padding: 8px 14px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.95em;
+        font-weight: 600;
+        transition: background-color 0.15s ease;
+      }
+      .add-btn ha-icon {
+        --mdc-icon-size: 18px;
+      }
+      .add-btn:hover {
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+      }
+      .filled-btn {
+        border: none;
+        border-radius: 20px;
+        padding: 10px 22px;
+        font-size: 0.95em;
+        font-weight: 600;
+        cursor: pointer;
+        background: var(--primary-color);
+        color: var(--text-primary-color, #fff);
+        transition: filter 0.15s ease;
+      }
+      .filled-btn:hover {
+        filter: brightness(1.08);
+      }
+      .text-btn {
+        border: none;
+        border-radius: 20px;
+        padding: 8px 14px;
+        font-size: 0.95em;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        color: var(--primary-color);
+        transition: background-color 0.15s ease;
+      }
+      .text-btn:hover {
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
       }
     `;
   }

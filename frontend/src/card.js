@@ -230,20 +230,25 @@ export class EcoFlowEnergyCard extends LitElement {
     return wh != null ? wh / 1000 : null;
   }
 
-  /* "Solar today", or the selected date when an energy period is active. */
-  _periodLabel() {
+  /* Whether the active range (an Energy date selection, if bound) refers to
+   * today. Without a bound collection the range is always today. */
+  _isToday() {
     const ref = this._dataRange().ref;
     const now = new Date();
-    const isToday =
+    return (
       ref.getFullYear() === now.getFullYear() &&
       ref.getMonth() === now.getMonth() &&
-      ref.getDate() === now.getDate();
-    if (isToday) return this._t("card.today");
-    return ref.toLocaleDateString(this.hass?.locale?.language || undefined, {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
+      ref.getDate() === now.getDate()
+    );
+  }
+
+  /* "Solar today", or the selected date when an energy period is active. */
+  _periodLabel() {
+    if (this._isToday()) return this._t("card.today");
+    return this._dataRange().ref.toLocaleDateString(
+      this.hass?.locale?.language || undefined,
+      { weekday: "short", day: "numeric", month: "short" }
+    );
   }
 
   /* -- live template rendering for overrides -- */
@@ -309,6 +314,14 @@ export class EcoFlowEnergyCard extends LitElement {
     }
     this._map = entityMap(this.hass, device.ents);
 
+    // When bound to an Energy date selector and a day other than today is
+    // selected, the live tiles (battery, grid, AC) all show current data and
+    // are unrelated to the chosen day — so collapse to just the solar
+    // production / forecast graph for that day.
+    if (!this._isToday()) {
+      return html`<ha-card>${this._forecastGraph()}</ha-card>`;
+    }
+
     return html`<ha-card>
       ${this._renderHead(device)}
       ${this._renderStats()}
@@ -317,22 +330,7 @@ export class EcoFlowEnergyCard extends LitElement {
         ? this._dialogFrame(this._t("panels.title"), renderPanels(this))
         : ""}
       ${this._dialog === "today"
-        ? this._dialogFrame(
-            this._periodLabel(),
-            renderForecastGraph(this, {
-              title: this._periodLabel(),
-              actual: this._hourly || {},
-              forecast: forecastHourly(
-                this._mergedForecast(),
-                this._dataRange().ref
-              ),
-              totalWh: this._todayWh,
-              showForecast:
-                this._show("show_forecast") &&
-                Object.keys(this._forecasts || {}).length > 0,
-            }),
-            "large"
-          )
+        ? this._dialogFrame(this._periodLabel(), this._forecastGraph(), "large")
         : ""}
       ${this._dialog === "battery"
         ? this._dialogFrame(this._t("battery.title"), this._renderBatteryDetail())
@@ -477,6 +475,20 @@ export class EcoFlowEnergyCard extends LitElement {
               ><title>${t.label} ${Math.round(t.v)}%</title></line>`;
             })}
           </svg>`
+        : ""}
+      ${active
+        ? html`<div class="batt-particles ${active}">
+            ${Array.from({ length: 12 }, (_, i) => {
+              const angle = i * 30; // evenly spaced around the ring
+              // decorrelate phase from angle (5 is coprime with 12) so the
+              // flow reads as a steady radial stream rather than a swirl.
+              const delay = (((i * 5) % 12) / 12) * 1.6;
+              return html`<span
+                class="particle"
+                style="--angle:${angle}deg;animation-delay:${delay.toFixed(2)}s"
+              ></span>`;
+            })}
+          </div>`
         : ""}
       ${showImg
         ? html`<picture
@@ -712,6 +724,15 @@ export class EcoFlowEnergyCard extends LitElement {
   }
 
   _renderStats() {
+    // A configured `stats` list replaces the built-in Solar + Grid tiles with
+    // arbitrary entities, each with its own tap action. Absent `stats` keeps
+    // the default behaviour below (solar breakdown + grid import/export).
+    if (Array.isArray(this._config.stats)) {
+      return html`<div class="stats custom">
+        ${this._config.stats.map((item) => this._renderCustomStat(item))}
+      </div>`;
+    }
+
     const solar = numState(this._state("sensor.pv_total"));
     const panels = panelData(this);
     const canBreakdown = this._show("show_panels") && panels.length > 0;
@@ -769,6 +790,125 @@ export class EcoFlowEnergyCard extends LitElement {
       </div>
       <div class="stat-sub">${label}</div>
     </div>`;
+  }
+
+  /* A user-configured stat tile: any entity, optional name/icon, and a native
+   * Home Assistant tap action (more-info by default). */
+  _renderCustomStat(item) {
+    if (!item || (!item.entity && !item.name)) return html``;
+    const stateObj = item.entity ? this.hass.states[item.entity] : undefined;
+    const name =
+      item.name || stateObj?.attributes?.friendly_name || item.entity || "";
+    const action = item.tap_action;
+    const clickable = !action || action.action !== "none";
+    return html`<div
+      class="stat ${clickable ? "clickable" : ""}"
+      @click=${clickable
+        ? () => this._handleAction(action, item.entity)
+        : null}
+    >
+      <div class="stat-head">
+        ${item.icon
+          ? html`<ha-icon icon=${item.icon}></ha-icon>`
+          : stateObj
+            ? html`<ha-state-icon
+                .hass=${this.hass}
+                .stateObj=${stateObj}
+              ></ha-state-icon>`
+            : html`<ha-icon icon="mdi:gauge"></ha-icon>`}
+        ${name}
+      </div>
+      <div class="stat-value">${this._metric(this._statValue(stateObj))}</div>
+    </div>`;
+  }
+
+  /* Format an arbitrary entity state as { n, u } for the metric display:
+   * watts collapse to W/kW, other numbers keep their unit, non-numeric states
+   * (e.g. "on") show as-is. */
+  _statValue(stateObj) {
+    const raw = stateObj?.state;
+    if (raw == null || raw === "unavailable" || raw === "unknown") {
+      return { n: "–", u: "" };
+    }
+    const num = numState(stateObj);
+    const unit = stateObj.attributes?.unit_of_measurement || "";
+    if (num == null) return { n: raw, u: "" };
+    if (unit === "W") return splitPower(num);
+    const n = Number.isInteger(num) ? String(num) : num.toFixed(1);
+    return { n, u: unit };
+  }
+
+  /* Minimal Home Assistant action handler for tap actions configured via the
+   * native ui-action editor. Covers the common actions; unknown ones fall back
+   * to more-info. */
+  _handleAction(action, entityId) {
+    const cfg = action || { action: "more-info" };
+    const type = cfg.action || "more-info";
+    if (type === "none") return;
+    if (cfg.confirmation) {
+      const text =
+        cfg.confirmation.text || this._t("card.confirm_action") || "Are you sure?";
+      if (!window.confirm(text)) return;
+    }
+    switch (type) {
+      case "more-info":
+        this._moreInfoId(cfg.entity || entityId);
+        return;
+      case "toggle": {
+        const id = cfg.entity || entityId;
+        if (id) {
+          this.hass.callService("homeassistant", "toggle", { entity_id: id });
+        }
+        return;
+      }
+      case "navigate":
+        if (cfg.navigation_path) {
+          history.pushState(null, "", cfg.navigation_path);
+          this.dispatchEvent(
+            new CustomEvent("location-changed", {
+              detail: { replace: false },
+              bubbles: true,
+              composed: true,
+            })
+          );
+        }
+        return;
+      case "url":
+        if (cfg.url_path) {
+          window.open(cfg.url_path, cfg.new_tab === false ? "_self" : "_blank");
+        }
+        return;
+      case "perform-action":
+      case "call-service": {
+        const svc = cfg.perform_action || cfg.service;
+        const [domain, service] = (svc || "").split(".", 2);
+        if (domain && service) {
+          this.hass.callService(
+            domain,
+            service,
+            cfg.data || cfg.service_data || {},
+            cfg.target
+          );
+        }
+        return;
+      }
+      default:
+        this._moreInfoId(cfg.entity || entityId);
+    }
+  }
+
+  /* The hourly solar production graph with the forecast curve over it, for the
+   * active range. Shown in the "today" dialog and inline for a past day. */
+  _forecastGraph() {
+    return renderForecastGraph(this, {
+      title: this._periodLabel(),
+      actual: this._hourly || {},
+      forecast: forecastHourly(this._mergedForecast(), this._dataRange().ref),
+      totalWh: this._todayWh,
+      showForecast:
+        this._show("show_forecast") &&
+        Object.keys(this._forecasts || {}).length > 0,
+    });
   }
 
   _renderToday() {

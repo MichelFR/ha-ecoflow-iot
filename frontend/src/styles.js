@@ -48,38 +48,69 @@ export const cardStyles = css`
     border-radius: 50%;
     background: var(--secondary-background-color);
   }
-  .batt-circle.charge {
-    animation: battery-glow 1.8s ease-in-out infinite;
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 36%, transparent);
+  /* energy-flow particles: small dots that stream inward (absorbed into the
+     device) while charging and outward while discharging — replaces the old
+     pulsing glow. Lives behind the device image so particles visually merge
+     into / emerge from the device near the centre. */
+  .batt-particles {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
   }
-  .batt-circle.discharge {
-    animation: battery-discharge-glow 1.8s ease-in-out infinite;
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--info-color, #2196f3) 36%, transparent);
+  .batt-particles .particle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%;
+    opacity: 0;
+    will-change: transform, opacity;
   }
-  @keyframes battery-glow {
-    0%,
+  .batt-particles.charge .particle {
+    background: var(--state-sensor-battery-high-color, #43a047);
+    box-shadow: 0 0 5px color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 70%, transparent);
+    animation: particle-charge 1.6s linear infinite;
+  }
+  .batt-particles.discharge .particle {
+    background: var(--info-color, #2196f3);
+    box-shadow: 0 0 5px color-mix(in srgb, var(--info-color, #2196f3) 70%, transparent);
+    animation: particle-discharge 1.6s linear infinite;
+  }
+  @keyframes particle-charge {
+    0% {
+      transform: rotate(var(--angle)) translateY(-64px) scale(1);
+      opacity: 0;
+    }
+    15%,
+    80% {
+      opacity: 1;
+    }
     100% {
-      box-shadow:
-        0 0 0 0 color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 20%, transparent),
-        0 0 16px color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 28%, transparent);
-    }
-    50% {
-      box-shadow:
-        0 0 0 7px color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 11%, transparent),
-        0 0 26px color-mix(in srgb, var(--state-sensor-battery-high-color, #43a047) 48%, transparent);
+      transform: rotate(var(--angle)) translateY(-22px) scale(0.3);
+      opacity: 0;
     }
   }
-  @keyframes battery-discharge-glow {
-    0%,
-    100% {
-      box-shadow:
-        0 0 0 0 color-mix(in srgb, var(--info-color, #2196f3) 20%, transparent),
-        0 0 16px color-mix(in srgb, var(--info-color, #2196f3) 28%, transparent);
+  @keyframes particle-discharge {
+    0% {
+      transform: rotate(var(--angle)) translateY(-22px) scale(0.3);
+      opacity: 0;
     }
-    50% {
-      box-shadow:
-        0 0 0 7px color-mix(in srgb, var(--info-color, #2196f3) 11%, transparent),
-        0 0 26px color-mix(in srgb, var(--info-color, #2196f3) 48%, transparent);
+    15%,
+    80% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(var(--angle)) translateY(-64px) scale(1);
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .batt-particles .particle {
+      animation: none !important;
     }
   }
   .batt-ring {
@@ -258,6 +289,10 @@ export const cardStyles = css`
     gap: 12px;
     margin-top: 16px;
   }
+  /* a configured stat list can hold any number of tiles — let them wrap. */
+  .stats.custom {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
   .stat {
     background: var(--secondary-background-color);
     border-radius: 14px;
@@ -280,7 +315,8 @@ export const cardStyles = css`
     color: var(--secondary-text-color);
     font-size: 0.85em;
   }
-  .stat-head ha-icon {
+  .stat-head ha-icon,
+  .stat-head ha-state-icon {
     --mdc-icon-size: 18px;
   }
   .stat-head .more {

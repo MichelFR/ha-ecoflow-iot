@@ -20,7 +20,8 @@
     "discharge_limit": "Discharge ≥",
     "ac1": "AC 1",
     "ac2": "AC 2",
-    "off": "Off"
+    "off": "Off",
+    "confirm_action": "Are you sure?"
   },
   "battery": {
     "title": "Battery",
@@ -73,11 +74,27 @@
     "forecast_selected": "{n} of {total} providers",
     "none": "Not set",
     "collection_key": "Energy collection key",
-    "collection_hint": "Optional. To follow a date chosen in an Energy period selector card (Energy date selection), enter the same collection key here as on that card — it starts with “energy_”; use “energy” for a selector left on its default key. Leave empty to always show today."
+    "collection_hint": "Optional. To follow a date chosen in an Energy period selector card (Energy date selection), enter the same collection key here as on that card — it starts with “energy_”; use “energy” for a selector left on its default key. Leave empty to always show today.",
+    "stats_default": "Default (Solar, Grid)",
+    "stats_count": "{n} tiles",
+    "stats_default_hint": "The card shows live Solar and Grid power. Customize to show any entities you like instead, each with its own tap action.",
+    "stats_customize": "Customize tiles",
+    "stats_hint": "Add the entities to show as stat tiles. Set a name and icon, and choose what happens on tap (more-info by default).",
+    "stats_add": "Add tile",
+    "stats_reset": "Reset to default",
+    "stats_remove": "Remove",
+    "stats_move_up": "Move up",
+    "stats_move_down": "Move down",
+    "stat_n": "Tile {n}",
+    "stat_field_entity": "Entity",
+    "stat_field_name": "Name",
+    "stat_field_icon": "Icon",
+    "stat_field_tap_action": "Tap action"
   },
   "page": {
     "appearance": "Appearance",
     "entities": "Entities",
+    "stats": "Stat tiles",
     "panels": "Solar panels",
     "forecast": "Solar forecast",
     "advanced": "Advanced"

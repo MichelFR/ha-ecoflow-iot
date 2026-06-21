@@ -20,7 +20,8 @@
     "discharge_limit": "Entladen ≥",
     "ac1": "AC 1",
     "ac2": "AC 2",
-    "off": "Aus"
+    "off": "Aus",
+    "confirm_action": "Sind Sie sicher?"
   },
   "battery": {
     "title": "Batterie",
@@ -73,11 +74,27 @@
     "forecast_selected": "{n} von {total} Anbietern",
     "none": "Nicht festgelegt",
     "collection_key": "Energie-Sammlungsschlüssel",
-    "collection_hint": "Optional. Um einem in einer Energie-Zeitraumauswahl-Karte gewählten Datum zu folgen (Energie-Datumsauswahl), geben Sie hier denselben Sammlungsschlüssel ein wie auf jener Karte — er beginnt mit „energy_“; verwenden Sie „energy“ für eine Auswahl, die auf ihrem Standardschlüssel belassen wurde. Leer lassen, um immer heute anzuzeigen."
+    "collection_hint": "Optional. Um einem in einer Energie-Zeitraumauswahl-Karte gewählten Datum zu folgen (Energie-Datumsauswahl), geben Sie hier denselben Sammlungsschlüssel ein wie auf jener Karte — er beginnt mit „energy_“; verwenden Sie „energy“ für eine Auswahl, die auf ihrem Standardschlüssel belassen wurde. Leer lassen, um immer heute anzuzeigen.",
+    "stats_default": "Standard (Solar, Netz)",
+    "stats_count": "{n} Kacheln",
+    "stats_default_hint": "Die Karte zeigt die aktuelle Solar- und Netzleistung. Passen Sie sie an, um stattdessen beliebige Entitäten anzuzeigen — jede mit eigener Tipp-Aktion.",
+    "stats_customize": "Kacheln anpassen",
+    "stats_hint": "Fügen Sie die Entitäten hinzu, die als Kacheln angezeigt werden sollen. Legen Sie Name und Symbol fest und wählen Sie, was beim Tippen passiert (standardmäßig Info-Dialog).",
+    "stats_add": "Kachel hinzufügen",
+    "stats_reset": "Auf Standard zurücksetzen",
+    "stats_remove": "Entfernen",
+    "stats_move_up": "Nach oben",
+    "stats_move_down": "Nach unten",
+    "stat_n": "Kachel {n}",
+    "stat_field_entity": "Entität",
+    "stat_field_name": "Name",
+    "stat_field_icon": "Symbol",
+    "stat_field_tap_action": "Tipp-Aktion"
   },
   "page": {
     "appearance": "Darstellung",
     "entities": "Entitäten",
+    "stats": "Kacheln",
     "panels": "Solarmodule",
     "forecast": "Solarprognose",
     "advanced": "Erweitert"
