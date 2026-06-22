@@ -44,12 +44,14 @@
           "enable_mqtt": "MQTT für Live-Daten verwenden",
           "poll_interval": "HTTP-Abrufintervall (Sekunden)",
           "mqtt_stale_seconds": "MQTT-Veralterungsschwelle (Sekunden)",
+          "mqtt_refresh_interval": "MQTT-Aktualisierungsintervall (Sekunden)",
           "invert_grid_sign": "Vorzeichen der Stream-Netzleistung umkehren",
           "reset_grid_energy": "Netz-Import/Export-Energiezähler & Verlauf zurücksetzen"
         },
         "data_description": {
           "poll_interval": "Wie oft die HTTP-API abgefragt wird (Fallback, wenn MQTT nicht verfügbar ist, sowie der Takt zum Aktualisieren reiner HTTP-Werte).",
           "mqtt_stale_seconds": "Trifft innerhalb dieses Zeitfensters keine MQTT-Nachricht ein, fragt die Integration die HTTP-API ab.",
+          "mqtt_refresh_interval": "Wie oft aktiv ein frischer Datensatz über MQTT angefordert wird (durch Senden eines „latestQuotas“-get, genau wie die EcoFlow-App). Geräte drosseln ihre Senderate im Leerlauf, sodass ein rein passives Abonnement veraltet, obwohl die Verbindung besteht; dies hält die Daten aktuell. Auf 0 setzen, um es zu deaktivieren und sich nur auf die vom Gerät gesendeten Daten plus den HTTP-Fallback zu verlassen.",
           "invert_grid_sign": "Manche Stream-Geräte melden die Netzleistung mit umgekehrtem Vorzeichen — sie zeigen ins Netz eingespeiste Leistung als positiv statt negativ an, also entgegengesetzt zur Konvention von Home Assistant. Das hängt von Modell und Firmware ab und lässt sich nicht automatisch erkennen. Lassen Sie diese Option aktiviert (Standard), wird das Vorzeichen korrigiert: Die Netzleistung ist beim Einspeisen negativ, und die Sensoren für Netzbezug/-einspeisung zählen in die richtige Richtung. Deaktivieren Sie sie nur, wenn Ihr Gerät bereits der Konvention von Home Assistant entspricht — d. h. beim Einspeisen ins Netz zeigt die Netzleistung bereits negativ an (Bezug positiv, Einspeisung negativ). Wenn Sie diese Einstellung ändern, aktivieren Sie unten auch „Netz-Import/Export-Energiezähler zurücksetzen“ — die bestehenden Werte wurden in die falsche Richtung aufgebaut und korrigieren sich nicht von selbst.",
           "reset_grid_energy": "Einmalige Aktion: Aktivieren und speichern Sie dies, um die Sensoren für Netzbezugs- und Netzeinspeise-Energie vollständig zurückzusetzen. Es setzt die Live-Zähler auf null und löscht deren aufgezeichneten Verlauf sowie die Statistiken des Energie-Dashboards, sodass die alten Daten mit falscher Richtung verschwinden und bei null neu beginnen. Empfohlen nach dem Ändern der Vorzeichen-Einstellung oben. Für den normalen Betrieb deaktiviert lassen."
         }

@@ -28,12 +28,20 @@ jobs:
         run: |
           version=$(python3 -c "import json; print(json.load(open('custom_components/ecoflow_iot/manifest.json'))['version'])")
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          # Pre-release versions carry a non-numeric marker (e.g. 0.28.0b1,
+          # 1.0.0-rc1); plain releases are digits and dots only. Flag those as
+          # GitHub pre-releases so HACS only offers them to beta opt-ins.
+          if echo "$version" | grep -qE '[A-Za-z-]'; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
           if git rev-parse "v$version" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Tag v$version already exists — skipping."
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Will release v$version."
+            echo "Will release v$version (prerelease=$(echo "$version" | grep -qE '[A-Za-z-]' && echo true || echo false))."
           fi
 
       - name: Create release
@@ -42,4 +50,5 @@ jobs:
         with:
           tag_name: v${{ steps.ver.outputs.version }}
           name: v${{ steps.ver.outputs.version }}
+          prerelease: ${{ steps.ver.outputs.prerelease }}
           generate_release_notes: true

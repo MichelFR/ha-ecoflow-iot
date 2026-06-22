@@ -31,6 +31,7 @@ from .const import (
     CONF_ACCESS_KEY,
     CONF_ENABLE_MQTT,
     CONF_INVERT_GRID_SIGN,
+    CONF_MQTT_REFRESH_INTERVAL,
     CONF_MQTT_STALE_SECONDS,
     CONF_POLL_INTERVAL,
     CONF_REGION,
@@ -39,6 +40,7 @@ from .const import (
     DATA_RESET_ENERGY_IDS,
     DEFAULT_ENABLE_MQTT,
     DEFAULT_INVERT_GRID_SIGN,
+    DEFAULT_MQTT_REFRESH_INTERVAL,
     DEFAULT_MQTT_STALE_SECONDS,
     DEFAULT_POLL_INTERVAL,
     DEFAULT_REGION,
@@ -199,6 +201,16 @@ class EcoFlowOptionsFlow(OptionsFlow):
                 ): NumberSelector(
                     NumberSelectorConfig(
                         min=30, max=3600, step=5, mode=NumberSelectorMode.BOX
+                    )
+                ),
+                vol.Required(
+                    CONF_MQTT_REFRESH_INTERVAL,
+                    default=options.get(
+                        CONF_MQTT_REFRESH_INTERVAL, DEFAULT_MQTT_REFRESH_INTERVAL
+                    ),
+                ): NumberSelector(
+                    NumberSelectorConfig(
+                        min=0, max=600, step=5, mode=NumberSelectorMode.BOX
                     )
                 ),
                 vol.Required(
