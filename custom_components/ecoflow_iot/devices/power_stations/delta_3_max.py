@@ -449,7 +449,9 @@ class Delta3MaxDevice(EcoFlowDevice):
 
     model = "EcoFlow Delta 3 Max"
     # Example SNs from spec: D3N1ZE1A9HCE0009, D3M1ZA1A9H7H0136
-    sn_prefixes = ("D3N1", "D3M1")
+    # Family codes "D3N"/"D3M" (the app keys on these). MAX and MAX PLUS share
+    # "D3M"; they are disambiguated by quota (see Delta3MaxPlusDevice.matches).
+    sn_prefixes = ("D3N", "D3M")
 
     def build_command(self, command: dict[str, Any]) -> dict[str, Any]:
         """Wrap control params in the Stream-style routing envelope."""

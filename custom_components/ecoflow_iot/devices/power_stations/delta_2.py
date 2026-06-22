@@ -1435,8 +1435,9 @@ class Delta2Device(EcoFlowDevice):
     """EcoFlow Delta 2 power station."""
 
     model = "EcoFlow Delta 2"
-    # Serial numbers from the spec examples: R331ZEB4ZEAL0528, R331ZCB4ZE86056P
-    sn_prefixes = ("R331",)
+    # Serial numbers from the spec examples: R331ZEB4ZEAL0528, R331ZCB4ZE86056P.
+    # Match the family code "R33" (the app keys on this; R35 = Delta 2 Max).
+    sn_prefixes = ("R33",)
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:

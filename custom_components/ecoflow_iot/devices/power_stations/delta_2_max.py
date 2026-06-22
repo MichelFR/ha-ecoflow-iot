@@ -1226,7 +1226,8 @@ class Delta2MaxDevice(EcoFlowDevice):
 
     model = "EcoFlow Delta 2 Max"
     # SN prefix derived from example serial R351ZFB4HF6L0030 in the spec.
-    sn_prefixes = ("R351",)
+    # Match the family code "R35" (the app keys on this).
+    sn_prefixes = ("R35",)
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:

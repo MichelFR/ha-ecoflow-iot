@@ -459,8 +459,9 @@ class River2ProDevice(EcoFlowDevice):
     """
 
     model = "EcoFlow River 2 Pro"
-    # Prefix derived from example SN: R621ZEB1XE8S0029
-    sn_prefixes: tuple[str, ...] = ("R621",)
+    # Prefix derived from example SN: R621ZEB1XE8S0029. Match the family code
+    # "R62" (R60/R61/R63/R65/R70 are distinct River models, not swallowed).
+    sn_prefixes: tuple[str, ...] = ("R62",)
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:
