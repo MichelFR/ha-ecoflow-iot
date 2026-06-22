@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable
 from datetime import timedelta
 from typing import Any
 
@@ -18,13 +19,16 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import EcoFlowError, EcoFlowHttpClient, EcoFlowMqttClient
 from .const import (
+    DEFAULT_MQTT_REFRESH_INTERVAL,
     DEFAULT_MQTT_STALE_SECONDS,
     DEFAULT_POLL_INTERVAL,
     DOMAIN,
+    OPERATE_LATEST_QUOTAS,
     SET_ACK_TIMEOUT,
     SN_PREFIX_LEN,
 )
@@ -45,6 +49,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         *,
         poll_interval: int = DEFAULT_POLL_INTERVAL,
         stale_seconds: int = DEFAULT_MQTT_STALE_SECONDS,
+        refresh_interval: int = DEFAULT_MQTT_REFRESH_INTERVAL,
         enable_mqtt: bool = True,
     ) -> None:
         """Initialise the coordinator (call :meth:`async_setup` next)."""
@@ -57,6 +62,8 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         )
         self._http = http
         self._stale_seconds = stale_seconds
+        self._refresh_interval = refresh_interval
+        self._refresh_unsub: Callable[[], None] | None = None
         self._enable_mqtt = enable_mqtt
         self._mqtt: EcoFlowMqttClient | None = None
         self._cert: Certification | None = None
@@ -147,6 +154,46 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             client_suffix=self.config_entry.entry_id,
         )
         await self._mqtt.async_connect()
+        self._schedule_active_refresh()
+
+    def _schedule_active_refresh(self) -> None:
+        """Start the periodic MQTT 'latestQuotas' pull (if enabled)."""
+        if self._refresh_unsub is not None or self._refresh_interval <= 0:
+            return
+        self._refresh_unsub = async_track_time_interval(
+            self.hass,
+            self._async_active_refresh,
+            timedelta(seconds=self._refresh_interval),
+        )
+
+    async def _async_active_refresh(self, _now: Any = None) -> None:
+        """Publish a 'latestQuotas' get for each online device.
+
+        Devices throttle their MQTT push cadence when idle, so a passive
+        subscriber sees data go stale even while the connection stays up. This
+        mirrors what the official app does: actively request the full latest
+        snapshot. Replies arrive on the get_reply/quota topics and refresh
+        ``last_mqtt_ts``, which also keeps the HTTP staleness fallback dormant.
+        """
+        mqtt = self._mqtt
+        if mqtt is None or not mqtt.connected:
+            return
+        for sn in self.devices:
+            state = self.data.get(sn)
+            if state is not None and not state.online:
+                continue
+            payload = {
+                "id": int(time.time() * 1000),
+                "version": "1.1",
+                "moduleType": 0,
+                "operateType": OPERATE_LATEST_QUOTAS,
+                "params": {},
+                "sn": sn,
+            }
+            try:
+                await mqtt.async_publish_get(sn, payload)
+            except (RuntimeError, OSError) as err:
+                _LOGGER.debug("Active MQTT refresh failed for %s: %s", sn, err)
 
     async def _async_refresh_certification(self) -> None:
         """Re-fetch broker credentials after an auth failure and reconnect."""
@@ -164,6 +211,9 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
     async def async_shutdown(self) -> None:
         """Disconnect MQTT on unload."""
+        if self._refresh_unsub is not None:
+            self._refresh_unsub()
+            self._refresh_unsub = None
         if self._mqtt is not None:
             await self._mqtt.async_disconnect()
         await super().async_shutdown()
@@ -237,7 +287,11 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         self.async_set_updated_data(self.data)
 
     @callback
-    def _handle_state_change(self, _state: ConnectionState) -> None:
+    def _handle_state_change(self, state: ConnectionState) -> None:
+        # On (re)connect, immediately pull a fresh snapshot rather than waiting
+        # for the first periodic refresh tick.
+        if state is ConnectionState.CONNECTED and self._refresh_interval > 0:
+            self.hass.async_create_task(self._async_active_refresh())
         # Refresh entities (e.g. the connection-status sensor and availability).
         self.async_update_listeners()
 

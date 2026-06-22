@@ -14,6 +14,7 @@ CONF_REGION: Final = "region"
 # Options keys
 CONF_POLL_INTERVAL: Final = "poll_interval"
 CONF_MQTT_STALE_SECONDS: Final = "mqtt_stale_seconds"
+CONF_MQTT_REFRESH_INTERVAL: Final = "mqtt_refresh_interval"
 CONF_ENABLE_MQTT: Final = "enable_mqtt"
 CONF_INVERT_GRID_SIGN: Final = "invert_grid_sign"
 # Transient options-flow checkbox (never persisted): queues a one-shot reset of
@@ -49,9 +50,19 @@ TOPIC_SET_REPLY: Final = "set_reply"
 TOPIC_GET: Final = "get"
 TOPIC_GET_REPLY: Final = "get_reply"
 
+# operateType that asks a device to report its full latest quota snapshot. This
+# is the refresh message the EcoFlow app publishes to the device's get topic
+# (reverse-engineered from the Android app's MqttManager.fetchAllDeviceData).
+OPERATE_LATEST_QUOTAS: Final = "latestQuotas"
+
 # Defaults / tuning.
 DEFAULT_POLL_INTERVAL: Final = 60  # seconds
 DEFAULT_MQTT_STALE_SECONDS: Final = 120  # consider MQTT stale after this many seconds
+# How often to actively pull fresh data over MQTT by publishing a "latestQuotas"
+# get request (0 disables). The official app does this rather than relying purely
+# on the broker pushing — devices throttle their push cadence when idle, so a
+# passive subscriber sees data go stale even while the connection stays up.
+DEFAULT_MQTT_REFRESH_INTERVAL: Final = 20  # seconds
 DEFAULT_ENABLE_MQTT: Final = True
 # Stream firmware reports gridConnectionPower with the opposite sign to Home
 # Assistant's grid convention (it reports feeding the grid as POSITIVE, despite

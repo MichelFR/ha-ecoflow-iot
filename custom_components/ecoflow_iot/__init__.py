@@ -21,11 +21,13 @@ from .const import (
     CARD_URL,
     CONF_ACCESS_KEY,
     CONF_ENABLE_MQTT,
+    CONF_MQTT_REFRESH_INTERVAL,
     CONF_POLL_INTERVAL,
     CONF_MQTT_STALE_SECONDS,
     CONF_REGION,
     CONF_SECRET_KEY,
     DEFAULT_ENABLE_MQTT,
+    DEFAULT_MQTT_REFRESH_INTERVAL,
     DEFAULT_MQTT_STALE_SECONDS,
     DEFAULT_POLL_INTERVAL,
     DEFAULT_REGION,
@@ -68,6 +70,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: EcoFlowConfigEntry) -> b
         http,
         poll_interval=options.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL),
         stale_seconds=options.get(CONF_MQTT_STALE_SECONDS, DEFAULT_MQTT_STALE_SECONDS),
+        refresh_interval=options.get(
+            CONF_MQTT_REFRESH_INTERVAL, DEFAULT_MQTT_REFRESH_INTERVAL
+        ),
         enable_mqtt=options.get(CONF_ENABLE_MQTT, DEFAULT_ENABLE_MQTT),
     )
 

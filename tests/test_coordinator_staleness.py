@@ -31,6 +31,10 @@ def install_ha_stub() -> None:
     helpers.__path__ = []
     sys.modules["homeassistant.helpers"] = helpers
 
+    event = types.ModuleType("homeassistant.helpers.event")
+    event.async_track_time_interval = lambda *args, **kwargs: (lambda: None)
+    sys.modules["homeassistant.helpers.event"] = event
+
     issue_registry = types.ModuleType("homeassistant.helpers.issue_registry")
     issue_registry.IssueSeverity = types.SimpleNamespace(WARNING="warning")
     issue_registry.async_create_issue = lambda *args, **kwargs: None
@@ -95,6 +99,12 @@ import ecoflow_iot.coordinator as coordinator_module  # noqa: E402
 class FakeMqtt:
     connected = True
 
+    def __init__(self) -> None:
+        self.gets: list[tuple[str, dict]] = []
+
+    async def async_publish_get(self, sn: str, payload: dict) -> None:
+        self.gets.append((sn, payload))
+
 
 class FakeHttp:
     def __init__(self) -> None:
@@ -148,3 +158,37 @@ def test_http_fallback_polls_only_stale_mqtt_devices(monkeypatch):
     assert coord.data["fresh"].data_source is DataSource.MQTT
     assert coord.data["stale"].quota["polled"] == "stale"
     assert coord.data["stale"].data_source is DataSource.HTTP
+
+
+def test_active_refresh_publishes_latest_quotas_for_online_devices(monkeypatch):
+    monkeypatch.setattr(coordinator_module.time, "time", lambda: 1000.0)
+    coord = make_coordinator()
+
+    asyncio.run(coord._async_active_refresh())
+
+    sns = [sn for sn, _ in coord._mqtt.gets]
+    assert set(sns) == {"fresh", "stale", "never"}
+    for _, payload in coord._mqtt.gets:
+        assert payload["operateType"] == "latestQuotas"
+        assert payload["params"] == {}
+        assert "sn" in payload and "id" in payload
+
+
+def test_active_refresh_skips_offline_devices(monkeypatch):
+    monkeypatch.setattr(coordinator_module.time, "time", lambda: 1000.0)
+    coord = make_coordinator()
+    coord.data["stale"].online = False
+
+    asyncio.run(coord._async_active_refresh())
+
+    assert {sn for sn, _ in coord._mqtt.gets} == {"fresh", "never"}
+
+
+def test_active_refresh_noop_when_mqtt_disconnected(monkeypatch):
+    monkeypatch.setattr(coordinator_module.time, "time", lambda: 1000.0)
+    coord = make_coordinator()
+    coord._mqtt.connected = False
+
+    asyncio.run(coord._async_active_refresh())
+
+    assert coord._mqtt.gets == []

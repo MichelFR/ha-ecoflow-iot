@@ -21,6 +21,8 @@ from typing import Any
 import paho.mqtt.client as mqtt
 
 from ..const import (
+    TOPIC_GET,
+    TOPIC_GET_REPLY,
     TOPIC_PREFIX,
     TOPIC_QUOTA,
     TOPIC_SET,
@@ -150,7 +152,7 @@ class EcoFlowMqttClient:
             return
 
         for sn in self._device_sns:
-            for suffix in (TOPIC_QUOTA, TOPIC_STATUS, TOPIC_SET_REPLY):
+            for suffix in (TOPIC_QUOTA, TOPIC_STATUS, TOPIC_SET_REPLY, TOPIC_GET_REPLY):
                 client.subscribe(self._topic(sn, suffix), qos=1)
         self._loop.call_soon_threadsafe(self._set_state, ConnectionState.CONNECTED)
 
@@ -183,6 +185,13 @@ class EcoFlowMqttClient:
             return
         if suffix == TOPIC_QUOTA:
             self._on_quota(sn, _unwrap_quota(payload))
+        elif suffix == TOPIC_GET_REPLY:
+            # Reply to an active "latestQuotas" pull: the snapshot is under
+            # ``data`` (some devices answer here, others push on the quota topic
+            # instead — either way keeps us fresh). Ignore pure acks.
+            data = _extract_reply_quota(payload)
+            if data:
+                self._on_quota(sn, data)
         elif suffix == TOPIC_STATUS:
             self._on_status(sn, _parse_status(payload))
         elif suffix == TOPIC_SET_REPLY:
@@ -244,6 +253,20 @@ class EcoFlowMqttClient:
         finally:
             self._pending.pop(msg_id, None)
 
+    async def async_publish_get(self, sn: str, payload: dict[str, Any]) -> None:
+        """Publish a get/refresh request to the device's ``get`` topic.
+
+        Fire-and-forget: the resulting data arrives asynchronously on the
+        ``get_reply`` or ``quota`` topic. A no-op when not connected so callers
+        (e.g. the periodic active refresh) don't have to guard the connection.
+        """
+        client = self._client
+        if client is None or not self.connected:
+            return
+        topic = self._topic(sn, TOPIC_GET)
+        body = json.dumps(payload)
+        await self._hass.async_add_executor_job(client.publish, topic, body, 1)
+
     # ---- helpers ----
 
     def _topic(self, sn: str, suffix: str) -> str:
@@ -264,6 +287,20 @@ def _unwrap_quota(payload: dict[str, Any]) -> dict[str, Any]:
     if isinstance(payload.get("param"), dict):
         return payload["param"]
     return payload
+
+
+def _extract_reply_quota(payload: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the quota map from a get_reply, or None for a bare ack.
+
+    Only a nested ``data``/``params``/``param`` dict is treated as quota; we
+    never merge the top-level envelope (``id``/``code``/``message``) so a pure
+    acknowledgement does not pollute the device state.
+    """
+    for key in ("data", "params", "param"):
+        value = payload.get(key)
+        if isinstance(value, dict) and value:
+            return value
+    return None
 
 
 def _parse_status(payload: dict[str, Any]) -> bool:
