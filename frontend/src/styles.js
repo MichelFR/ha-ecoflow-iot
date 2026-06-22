@@ -733,4 +733,86 @@ export const cardStyles = css`
       transparent 6px 11px
     );
   }
+
+  /* produced-vs-forecast progress (red) */
+  .fc-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: -2px 0 12px;
+  }
+  .fc-progress-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 6px;
+    background: var(--secondary-background-color);
+    overflow: hidden;
+  }
+  .fc-progress-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: var(--energy-solar-color, #ff9800);
+    transition: width 0.5s ease;
+  }
+  .fc-progress-label {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+  }
+
+  /* the live, in-progress hour: same solar colour as the other bars, set apart
+   * by a gentle pulse + glow that reads as "still rising" */
+  .fc-current {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: fc-pulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 3px var(--energy-solar-color, #ff9800));
+  }
+  @keyframes fc-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scaleY(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scaleY(1.04);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fc-current {
+      animation: none;
+    }
+  }
+
+  /* hover / touch tooltip */
+  .fc-hit {
+    fill: transparent;
+    pointer-events: all;
+    cursor: pointer;
+  }
+  .fc-band {
+    fill: var(--primary-text-color);
+    opacity: 0.06;
+  }
+  .fc-tip-box {
+    fill: var(--card-background-color, #1c1c1c);
+    stroke: var(--divider-color);
+    stroke-width: 1;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  }
+  .fc-tip-time {
+    fill: var(--primary-text-color);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .fc-tip-line {
+    fill: var(--secondary-text-color);
+    font-size: 14px;
+  }
+  .fc-tip-line .v {
+    fill: var(--primary-text-color);
+    font-weight: 700;
+  }
 `;
