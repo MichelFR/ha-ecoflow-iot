@@ -1310,7 +1310,9 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
 #   M10EZ  – LD_AC distribution panel
 #   M10E1  – LD_DC distribution panel
 #   M106W  – wireless module (M106WAB4Z…)
-_POWER_KITS_SN_PREFIXES = ("M106Z", "M109Z", "M102Z", "M10EZ", "M10E1", "M106W")
+# The app keys Power Kits on the family code "M10" (M20/M3H are other products);
+# this covers all SKUs above (M106Z/M109Z/M102Z/M10EZ/M10E1/M106W) and variants.
+_POWER_KITS_SN_PREFIXES = ("M10",)
 
 # Distinctive quota key present in all Power Kits deployments
 _POWER_KITS_MARKER = "totalSoc"

@@ -908,11 +908,16 @@ export class EcoFlowEnergyCard extends LitElement {
   /* The hourly solar production graph with the forecast curve over it, for the
    * active range. Shown in the "today" dialog and inline for a past day. */
   _forecastGraph() {
+    const ref = this._dataRange().ref;
+    const merged = this._mergedForecast();
     return renderForecastGraph(this, {
       title: this._periodLabel(),
       actual: this._hourly || {},
-      forecast: forecastHourly(this._mergedForecast(), this._dataRange().ref),
+      forecast: forecastHourly(merged, ref),
       totalWh: this._todayWh,
+      forecastWh: forecastTodayWh(merged, ref),
+      // Only "today" has an in-progress hour to animate (blue bar).
+      currentHour: this._isToday() ? new Date().getHours() : null,
       showForecast:
         this._show("show_forecast") &&
         Object.keys(this._forecasts || {}).length > 0,

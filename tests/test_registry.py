@@ -96,6 +96,22 @@ cases = [
     ("KT21ZCH2ZF170012", {}, "WaveDevice"),
     ("SP10ZAW5ZE9E0052", {}, "SmartHomePanelDevice"),
     ("HD31ZAS4ZFAP0018", {}, "SmartHomePanel2Device"),
+    # Synthetic variant serials: a 4th SN char the integration didn't list
+    # before. These exercise the family-code prefixes (R33/R35/R62/Y71/MR5/
+    # BX1/KT2/HD3/HJ3/M10) broadened from the decompiled app's device registry,
+    # so model variants no longer raise an "unsupported device" repair.
+    ("R332ZEB4ZEAL9999", {}, "Delta2Device"),
+    ("R352ZFB4HF6L9999", {}, "Delta2MaxDevice"),
+    ("R622ZEB1XE8S9999", {}, "River2ProDevice"),
+    ("Y712ZAB4SFAU9999", {}, "DeltaProUltraDevice"),
+    ("MR52ZAS2PG339999", {}, "DeltaPro3Device"),
+    ("BX12ZCB4EF2E9999", {}, "GlacierDevice"),
+    ("KT22ZCH2ZF179999", {}, "WaveDevice"),
+    ("HD32ZAS4ZFAP9999", {}, "SmartHomePanel2Device"),
+    ("HJ32ZDH2ZF699999", {}, "PowerOceanDevice"),
+    ("M109Z9999999999", {}, "PowerKitsDevice"),
+    ("D3M2ZA1A9H7H9999", {"powGetPv2": 0}, "Delta3MaxPlusDevice"),
+    ("D3M2ZA1A9H7H9999", {}, "Delta3MaxDevice"),
 ]
 
 fails = 0

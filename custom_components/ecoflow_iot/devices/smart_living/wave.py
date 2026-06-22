@@ -622,8 +622,9 @@ class WaveDevice(EcoFlowDevice):
 
     model = "EcoFlow WAVE"
 
-    # SN prefix from documented example SNs (e.g. KT21ZCH2ZF170012).
-    sn_prefixes: tuple[str, ...] = ("KT21ZCH2",)
+    # SN prefix from documented example SNs (e.g. KT21ZCH2ZF170012). Match the
+    # family code "KT2" (the app keys on this) to catch WAVE variants.
+    sn_prefixes: tuple[str, ...] = ("KT2",)
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:

@@ -1021,7 +1021,8 @@ class DeltaProUltraDevice(EcoFlowDevice):
     # SN prefixes derived from the example serial numbers in the spec:
     #   Y711ZAB4SFAU0069  →  "Y711Z"
     #   Y711ZKB2SG2Q0005  →  "Y711Z"
-    sn_prefixes: tuple[str, ...] = ("Y711Z",)
+    # Match the family code "Y71" (the app keys on this).
+    sn_prefixes: tuple[str, ...] = ("Y71",)
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:

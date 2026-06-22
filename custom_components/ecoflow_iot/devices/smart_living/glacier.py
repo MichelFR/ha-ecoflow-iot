@@ -902,8 +902,9 @@ class GlacierDevice(EcoFlowDevice):
     """EcoFlow Glacier portable refrigerator/freezer with optional battery."""
 
     model = "EcoFlow Glacier"
-    # SN prefix derived from the documented example SN: BX11ZCB4EF2E0002
-    sn_prefixes = ("BX11Z",)
+    # SN prefix derived from the documented example SN: BX11ZCB4EF2E0002.
+    # Match the family code "BX1" (the app keys on this).
+    sn_prefixes = ("BX1",)
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:

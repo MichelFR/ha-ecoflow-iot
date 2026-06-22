@@ -390,7 +390,8 @@ class Delta3MaxPlusDevice(EcoFlowDevice):
     """
 
     model = "EcoFlow Delta 3 Max Plus"
-    sn_prefixes = ("D3M1",)
+    # Family code "D3M", shared with the MAX; matches() below disambiguates.
+    sn_prefixes = ("D3M",)
 
     @classmethod
     def matches(cls, sn: str, quota: Mapping[str, Any]) -> bool:

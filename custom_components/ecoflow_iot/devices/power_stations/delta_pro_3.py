@@ -1054,7 +1054,8 @@ class DeltaPro3Device(EcoFlowDevice):
     """
 
     model = "EcoFlow Delta Pro 3"
-    sn_prefixes: tuple[str, ...] = ("MR51",)
+    # Match the family code "MR5" (the app keys on this).
+    sn_prefixes: tuple[str, ...] = ("MR5",)
 
     def build_command(self, command: dict[str, Any]) -> dict[str, Any]:
         """Wrap the params dict in the binary-protocol routing envelope."""

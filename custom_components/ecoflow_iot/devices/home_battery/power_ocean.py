@@ -501,8 +501,9 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
 # ---------------------------------------------------------------------------
 
 # Serial-number prefixes for PowerOcean. "HJ31" is from the spec example SNs
-# (HJ31ZDH2ZF690029/25); "J32E" is an observed real-world prefix.
-_SN_PREFIXES = ("HJ31", "J32E")
+# (HJ31ZDH2ZF690029/25); "J32E" is an observed real-world prefix. The app keys
+# on the family codes "HJ3"/"J32", so match those to catch all variants.
+_SN_PREFIXES = ("HJ3", "J32")
 
 # A distinctive top-level quota key that only PowerOcean devices report.
 _DISTINCTIVE_KEY = "bpSoc"

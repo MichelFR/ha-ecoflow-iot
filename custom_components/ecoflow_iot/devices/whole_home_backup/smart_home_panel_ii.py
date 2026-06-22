@@ -492,7 +492,8 @@ class SmartHomePanel2Device(EcoFlowDevice):
     """
 
     model = "EcoFlow Smart Home Panel 2"
-    sn_prefixes: tuple[str, ...] = ("HD31",)
+    # Match the family code "HD3" (the app keys on this).
+    sn_prefixes: tuple[str, ...] = ("HD3",)
 
     def build_command(self, command: dict[str, Any]) -> dict[str, Any]:
         """Wrap control params in the PD303_APP_SET cmdCode envelope.
