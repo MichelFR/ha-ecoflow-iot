@@ -10,5 +10,5 @@
   "issue_tracker": "https://github.com/MichelFR/ha-ecoflow-iot/issues",
   "loggers": ["paho"],
   "requirements": ["paho-mqtt>=1.6.1"],
-  "version": "0.28.0b2"
+  "version": "0.28.0"
 }
