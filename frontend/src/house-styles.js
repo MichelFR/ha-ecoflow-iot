@@ -26,10 +26,14 @@ export const houseCardStyles = css`
   /* The illustration: house render with overlays pinned to the same box. The
      2340×1680 house and 1170×840 overlays share an aspect ratio, so object-fit:
      contain on each lines them up exactly. */
+  /* The house render is 2340×1680; the stage is a touch taller so a clear band
+     is left at the bottom for the battery readout. The house and every overlay
+     are top-aligned (object-position / preserveAspectRatio) so they stay
+     mutually aligned and that band stays free of the illustration. */
   .stage {
     position: relative;
     width: 100%;
-    aspect-ratio: 2340 / 1680;
+    aspect-ratio: 2340 / 1920;
   }
   .layer {
     position: absolute;
@@ -40,6 +44,7 @@ export const houseCardStyles = css`
   }
   img.layer {
     object-fit: contain;
+    object-position: top center;
   }
   .flow {
     transition: opacity 0.4s ease;
@@ -56,7 +61,40 @@ export const houseCardStyles = css`
     z-index: 3;
   }
 
-  /* Top figures — Grid · Solar · Home — over the sky, like the app. */
+  /* Leader lines dropping from each figure into the scene (app-style). */
+  .leaders {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+  }
+  .leader {
+    position: absolute;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--primary-text-color) 38%, transparent),
+      transparent
+    );
+  }
+  .leader.grid {
+    left: 6.5%;
+    top: 13%;
+    height: 62%;
+  }
+  .leader.solar {
+    left: 44.5%;
+    top: 13%;
+    height: 34%;
+  }
+  .leader.home {
+    left: 70%;
+    top: 13%;
+    height: 50%;
+  }
+
+  /* Top figures — Grid · Solar · Home. A soft scrim of the card surface keeps
+     them legible over whatever part of the render sits behind them. */
   .stats {
     position: absolute;
     top: 0;
@@ -64,8 +102,13 @@ export const houseCardStyles = css`
     right: 0;
     z-index: 9;
     display: flex;
-    padding: clamp(10px, 3.5%, 22px) clamp(12px, 4%, 28px) 0;
+    padding: clamp(10px, 3.5%, 22px) clamp(12px, 4%, 28px) clamp(20px, 6%, 48px);
     gap: 4px;
+    background: linear-gradient(
+      to bottom,
+      var(--ha-card-background, var(--card-background-color, #fff)) 28%,
+      transparent
+    );
   }
   .stat {
     flex: 1;
@@ -121,22 +164,31 @@ export const houseCardStyles = css`
     color: var(--energy-grid-return-color, #8353d1);
   }
 
-  /* Battery readout below the box. */
+  /* Battery readout below the box, on a translucent pill so it stays legible
+     wherever it overlaps the render. */
   .battery {
     position: absolute;
     left: 50%;
-    bottom: clamp(6px, 3%, 22px);
+    bottom: clamp(2px, 1.5%, 14px);
     transform: translateX(-50%);
     z-index: 9;
     text-align: center;
-    border-radius: 12px;
-    padding: 4px 10px;
+    border-radius: 14px;
+    padding: 5px 14px;
+    background: color-mix(
+      in srgb,
+      var(--ha-card-background, var(--card-background-color, #fff)) 74%,
+      transparent
+    );
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
   }
   .battery.clickable {
     cursor: pointer;
   }
   .battery.clickable:hover {
-    background: rgba(255, 255, 255, 0.06);
+    filter: brightness(1.08);
   }
   .battery-line {
     display: inline-flex;

@@ -126,11 +126,12 @@ export class EcoFlowHouseCard extends LitElement {
 
   /* -- live values -- */
 
-  /* Grid uses the whole-system grid power when available (the app's sysGridPwr),
-   * falling back to the single grid sensor. Positive = importing from the grid. */
+  /* Grid power, positive = importing from the grid — the same sensor and sign
+   * convention as the Energy card (grid_power has the invert_grid_sign fix
+   * applied; sys_grid_power is the raw, oppositely-signed value). */
   _grid() {
-    const sys = this._state("sensor.sys_grid_power");
-    return numState(sys != null ? sys : this._state("sensor.grid_power"));
+    const grid = this._state("sensor.grid_power");
+    return numState(grid != null ? grid : this._state("sensor.sys_grid_power"));
   }
 
   _flowStates() {
@@ -140,25 +141,18 @@ export class EcoFlowHouseCard extends LitElement {
     const bat = numState(this._state("sensor.bat_power"));
     const soc = numState(this._state("sensor.cms_batt_soc"));
 
-    // Solar route = number of producing PV strings (1..7), or an explicit
-    // override; mirrors the app picking re_space_solar_<n>.
-    let strings = this._config.solar_route;
-    if (!strings || strings === "auto") {
-      strings = 0;
-      for (let i = 1; i <= 4; i++) {
-        if (numState(this._state(`sensor.pv${i}_power`)) > ACTIVE_W) strings++;
-      }
-      strings = strings || 1;
-    }
+    // The solar flow is drawn for the chosen house, so its route follows the
+    // house style (house 1 -> re_space_solar_1, and so on).
+    const route = parseInt(this._config.house || DEFAULT_HOUSE_STYLE, 10) || 1;
 
-    return { grid, solar, load, bat, soc, strings };
+    return { grid, solar, load, bat, soc, route };
   }
 
   /* The flow layers and when each is active, in z-order (declared first =
    * underneath). Files are the reverse-engineered app assets. */
   _flowDefs() {
     return [
-      { key: "solar", file: (s) => solarFlowName(s.strings), active: (s) => s.solar > ACTIVE_W },
+      { key: "solar", file: (s) => solarFlowName(s.route), active: (s) => s.solar > ACTIVE_W },
       { key: "grid_in", file: () => FLOWS.grid_in, active: (s) => s.grid > ACTIVE_W },
       { key: "grid_out", file: () => FLOWS.grid_out, active: (s) => s.grid < -ACTIVE_W },
       { key: "home", file: () => FLOWS.home, active: (s) => s.load > ACTIVE_W },
@@ -206,6 +200,9 @@ export class EcoFlowHouseCard extends LitElement {
         loop: mode !== "soc",
         autoplay: false,
         path: flowUrl(file),
+        // Top-align like the house image so the scene keeps a clear band at the
+        // bottom for the battery readout (see the stage's aspect ratio).
+        rendererSettings: { preserveAspectRatio: "xMidYMin meet" },
       });
       rec = this._flowAnims[key] = { anim, file, ready: false, mode };
       anim.addEventListener("DOMLoaded", () => {
@@ -264,9 +261,20 @@ export class EcoFlowHouseCard extends LitElement {
         <div class="layer flow z-box" data-flow="bat_soc"></div>
         <div class="layer flow z-box" data-flow="bat_chg"></div>
         <div class="layer flow z-box" data-flow="bat_dsg"></div>
-        ${this._renderStats()} ${showBattery ? this._renderBattery() : ""}
+        ${this._renderLeaders()} ${this._renderStats()}
+        ${showBattery ? this._renderBattery() : ""}
       </div>
     </ha-card>`;
+  }
+
+  /* Thin leader lines dropping from each top figure into the scene, as the app
+   * draws them. Decorative; one per shown column. */
+  _renderLeaders() {
+    return html`<div class="leaders">
+      ${this._show("show_grid") ? html`<span class="leader grid"></span>` : ""}
+      ${this._show("show_solar") ? html`<span class="leader solar"></span>` : ""}
+      ${this._show("show_home") ? html`<span class="leader home"></span>` : ""}
+    </div>`;
   }
 
   _renderStats() {
@@ -276,8 +284,8 @@ export class EcoFlowHouseCard extends LitElement {
       const importing = s.grid > ACTIVE_W;
       const exporting = s.grid < -ACTIVE_W;
       cols.push({
-        slot: "sensor.sys_grid_power",
-        fallback: "sensor.grid_power",
+        slot: "sensor.grid_power",
+        fallback: "sensor.sys_grid_power",
         value: s.grid != null ? Math.abs(s.grid) : null,
         label: importing
           ? this._t("house.from_grid")

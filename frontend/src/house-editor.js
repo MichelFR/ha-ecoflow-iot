@@ -74,7 +74,6 @@ export class EcoFlowHouseCardEditor extends LitElement {
     if (!this.hass) return html``;
     const style = this._config.house || DEFAULT_HOUSE_STYLE;
     const mode = this._config.house_mode || DEFAULT_HOUSE_MODE;
-    const route = this._config.solar_route || "auto";
 
     return html`<ha-form
         .hass=${this.hass}
@@ -115,25 +114,6 @@ export class EcoFlowHouseCardEditor extends LitElement {
       </div>
 
       ${TOGGLES.map(([key, def, icon]) => this._renderToggle(key, def, icon))}
-
-      <div class="section">
-        <ha-icon icon="mdi:solar-power-variant"></ha-icon>${this._t(
-          "house.editor.solar_route"
-        )}
-      </div>
-      <div class="hint">${this._t("house.editor.solar_route_hint")}</div>
-      <select
-        class="route"
-        .value=${String(route)}
-        @change=${(ev) => this._set("solar_route", ev.target.value, "auto")}
-      >
-        <option value="auto">${this._t("editor.automatic")}</option>
-        ${[1, 2, 3, 4, 5, 6, 7].map(
-          (n) => html`<option value=${String(n)} ?selected=${String(route) === String(n)}>
-            ${this._t("house.editor.route_n", { n })}
-          </option>`
-        )}
-      </select>
 
       <button class="disclosure" @click=${() => (this._showEntities = !this._showEntities)}>
         <ha-icon icon="mdi:tune-variant"></ha-icon>
@@ -309,15 +289,6 @@ export class EcoFlowHouseCardEditor extends LitElement {
         color: var(--secondary-text-color);
         font-size: 0.85em;
         margin: 4px 4px 10px;
-      }
-      select.route {
-        width: 100%;
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid var(--divider-color);
-        background: var(--secondary-background-color);
-        color: var(--primary-text-color);
-        font-size: 0.95em;
       }
       .disclosure {
         display: flex;

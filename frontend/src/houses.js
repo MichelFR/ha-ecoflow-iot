@@ -51,10 +51,10 @@ export function flowUrl(name) {
   return `${ASSET_BASE}/flows/${name}.json`;
 }
 
-// Solar flow route by number of active PV strings (re_space_solar_1..7): more
-// strings → a flow that fans out to more points on the roof.
-export function solarFlowName(activeStrings) {
-  const n = Math.min(7, Math.max(1, activeStrings || 1));
+// Solar flow drawn for the selected house (re_space_solar_1..7) — each house
+// render has its panels in a particular place, so the flow follows the house.
+export function solarFlowName(houseStyle) {
+  const n = Math.min(7, Math.max(1, houseStyle || 1));
   return `re_space_solar_${n}`;
 }
 

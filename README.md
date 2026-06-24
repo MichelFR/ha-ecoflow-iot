@@ -184,9 +184,8 @@ artwork and flow animations.
   the editor.
 - **Pick the house:** the editor offers **9 house styles** and a **Day / Night / Automatic**
   picture (Automatic follows the sun, falling back to the UI theme).
-- **Configure:** toggle each flow/figure on or off, choose the **solar flow route** (how
-  many roof strings the solar flow fans out to, automatic by default), and override any of
-  the driving sensors.
+- **Configure:** toggle each flow/figure on or off and override any of the driving sensors.
+  The solar flow matches the chosen house.
 - Registers itself as a dashboard resource the same way as the Energy card; in **YAML mode**
   it's the same module: `/ecoflow_iot/ecoflow-energy-card.js`.
 

@@ -45,9 +45,6 @@
       "style": "House style",
       "style_n": "House {n}",
       "mode": "Day / night",
-      "solar_route": "Solar flow route",
-      "solar_route_hint": "How many roof strings the solar flow fans out to. Automatic uses the number of producing panels.",
-      "route_n": "{n} strings",
       "entities": "Entities",
       "entities_hint": "Override the auto-detected sensors that drive the scene. Leave empty to use the integration's defaults."
     }
