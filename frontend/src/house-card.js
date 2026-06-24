@@ -286,6 +286,7 @@ export class EcoFlowHouseCard extends LitElement {
       cols.push({
         slot: "sensor.grid_power",
         fallback: "sensor.sys_grid_power",
+        anchor: "col-grid",
         value: s.grid != null ? Math.abs(s.grid) : null,
         label: importing
           ? this._t("house.from_grid")
@@ -298,6 +299,7 @@ export class EcoFlowHouseCard extends LitElement {
     if (this._show("show_solar")) {
       cols.push({
         slot: "sensor.pv_total",
+        anchor: "col-solar",
         value: s.solar,
         label: this._t("card.solar"),
         cls: s.solar > ACTIVE_W ? "solar" : "",
@@ -306,6 +308,7 @@ export class EcoFlowHouseCard extends LitElement {
     if (this._show("show_home")) {
       cols.push({
         slot: "sensor.sys_load",
+        anchor: "col-home",
         value: s.load,
         label: this._t("house.home"),
         cls: s.load > ACTIVE_W ? "home" : "",
@@ -317,7 +320,7 @@ export class EcoFlowHouseCard extends LitElement {
       ${cols.map((c) => {
         const split = splitPower(c.value);
         return html`<div
-          class="stat ${c.cls} clickable"
+          class="stat ${c.anchor} ${c.cls} clickable"
           @click=${() => this._moreInfo(this._entityId(c.slot) ? c.slot : c.fallback || c.slot)}
         >
           <div class="stat-value">

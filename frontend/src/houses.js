@@ -53,9 +53,13 @@ export function flowUrl(name) {
 
 // Solar flow drawn for the selected house (re_space_solar_1..7) — each house
 // render has its panels in a particular place, so the flow follows the house.
+// Houses 1..7 use the matching flow; 8 and 9 reuse the closest-fitting one.
+const SOLAR_FLOW_BY_HOUSE = { 8: 3, 9: 6 };
+
 export function solarFlowName(houseStyle) {
-  const n = Math.min(7, Math.max(1, houseStyle || 1));
-  return `re_space_solar_${n}`;
+  const route =
+    SOLAR_FLOW_BY_HOUSE[houseStyle] || Math.min(7, Math.max(1, houseStyle || 1));
+  return `re_space_solar_${route}`;
 }
 
 // Fixed flow assets for the remaining paths (all in www/flows/).

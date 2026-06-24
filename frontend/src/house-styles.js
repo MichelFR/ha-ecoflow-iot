@@ -93,40 +93,41 @@ export const houseCardStyles = css`
     height: 50%;
   }
 
-  /* Top figures — Grid · Solar · Home. A soft scrim of the card surface keeps
-     them legible over whatever part of the render sits behind them. */
+  /* Top figures — Grid · Solar · Home. Each figure is left-aligned at the x of
+     its leader line (below), so the figure sits directly above its line. A soft
+     scrim of the card surface keeps them legible over the render behind them. */
   .stats {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     z-index: 9;
-    display: flex;
-    padding: clamp(10px, 3.5%, 22px) clamp(12px, 4%, 28px) clamp(20px, 6%, 48px);
-    gap: 4px;
+    height: clamp(70px, 18%, 112px);
     background: linear-gradient(
       to bottom,
-      var(--ha-card-background, var(--card-background-color, #fff)) 28%,
+      var(--ha-card-background, var(--card-background-color, #fff)) 30%,
       transparent
     );
   }
   .stat {
-    flex: 1;
-    min-width: 0;
+    position: absolute;
+    top: clamp(8px, 3%, 20px);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    text-align: left;
     border-radius: 10px;
-    padding: 4px 6px;
+    /* no left padding so the text's left edge sits exactly on the leader line */
+    padding: 4px 8px 4px 0;
   }
-  /* centre + right columns, evoking the app's three-column header */
-  .stat:nth-child(2) {
-    align-items: center;
-    text-align: center;
+  .stat.col-grid {
+    left: 6.5%;
   }
-  .stat:last-child:nth-child(3) {
-    align-items: flex-end;
-    text-align: right;
+  .stat.col-solar {
+    left: 44.5%;
+  }
+  .stat.col-home {
+    left: 70%;
   }
   .stat.clickable {
     cursor: pointer;
@@ -164,8 +165,7 @@ export const houseCardStyles = css`
     color: var(--energy-grid-return-color, #8353d1);
   }
 
-  /* Battery readout below the box, on a translucent pill so it stays legible
-     wherever it overlaps the render. */
+  /* Battery readout in the clear band below the house — no container needed. */
   .battery {
     position: absolute;
     left: 50%;
@@ -173,22 +173,14 @@ export const houseCardStyles = css`
     transform: translateX(-50%);
     z-index: 9;
     text-align: center;
-    border-radius: 14px;
-    padding: 5px 14px;
-    background: color-mix(
-      in srgb,
-      var(--ha-card-background, var(--card-background-color, #fff)) 74%,
-      transparent
-    );
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    border-radius: 12px;
+    padding: 4px 12px;
   }
   .battery.clickable {
     cursor: pointer;
   }
   .battery.clickable:hover {
-    filter: brightness(1.08);
+    background: rgba(127, 127, 127, 0.12);
   }
   .battery-line {
     display: inline-flex;
