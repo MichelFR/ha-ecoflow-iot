@@ -11,5 +11,8 @@
   "devDependencies": {
     "esbuild": "^0.25.0",
     "lit": "^3.2.0"
+  },
+  "dependencies": {
+    "lottie-web": "^5.13.0"
   }
 }

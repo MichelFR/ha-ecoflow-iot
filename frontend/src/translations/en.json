@@ -23,6 +23,35 @@
     "off": "Off",
     "confirm_action": "Are you sure?"
   },
+  "house": {
+    "home": "Home",
+    "grid": "Grid",
+    "from_grid": "From grid",
+    "to_grid": "To grid",
+    "idle": "Idle",
+    "mode": {
+      "auto": "Automatic",
+      "day": "Day",
+      "night": "Night"
+    },
+    "toggle": {
+      "show_flows": "Animate energy flows",
+      "show_grid": "Show grid power",
+      "show_solar": "Show solar power",
+      "show_home": "Show home consumption",
+      "show_battery": "Show battery"
+    },
+    "editor": {
+      "style": "House style",
+      "style_n": "House {n}",
+      "mode": "Day / night",
+      "solar_route": "Solar flow route",
+      "solar_route_hint": "How many roof strings the solar flow fans out to. Automatic uses the number of producing panels.",
+      "route_n": "{n} strings",
+      "entities": "Entities",
+      "entities_hint": "Override the auto-detected sensors that drive the scene. Leave empty to use the integration's defaults."
+    }
+  },
   "battery": {
     "title": "Battery",
     "idle": "Idle",
@@ -121,6 +150,8 @@
       "bat_power": "Battery power (charge/discharge speed)",
       "pv_total": "Solar power",
       "grid_power": "Grid power",
+      "sys_grid_power": "Grid power (whole system)",
+      "sys_load": "Home consumption",
       "solar_energy": "Solar energy (source for today's total)",
       "pv1_power": "Solar panel 1",
       "pv2_power": "Solar panel 2",

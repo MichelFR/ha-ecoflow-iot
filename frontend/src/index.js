@@ -1,27 +1,45 @@
-/* EcoFlow Energy Card — bundled with the EcoFlow IoT integration.
+/* EcoFlow cards — bundled with the EcoFlow IoT integration.
  *
- * A Lovelace card for EcoFlow Stream devices: device image, an animated battery
- * bar, live Solar and Grid power, and today's solar production with an optional
- * forecast comparison; tapping Solar power reveals a per-panel breakdown.
- * Entities are auto-discovered from the ecoflow_iot integration.
+ * Two Lovelace cards for EcoFlow Stream devices, both auto-discovering their
+ * entities from the ecoflow_iot integration:
+ *
+ *  - EcoFlow Energy Card: device image, an animated battery bar, live Solar and
+ *    Grid power, and today's solar production with an optional forecast.
+ *  - EcoFlow House Card: the whole-home energy-flow illustration — a rendered
+ *    house with the battery box and animated Grid / Solar / Home / battery
+ *    flows, mirroring the EcoFlow app's "space" view.
  *
  * Built on Home Assistant's own frontend elements (ha-card, ha-dialog,
- * ha-switch, ha-form, ha-icon, ha-state-icon); Lit is bundled at build time so
- * the module is self-contained. */
+ * ha-switch, ha-form, ha-icon, ha-state-icon); Lit and lottie-web are bundled
+ * at build time so the module is self-contained. */
 
-import { CARD_TYPE } from "./const.js";
+import { CARD_TYPE, HOUSE_CARD_TYPE } from "./const.js";
 import { EcoFlowEnergyCard } from "./card.js";
 import { EcoFlowEnergyCardEditor } from "./editor.js";
+import { EcoFlowHouseCard } from "./house-card.js";
+import { EcoFlowHouseCardEditor } from "./house-editor.js";
 
 customElements.define(CARD_TYPE, EcoFlowEnergyCard);
 customElements.define(`${CARD_TYPE}-editor`, EcoFlowEnergyCardEditor);
+customElements.define(HOUSE_CARD_TYPE, EcoFlowHouseCard);
+customElements.define(`${HOUSE_CARD_TYPE}-editor`, EcoFlowHouseCardEditor);
 
 window.customCards = window.customCards || [];
-window.customCards.push({
-  type: CARD_TYPE,
-  name: "EcoFlow Energy Card",
-  description:
-    "EcoFlow Stream card with device image, battery bar, solar & grid power, today's production and forecast.",
-  preview: true,
-  documentationURL: "https://github.com/MichelFR/ha-ecoflow-iot",
-});
+window.customCards.push(
+  {
+    type: CARD_TYPE,
+    name: "EcoFlow Energy Card",
+    description:
+      "EcoFlow Stream card with device image, battery bar, solar & grid power, today's production and forecast.",
+    preview: true,
+    documentationURL: "https://github.com/MichelFR/ha-ecoflow-iot",
+  },
+  {
+    type: HOUSE_CARD_TYPE,
+    name: "EcoFlow House Card",
+    description:
+      "Whole-home energy-flow illustration: a house with the battery box and animated grid, solar, home and battery flows.",
+    preview: true,
+    documentationURL: "https://github.com/MichelFR/ha-ecoflow-iot",
+  }
+);

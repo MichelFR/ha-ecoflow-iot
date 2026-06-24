@@ -13,6 +13,13 @@ export const KNOWN_KEYS = {
     "bat_power",
     "pv_total",
     "grid_power",
+    // Whole-system load + grid + per-source split, used by the house card's
+    // energy-flow overlay (the EcoFlow app's "space" view drives the same).
+    "sys_load",
+    "sys_grid_power",
+    "load_from_pv",
+    "load_from_grid",
+    "load_from_bat",
     "solar_energy",
     "pv1_power",
     "pv2_power",

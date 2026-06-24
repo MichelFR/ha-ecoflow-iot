@@ -23,6 +23,35 @@
     "off": "Aus",
     "confirm_action": "Sind Sie sicher?"
   },
+  "house": {
+    "home": "Hausnetz",
+    "grid": "Netz",
+    "from_grid": "Vom Netz",
+    "to_grid": "Ins Netz",
+    "idle": "Bereit",
+    "mode": {
+      "auto": "Automatisch",
+      "day": "Tag",
+      "night": "Nacht"
+    },
+    "toggle": {
+      "show_flows": "Energieflüsse animieren",
+      "show_grid": "Netzleistung anzeigen",
+      "show_solar": "Solarleistung anzeigen",
+      "show_home": "Hausverbrauch anzeigen",
+      "show_battery": "Batterie anzeigen"
+    },
+    "editor": {
+      "style": "Haus-Stil",
+      "style_n": "Haus {n}",
+      "mode": "Tag / Nacht",
+      "solar_route": "Solar-Flussroute",
+      "solar_route_hint": "Auf wie viele Dachstränge sich der Solarfluss verzweigt. Automatisch verwendet die Anzahl erzeugender Module.",
+      "route_n": "{n} Stränge",
+      "entities": "Entitäten",
+      "entities_hint": "Überschreiben Sie die automatisch erkannten Sensoren, die die Darstellung steuern. Leer lassen, um die Standardwerte der Integration zu verwenden."
+    }
+  },
   "battery": {
     "title": "Batterie",
     "idle": "Inaktiv",
@@ -121,6 +150,8 @@
       "bat_power": "Batterieleistung (Lade-/Entladegeschwindigkeit)",
       "pv_total": "Solarleistung",
       "grid_power": "Netzleistung",
+      "sys_grid_power": "Netzleistung (Gesamtsystem)",
+      "sys_load": "Hausverbrauch",
       "solar_energy": "Solarenergie (Quelle für Tagessumme)",
       "pv1_power": "Solarmodul 1",
       "pv2_power": "Solarmodul 2",

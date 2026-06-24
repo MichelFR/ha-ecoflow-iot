@@ -170,6 +170,26 @@ common case you just add it from the dashboard's card picker.
   mode** (the default UI mode). In **YAML mode**, add the resource manually:
   `/ecoflow_iot/ecoflow-energy-card.js` as a **JavaScript Module**.
 
+### EcoFlow House card
+
+A second bundled card, **EcoFlow House**, draws the whole-home energy-flow illustration:
+a rendered house with the battery/inverter box in front, the live **Grid**, **Solar** and
+**Home** figures across the top, the **battery** state below, and **animated flow lines**
+between them — solar when the panels produce, grid in/out by direction, and battery
+charge/discharge. It's the same scene the EcoFlow app shows, built from the app's own
+artwork and flow animations.
+
+- **Add it:** **+ Add Card** → search for **EcoFlow House**. Entities auto-detect from the
+  integration (shared with the Energy card); with more than one Stream, pick the device in
+  the editor.
+- **Pick the house:** the editor offers **9 house styles** and a **Day / Night / Automatic**
+  picture (Automatic follows the sun, falling back to the UI theme).
+- **Configure:** toggle each flow/figure on or off, choose the **solar flow route** (how
+  many roof strings the solar flow fans out to, automatic by default), and override any of
+  the driving sensors.
+- Registers itself as a dashboard resource the same way as the Energy card; in **YAML mode**
+  it's the same module: `/ecoflow_iot/ecoflow-energy-card.js`.
+
 ## How data flows
 
 ```
