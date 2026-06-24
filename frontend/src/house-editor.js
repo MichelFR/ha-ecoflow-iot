@@ -9,10 +9,13 @@ import { isEntityId, isTemplate } from "./format.js";
 import { ensureHaComponents } from "./ha-components.js";
 import { localize } from "./localize.js";
 import {
+  BATTERY_BOXES,
+  DEFAULT_BATTERY,
   DEFAULT_HOUSE_MODE,
   DEFAULT_HOUSE_STYLE,
   HOUSE_MODES,
   HOUSE_STYLES,
+  batteryBoxUrl,
   housePreviewUrl,
 } from "./houses.js";
 
@@ -74,6 +77,8 @@ export class EcoFlowHouseCardEditor extends LitElement {
     if (!this.hass) return html``;
     const style = this._config.house || DEFAULT_HOUSE_STYLE;
     const mode = this._config.house_mode || DEFAULT_HOUSE_MODE;
+    const battery = this._config.battery || DEFAULT_BATTERY;
+    const batteryOn = this._config.show_battery ?? true;
 
     return html`<ha-form
         .hass=${this.hass}
@@ -114,6 +119,27 @@ export class EcoFlowHouseCardEditor extends LitElement {
       </div>
 
       ${TOGGLES.map(([key, def, icon]) => this._renderToggle(key, def, icon))}
+
+      <div class="section">
+        <ha-icon icon="mdi:home-battery-outline"></ha-icon>${this._t(
+          "house.editor.battery"
+        )}
+      </div>
+      <div class=${batteryOn ? "batt-grid" : "batt-grid dim"}>
+        ${BATTERY_BOXES.map(
+          (key) => html`<button
+            class="batt-opt ${battery === key ? "on" : ""}"
+            title=${this._t(`house.battery.${key}`)}
+            @click=${() => this._set("battery", key, DEFAULT_BATTERY)}
+          >
+            <span
+              class="batt-thumb"
+              style=${`background-image:url(${batteryBoxUrl(key)})`}
+            ></span>
+            <span class="batt-label">${this._t(`house.battery.${key}`)}</span>
+          </button>`
+        )}
+      </div>
 
       <button class="disclosure" @click=${() => (this._showEntities = !this._showEntities)}>
         <ha-icon icon="mdi:tune-variant"></ha-icon>
@@ -244,6 +270,49 @@ export class EcoFlowHouseCardEditor extends LitElement {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: 100%;
+      }
+      .batt-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+        gap: 8px;
+      }
+      .batt-grid.dim {
+        opacity: 0.45;
+        pointer-events: none;
+      }
+      .batt-opt {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        background: var(--secondary-background-color);
+        padding: 6px 4px;
+        cursor: pointer;
+        transition: border-color 0.15s ease, filter 0.15s ease;
+      }
+      .batt-opt:hover {
+        filter: brightness(1.1);
+      }
+      .batt-opt.on {
+        border-color: var(--primary-color);
+      }
+      /* The renders frame the box at centre; zoom the thumbnail into it. */
+      .batt-thumb {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 8px;
+        background-repeat: no-repeat;
+        background-position: center 58%;
+        background-size: 200%;
+      }
+      .batt-label {
+        font-size: 0.72em;
+        color: var(--secondary-text-color);
+        text-align: center;
+        line-height: 1.15;
         max-width: 100%;
       }
       .modes {

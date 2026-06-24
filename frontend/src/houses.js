@@ -41,10 +41,47 @@ export function housePreviewUrl(style) {
   return `${ASSET_BASE}/houses/day_${key}.webp`;
 }
 
-// The battery/inverter device render that sits in front of the house. The app
-// picks this per device type; the Stream uses re_space_system_battery.
-export function batteryBoxUrl() {
-  return `${ASSET_BASE}/houses/re_space_system_battery.webp`;
+// The battery/inverter device renders that sit in front of the house. The app
+// picks one per device type; here it's selectable. Keys are the asset names;
+// friendly labels come from translations (house.battery.<key>).
+export const BATTERY_BOXES = [
+  "re_space_system_battery",
+  "re_space_system_battery_gateway",
+  "re305_or_re306_battery",
+  "re305_or_re306_device",
+  "re305_device",
+  "re306_device",
+  "re306_dpu_battery",
+  "po_space_re305_battery",
+  "po_space_battery",
+  "po_space_battery_system_battery",
+  "po_space_battery_ats",
+  "po_space_battery_shp32",
+  "po_space_battery_system_dpu",
+  "jt303_space_battery",
+  "jt321_space_battery",
+  "dc303_space_battery",
+];
+
+// EcoFlow Stream — the device this card is built around.
+export const DEFAULT_BATTERY = "re_space_system_battery";
+
+export function batteryBoxUrl(key) {
+  const k = BATTERY_BOXES.includes(key) ? key : DEFAULT_BATTERY;
+  return `${ASSET_BASE}/batteries/${k}.webp`;
+}
+
+// The on-battery overlays (SoC fill, charge/discharge glow, battery flow lines)
+// are drawn at a fixed spot that only matches the Stream system battery, so
+// they're shown only for it; other renders display statically (the house-
+// anchored grid/solar/home flows still animate).
+const BATTERY_WITH_OVERLAYS = new Set([
+  "re_space_system_battery",
+  "re_space_system_battery_gateway",
+]);
+
+export function batteryHasOverlays(key) {
+  return BATTERY_WITH_OVERLAYS.has(key || DEFAULT_BATTERY);
 }
 
 export function flowUrl(name) {

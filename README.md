@@ -184,6 +184,10 @@ artwork and flow animations.
   the editor.
 - **Pick the house:** the editor offers **9 house styles** and a **Day / Night / Automatic**
   picture (Automatic follows the sun, falling back to the UI theme).
+- **Pick the battery:** choose the device render shown in front of the house from a gallery
+  (EcoFlow Stream, Stream Ultra and more). The animated SoC fill and charge/discharge glow
+  are shown for the Stream system battery, which they're aligned to; other renders are shown
+  statically.
 - **Configure:** toggle each flow/figure on or off and override any of the driving sensors.
   The solar flow matches the chosen house.
 - Registers itself as a dashboard resource the same way as the Energy card; in **YAML mode**

@@ -45,8 +45,27 @@
       "style": "Haus-Stil",
       "style_n": "Haus {n}",
       "mode": "Tag / Nacht",
+      "battery": "Batterie",
       "entities": "Entitäten",
       "entities_hint": "Überschreiben Sie die automatisch erkannten Sensoren, die die Darstellung steuern. Leer lassen, um die Standardwerte der Integration zu verwenden."
+    },
+    "battery": {
+      "re_space_system_battery": "Stream",
+      "re_space_system_battery_gateway": "Stream + Gateway",
+      "re305_or_re306_battery": "Stream Ultra",
+      "re305_or_re306_device": "Stream Ultra + Wechselrichter",
+      "re305_device": "Stream Ultra + Batterie",
+      "re306_device": "Stream Ultra (einzeln)",
+      "re306_dpu_battery": "Stream Ultra (gestapelt)",
+      "po_space_re305_battery": "Batteriestapel",
+      "po_space_battery": "Batterie + Wechselrichter",
+      "po_space_battery_system_battery": "Einzelbatterie",
+      "po_space_battery_ats": "PowerOcean (ATS)",
+      "po_space_battery_shp32": "Smart Home Panel",
+      "po_space_battery_system_dpu": "Delta Pro Ultra",
+      "jt303_space_battery": "Batterie (JT303)",
+      "jt321_space_battery": "Batterie (JT321)",
+      "dc303_space_battery": "Batterie (DC303)"
     }
   },
   "battery": {

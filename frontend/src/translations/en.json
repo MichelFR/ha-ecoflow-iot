@@ -45,8 +45,27 @@
       "style": "House style",
       "style_n": "House {n}",
       "mode": "Day / night",
+      "battery": "Battery",
       "entities": "Entities",
       "entities_hint": "Override the auto-detected sensors that drive the scene. Leave empty to use the integration's defaults."
+    },
+    "battery": {
+      "re_space_system_battery": "Stream",
+      "re_space_system_battery_gateway": "Stream + gateway",
+      "re305_or_re306_battery": "Stream Ultra",
+      "re305_or_re306_device": "Stream Ultra + inverter",
+      "re305_device": "Stream Ultra + battery",
+      "re306_device": "Stream Ultra (single)",
+      "re306_dpu_battery": "Stream Ultra (stacked)",
+      "po_space_re305_battery": "Battery stack",
+      "po_space_battery": "Battery + inverter",
+      "po_space_battery_system_battery": "Single battery",
+      "po_space_battery_ats": "PowerOcean (ATS)",
+      "po_space_battery_shp32": "Smart Home Panel",
+      "po_space_battery_system_dpu": "Delta Pro Ultra",
+      "jt303_space_battery": "Battery (JT303)",
+      "jt321_space_battery": "Battery (JT321)",
+      "dc303_space_battery": "Battery (DC303)"
     }
   },
   "battery": {

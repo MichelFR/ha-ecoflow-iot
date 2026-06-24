@@ -26,6 +26,7 @@ import {
   DEFAULT_HOUSE_STYLE,
   FLOWS,
   batteryBoxUrl,
+  batteryHasOverlays,
   flowUrl,
   houseUrl,
   solarFlowName,
@@ -156,12 +157,14 @@ export class EcoFlowHouseCard extends LitElement {
       { key: "grid_in", file: () => FLOWS.grid_in, active: (s) => s.grid > ACTIVE_W },
       { key: "grid_out", file: () => FLOWS.grid_out, active: (s) => s.grid < -ACTIVE_W },
       { key: "home", file: () => FLOWS.home, active: (s) => s.load > ACTIVE_W },
-      { key: "bat_in", file: () => FLOWS.bat_in, active: (s) => s.bat > ACTIVE_W },
-      { key: "bat_out", file: () => FLOWS.bat_out, active: (s) => s.bat < -ACTIVE_W },
+      // The bat_* layers are drawn on/around the battery box, so they only
+      // apply to a battery whose overlays line up (see _syncFlows).
+      { key: "bat_in", file: () => FLOWS.bat_in, active: (s) => s.bat > ACTIVE_W, bat: true },
+      { key: "bat_out", file: () => FLOWS.bat_out, active: (s) => s.bat < -ACTIVE_W, bat: true },
       // SoC fill sits on the battery box and is seeked to the level, not played.
-      { key: "bat_soc", file: () => FLOWS.bat_soc, active: (s) => s.soc != null, mode: "soc" },
-      { key: "bat_chg", file: () => FLOWS.bat_chg, active: (s) => s.bat > ACTIVE_W },
-      { key: "bat_dsg", file: () => FLOWS.bat_dsg, active: (s) => s.bat < -ACTIVE_W },
+      { key: "bat_soc", file: () => FLOWS.bat_soc, active: (s) => s.soc != null, mode: "soc", bat: true },
+      { key: "bat_chg", file: () => FLOWS.bat_chg, active: (s) => s.bat > ACTIVE_W, bat: true },
+      { key: "bat_dsg", file: () => FLOWS.bat_dsg, active: (s) => s.bat < -ACTIVE_W, bat: true },
     ];
   }
 
@@ -175,11 +178,15 @@ export class EcoFlowHouseCard extends LitElement {
   _syncFlows() {
     if (!this.renderRoot || !this._device) return;
     const showFlows = this._show("show_flows");
+    // The on-battery overlays only line up with a battery that has them.
+    const batOverlays =
+      this._show("show_battery") && batteryHasOverlays(this._config.battery);
     const states = this._flowStates();
     for (const def of this._flowDefs()) {
       const container = this.renderRoot.querySelector(`[data-flow="${def.key}"]`);
       if (!container) continue;
-      const active = showFlows && def.active(states);
+      const active =
+        showFlows && def.active(states) && (!def.bat || batOverlays);
       this._setFlow(container, def, active, states);
     }
   }
@@ -191,8 +198,8 @@ export class EcoFlowHouseCard extends LitElement {
     let rec = this._flowAnims[key];
 
     // Mount lazily on first activation; reload only if the chosen file changed
-    // (e.g. the solar route). SoC stays mounted so its fill can be re-seeked.
-    if ((active || mode === "soc") && (!rec || rec.file !== file)) {
+    // (e.g. the solar route).
+    if (active && (!rec || rec.file !== file)) {
       rec?.anim?.destroy();
       const anim = lottie.loadAnimation({
         container,
@@ -256,7 +263,11 @@ export class EcoFlowHouseCard extends LitElement {
         <div class="layer flow z-bg" data-flow="bat_in"></div>
         <div class="layer flow z-bg" data-flow="bat_out"></div>
         ${showBattery
-          ? html`<img class="layer box" src=${batteryBoxUrl()} alt="" />`
+          ? html`<img
+              class="layer box"
+              src=${batteryBoxUrl(this._config.battery)}
+              alt=""
+            />`
           : ""}
         <div class="layer flow z-box" data-flow="bat_soc"></div>
         <div class="layer flow z-box" data-flow="bat_chg"></div>
