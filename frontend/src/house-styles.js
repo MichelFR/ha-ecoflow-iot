@@ -10,6 +10,10 @@ export const houseCardStyles = css`
   ha-card {
     overflow: hidden;
     position: relative;
+    /* Contain every internal z-index in the card's own stacking context so the
+       figures / lines can't paint over Home Assistant's nav. */
+    isolation: isolate;
+    z-index: 0;
   }
   .title {
     font-size: 1.05em;
@@ -65,7 +69,7 @@ export const houseCardStyles = css`
   .leaders {
     position: absolute;
     inset: 0;
-    z-index: 8;
+    z-index: 3;
     pointer-events: none;
   }
   .leader {
@@ -101,7 +105,7 @@ export const houseCardStyles = css`
     top: 0;
     left: 0;
     right: 0;
-    z-index: 9;
+    z-index: 3;
     height: clamp(70px, 18%, 112px);
     background: linear-gradient(
       to bottom,
@@ -171,7 +175,7 @@ export const houseCardStyles = css`
     left: 50%;
     bottom: clamp(2px, 1.5%, 14px);
     transform: translateX(-50%);
-    z-index: 9;
+    z-index: 3;
     text-align: center;
     border-radius: 12px;
     padding: 4px 12px;
