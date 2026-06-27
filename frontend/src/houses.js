@@ -35,6 +35,24 @@ export function houseUrl(style, mode, hass) {
   return `${ASSET_BASE}/houses/${resolveHouseMode(mode, hass)}_${key}.webp`;
 }
 
+/* Whether a config carries a user-uploaded house image (light and/or dark). */
+export function hasCustomHouseImage(config) {
+  return !!(config?.house_image || config?.house_image_dark);
+}
+
+/* The house render to show: a custom upload when present (mode-aware — the dark
+ * variant at night, falling back to whichever single variant was uploaded),
+ * otherwise the selected built-in style. */
+export function houseImageUrl(config, hass) {
+  const light = config?.house_image;
+  const dark = config?.house_image_dark;
+  if (light || dark) {
+    const mode = resolveHouseMode(config?.house_mode, hass);
+    return mode === "night" ? dark || light : light || dark;
+  }
+  return houseUrl(config?.house, config?.house_mode, hass);
+}
+
 /* A fixed preview image (day render) for a style, used by the editor gallery. */
 export function housePreviewUrl(style) {
   const key = HOUSE_STYLES.includes(style) ? style : DEFAULT_HOUSE_STYLE;

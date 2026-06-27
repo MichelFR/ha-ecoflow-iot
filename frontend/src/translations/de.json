@@ -29,6 +29,19 @@
     "from_grid": "Vom Netz",
     "to_grid": "Ins Netz",
     "idle": "Bereit",
+    "page": {
+      "appearance": "Darstellung",
+      "display": "Anzeige",
+      "battery": "Batterie",
+      "entities": "Entitäten"
+    },
+    "short": {
+      "show_flows": "Flüsse",
+      "show_grid": "Netz",
+      "show_solar": "Solar",
+      "show_home": "Haus",
+      "show_battery": "Batterie"
+    },
     "mode": {
       "auto": "Automatisch",
       "day": "Tag",
@@ -46,11 +59,13 @@
       "style_n": "Haus {n}",
       "mode": "Tag / Nacht",
       "battery": "Batterie",
+      "battery_hint": "Wähle das Geräte-Render, das zu deinem Aufbau passt. Es wird vor dem Haus angezeigt.",
       "custom": "Eigenes Hausbild",
-      "custom_label": "Bild hochladen",
-      "custom_remove": "Eigenes Bild entfernen",
+      "custom_light": "Helles / Tag-Bild",
+      "custom_dark": "Dunkles / Nacht-Bild",
+      "custom_remove": "Entfernen",
       "uploading": "Wird hochgeladen …",
-      "custom_hint": "Lade dein eigenes Haus-Render hoch, um es statt der mitgelieferten Stile zu verwenden. Für eine perfekte Passung das mitgelieferte Format 2340×1680 übernehmen – lade unten den kompletten Satz zum Nachzeichnen herunter.",
+      "custom_hint": "Lade dein eigenes Haus-Render hoch, um es statt der mitgelieferten Stile zu verwenden. Das dunkle Bild wird nachts angezeigt (Auto-/Nacht-Modus); lade nur das helle hoch, um es für beide zu nutzen. Für eine perfekte Passung das mitgelieferte Format 2340×1680 übernehmen – lade unten den kompletten Satz zum Nachzeichnen herunter.",
       "download_zip": "Alle Hausbilder herunterladen (.zip)",
       "preparing": "Download wird vorbereitet …",
       "entities": "Entitäten",

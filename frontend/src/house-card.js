@@ -28,7 +28,7 @@ import {
   batteryBoxUrl,
   batteryHasOverlays,
   flowUrl,
-  houseUrl,
+  houseImageUrl,
   solarFlowName,
 } from "./houses.js";
 import { houseCardStyles } from "./house-styles.js";
@@ -253,8 +253,7 @@ export class EcoFlowHouseCard extends LitElement {
       <div class="stage">
         <img
           class="layer house"
-          src=${this._config.house_image ||
-          houseUrl(this._config.house, this._config.house_mode, this.hass)}
+          src=${houseImageUrl(this._config, this.hass)}
           alt=""
         />
         <div class="layer flow z-bg" data-flow="solar"></div>

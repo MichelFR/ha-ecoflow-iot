@@ -1,6 +1,8 @@
-/* Visual editor for the EcoFlow House Card: device picker, a gallery to pick
- * the house illustration, display toggles, the solar-flow route, and optional
- * entity overrides for the values that drive the scene. */
+/* Visual editor for the EcoFlow House Card, styled after the Energy card's
+ * editor: the root shows the device picker and a list of setting groups, and
+ * each group opens a subpage. Pages cover the look (house style, day/night,
+ * custom uploads), the display toggles, the battery render, and optional entity
+ * overrides for the values that drive the scene. */
 
 import { LitElement, html, css } from "lit";
 import { HOUSE_CARD_TYPE, PLATFORM } from "./const.js";
@@ -16,6 +18,7 @@ import {
   HOUSE_MODES,
   HOUSE_STYLES,
   batteryBoxUrl,
+  hasCustomHouseImage,
   houseAssetFiles,
   housePreviewUrl,
 } from "./houses.js";
@@ -25,7 +28,14 @@ const DEVICE_SCHEMA = [
   { name: "device", selector: { device: { integration: PLATFORM } } },
 ];
 
-// [config key, default, icon]
+const PAGES = [
+  { id: "appearance", icon: "mdi:palette-outline" },
+  { id: "display", icon: "mdi:eye-outline" },
+  { id: "battery", icon: "mdi:home-battery-outline" },
+  { id: "entities", icon: "mdi:tune-variant" },
+];
+
+// Display toggles (on the "display" page): [config key, default, icon].
 const TOGGLES = [
   ["show_flows", true, "mdi:transit-connection-variant"],
   ["show_grid", true, "mdi:transmission-tower"],
@@ -34,7 +44,8 @@ const TOGGLES = [
   ["show_battery", true, "mdi:home-battery"],
 ];
 
-// Entity slots the scene reads; each offers an optional override.
+// Entity slots the scene reads (on the "entities" page); each offers an
+// optional override.
 const SLOTS = [
   ["sensor.sys_grid_power", "mdi:transmission-tower"],
   ["sensor.pv_total", "mdi:solar-power-variant"],
@@ -43,12 +54,18 @@ const SLOTS = [
   ["sensor.cms_batt_soc", "mdi:battery-high"],
 ];
 
+// The two custom-image slots: [config key, translation suffix, icon].
+const CUSTOM_VARIANTS = [
+  ["house_image", "light", "mdi:white-balance-sunny"],
+  ["house_image_dark", "dark", "mdi:weather-night"],
+];
+
 export class EcoFlowHouseCardEditor extends LitElement {
   static get properties() {
     return {
       hass: {},
       _config: {},
-      _showEntities: { state: true },
+      _page: { state: true },
       _zipping: { state: true },
       _uploading: { state: true },
     };
@@ -56,9 +73,9 @@ export class EcoFlowHouseCardEditor extends LitElement {
 
   constructor() {
     super();
-    this._showEntities = false;
+    this._page = null; // null = root, otherwise a PAGES id
     this._zipping = false;
-    this._uploading = false;
+    this._uploading = null; // the config key currently being uploaded, or null
   }
 
   connectedCallback() {
@@ -85,12 +102,13 @@ export class EcoFlowHouseCardEditor extends LitElement {
 
   render() {
     if (!this.hass) return html``;
-    const style = this._config.house || DEFAULT_HOUSE_STYLE;
-    const customImage = this._config.house_image || "";
-    const mode = this._config.house_mode || DEFAULT_HOUSE_MODE;
-    const battery = this._config.battery || DEFAULT_BATTERY;
-    const batteryOn = this._config.show_battery ?? true;
+    const page = PAGES.find((p) => p.id === this._page);
+    return page ? this._renderSubpage(page) : this._renderRoot();
+  }
 
+  /* -- root: device picker + settings list -- */
+
+  _renderRoot() {
     return html`<ha-form
         .hass=${this.hass}
         .data=${this._config}
@@ -98,8 +116,75 @@ export class EcoFlowHouseCardEditor extends LitElement {
         .computeLabel=${() => this._t("editor.device")}
         @value-changed=${this._deviceChanged}
       ></ha-form>
+      <div class="nav">
+        ${PAGES.map(
+          (page) => html`<button
+            class="nav-row"
+            @click=${() => (this._page = page.id)}
+          >
+            <ha-icon class="nav-icon" icon=${page.icon}></ha-icon>
+            <span class="nav-labels">
+              <span class="nav-label">${this._t(`house.page.${page.id}`)}</span>
+              <span class="nav-secondary">${this._summary(page.id)}</span>
+            </span>
+            <ha-icon icon="mdi:chevron-right"></ha-icon>
+          </button>`
+        )}
+      </div>`;
+  }
 
-      <div class="section">
+  _summary(pageId) {
+    if (pageId === "appearance") {
+      if (hasCustomHouseImage(this._config)) return this._t("house.editor.custom");
+      const style = this._config.house || DEFAULT_HOUSE_STYLE;
+      const mode = this._config.house_mode || DEFAULT_HOUSE_MODE;
+      return `${this._t("house.editor.style_n", { n: style })} · ${this._t(
+        `house.mode.${mode}`
+      )}`;
+    }
+    if (pageId === "display") {
+      const shown = TOGGLES.filter(([key, def]) => this._config[key] ?? def);
+      if (!shown.length) return this._t("editor.nothing_shown");
+      return shown.map(([key]) => this._t(`house.short.${key}`)).join(", ");
+    }
+    if (pageId === "battery") {
+      const on = this._config.show_battery ?? true;
+      const name = this._t(`house.battery.${this._config.battery || DEFAULT_BATTERY}`);
+      return on ? name : this._t("editor.nothing_shown");
+    }
+    if (pageId === "entities") {
+      const n = SLOTS.filter(([slot]) => this._config.entities?.[slot]).length;
+      return n ? this._t("editor.overridden", { n }) : this._t("editor.automatic");
+    }
+    return "";
+  }
+
+  /* -- subpages -- */
+
+  _renderSubpage(page) {
+    return html`<div class="subpage-head">
+        <button class="back" @click=${() => (this._page = null)}>
+          <ha-icon icon="mdi:chevron-left"></ha-icon>
+        </button>
+        <span class="subpage-title">${this._t(`house.page.${page.id}`)}</span>
+      </div>
+      ${page.id === "appearance"
+        ? this._renderAppearancePage()
+        : page.id === "display"
+          ? TOGGLES.map(([key, def, icon]) => this._renderToggle(key, def, icon))
+          : page.id === "battery"
+            ? this._renderBatteryPage()
+            : this._renderEntitiesPage()}`;
+  }
+
+  /* -- appearance: house style gallery, day/night, custom uploads -- */
+
+  _renderAppearancePage() {
+    const style = this._config.house || DEFAULT_HOUSE_STYLE;
+    const customImage = hasCustomHouseImage(this._config);
+    const mode = this._config.house_mode || DEFAULT_HOUSE_MODE;
+
+    return html`<div class="section">
         <ha-icon icon="mdi:home-outline"></ha-icon>${this._t("house.editor.style")}
       </div>
       <div class="house-grid">
@@ -116,49 +201,6 @@ export class EcoFlowHouseCardEditor extends LitElement {
       </div>
 
       <div class="section">
-        <ha-icon icon="mdi:image-edit-outline"></ha-icon>${this._t(
-          "house.editor.custom"
-        )}
-      </div>
-      <div class="hint">${this._t("house.editor.custom_hint")}</div>
-      ${customImage
-        ? html`<div class="custom-img">
-            <img src=${customImage} alt="" />
-            <button class="link-btn danger" @click=${this._clearCustomImage}>
-              <ha-icon icon="mdi:delete-outline"></ha-icon>
-              <span>${this._t("house.editor.custom_remove")}</span>
-            </button>
-          </div>`
-        : html`<label class="upload ${this._uploading ? "busy" : ""}">
-            <ha-icon
-              icon=${this._uploading ? "mdi:progress-upload" : "mdi:image-plus"}
-            ></ha-icon>
-            <span
-              >${this._uploading
-                ? this._t("house.editor.uploading")
-                : this._t("house.editor.custom_label")}</span
-            >
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif"
-              ?disabled=${this._uploading}
-              @change=${this._pickCustomImage}
-            />
-          </label>`}
-      <button
-        class="link-btn"
-        ?disabled=${this._zipping}
-        @click=${this._downloadHouses}
-      >
-        <ha-icon icon=${this._zipping ? "mdi:progress-download" : "mdi:download"}></ha-icon>
-        <span
-          >${this._zipping
-            ? this._t("house.editor.preparing")
-            : this._t("house.editor.download_zip")}</span
-        >
-      </button>
-
-      <div class="section">
         <ha-icon icon="mdi:theme-light-dark"></ha-icon>${this._t("house.editor.mode")}
       </div>
       <div class="modes">
@@ -172,13 +214,62 @@ export class EcoFlowHouseCardEditor extends LitElement {
         )}
       </div>
 
-      ${TOGGLES.map(([key, def, icon]) => this._renderToggle(key, def, icon))}
-
       <div class="section">
-        <ha-icon icon="mdi:home-battery-outline"></ha-icon>${this._t(
-          "house.editor.battery"
-        )}
+        <ha-icon icon="mdi:image-edit-outline"></ha-icon>${this._t("house.editor.custom")}
       </div>
+      <div class="hint">${this._t("house.editor.custom_hint")}</div>
+      ${CUSTOM_VARIANTS.map(([key, suffix, icon]) =>
+        this._renderUploadSlot(key, suffix, icon)
+      )}
+      <button
+        class="link-btn"
+        ?disabled=${this._zipping}
+        @click=${this._downloadHouses}
+      >
+        <ha-icon icon=${this._zipping ? "mdi:progress-download" : "mdi:download"}></ha-icon>
+        <span
+          >${this._zipping
+            ? this._t("house.editor.preparing")
+            : this._t("house.editor.download_zip")}</span
+        >
+      </button>`;
+  }
+
+  _renderUploadSlot(key, suffix, icon) {
+    const value = this._config[key] || "";
+    const busy = this._uploading === key;
+    const label = this._t(`house.editor.custom_${suffix}`);
+    return html`<div class="upload-slot">
+      <div class="upload-slot-label">
+        <ha-icon icon=${icon}></ha-icon><span>${label}</span>
+      </div>
+      ${value
+        ? html`<div class="custom-img">
+            <img src=${value} alt="" />
+            <button class="link-btn danger" @click=${() => this._set(key, "", "")}>
+              <ha-icon icon="mdi:delete-outline"></ha-icon>
+              <span>${this._t("house.editor.custom_remove")}</span>
+            </button>
+          </div>`
+        : html`<label class="upload ${busy ? "busy" : ""}">
+            <ha-icon icon=${busy ? "mdi:progress-upload" : "mdi:image-plus"}></ha-icon>
+            <span>${busy ? this._t("house.editor.uploading") : label}</span>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              ?disabled=${this._uploading}
+              @change=${(ev) => this._pickCustomImage(ev, key)}
+            />
+          </label>`}
+    </div>`;
+  }
+
+  /* -- battery: device render gallery -- */
+
+  _renderBatteryPage() {
+    const battery = this._config.battery || DEFAULT_BATTERY;
+    const batteryOn = this._config.show_battery ?? true;
+    return html`<div class="hint top-hint">${this._t("house.editor.battery_hint")}</div>
       <div class=${batteryOn ? "batt-grid" : "batt-grid dim"}>
         ${BATTERY_BOXES.map(
           (key) => html`<button
@@ -193,17 +284,14 @@ export class EcoFlowHouseCardEditor extends LitElement {
             <span class="batt-label">${this._t(`house.battery.${key}`)}</span>
           </button>`
         )}
-      </div>
+      </div>`;
+  }
 
-      <button class="disclosure" @click=${() => (this._showEntities = !this._showEntities)}>
-        <ha-icon icon="mdi:tune-variant"></ha-icon>
-        <span>${this._t("house.editor.entities")}</span>
-        <ha-icon icon=${this._showEntities ? "mdi:chevron-up" : "mdi:chevron-down"}></ha-icon>
-      </button>
-      ${this._showEntities
-        ? html`<div class="hint">${this._t("house.editor.entities_hint")}</div>
-            ${SLOTS.map(([slot, icon]) => this._renderSlot(slot, icon))}`
-        : ""}`;
+  /* -- entities: optional sensor overrides -- */
+
+  _renderEntitiesPage() {
+    return html`<div class="hint top-hint">${this._t("house.editor.entities_hint")}</div>
+      ${SLOTS.map(([slot, icon]) => this._renderSlot(slot, icon))}`;
   }
 
   _renderToggle(key, def, icon) {
@@ -258,6 +346,7 @@ export class EcoFlowHouseCardEditor extends LitElement {
   _selectHouse(key) {
     const config = { ...this._config, type: `custom:${HOUSE_CARD_TYPE}` };
     delete config.house_image;
+    delete config.house_image_dark;
     if (key === DEFAULT_HOUSE_STYLE) delete config.house;
     else config.house = key;
     this._dispatch(config);
@@ -267,11 +356,11 @@ export class EcoFlowHouseCardEditor extends LitElement {
      picture upload uses) and store the full-resolution serve URL. Done by hand
      rather than via <ha-picture-upload>, which is lazy-loaded and not reliably
      registered for a bundled custom card. */
-  async _pickCustomImage(ev) {
+  async _pickCustomImage(ev, key) {
     const file = ev.target.files?.[0];
     ev.target.value = "";
     if (!file || this._uploading) return;
-    this._uploading = true;
+    this._uploading = key;
     try {
       const fd = new FormData();
       fd.append("file", file);
@@ -281,16 +370,12 @@ export class EcoFlowHouseCardEditor extends LitElement {
       });
       if (!resp.ok) throw new Error(`upload failed: ${resp.status}`);
       const media = await resp.json();
-      this._set("house_image", `/api/image/serve/${media.id}/original`, "");
+      this._set(key, `/api/image/serve/${media.id}/original`, "");
     } catch (err) {
       console.error("EcoFlow House card: image upload failed", err);
     } finally {
-      this._uploading = false;
+      this._uploading = null;
     }
-  }
-
-  _clearCustomImage() {
-    this._set("house_image", "", "");
   }
 
   /* Bundle every house render into a zip so the user can trace one into their
@@ -341,6 +426,80 @@ export class EcoFlowHouseCardEditor extends LitElement {
 
   static get styles() {
     return css`
+      .nav {
+        display: flex;
+        flex-direction: column;
+        margin-top: 16px;
+      }
+      .nav-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border: none;
+        background: transparent;
+        padding: 12px 6px;
+        cursor: pointer;
+        text-align: left;
+        border-radius: 10px;
+        color: var(--primary-text-color);
+        transition: background-color 0.15s ease;
+      }
+      .nav-row:hover {
+        background: var(--secondary-background-color);
+      }
+      .nav-row ha-icon {
+        color: var(--secondary-text-color);
+        --mdc-icon-size: 20px;
+      }
+      .nav-labels {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .nav-label {
+        font-size: 1em;
+      }
+      .nav-secondary {
+        font-size: 0.85em;
+        color: var(--secondary-text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 280px;
+      }
+      .subpage-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--card-background-color, var(--ha-card-background));
+        padding: 8px 0;
+        margin-top: -8px;
+      }
+      .back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--primary-text-color);
+        cursor: pointer;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        transition: background-color 0.15s ease;
+      }
+      .back:hover {
+        background: var(--secondary-background-color);
+      }
+      .subpage-title {
+        font-size: 1.1em;
+        font-weight: 600;
+      }
       .section {
         display: flex;
         align-items: center;
@@ -478,6 +637,24 @@ export class EcoFlowHouseCardEditor extends LitElement {
         font-size: 0.85em;
         margin: 4px 4px 10px;
       }
+      .top-hint {
+        margin: 0 4px 10px;
+      }
+      .upload-slot {
+        margin-bottom: 12px;
+      }
+      .upload-slot-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9em;
+        color: var(--primary-text-color);
+        margin: 0 2px 6px;
+      }
+      .upload-slot-label ha-icon {
+        --mdc-icon-size: 18px;
+        color: var(--secondary-text-color);
+      }
       .link-btn {
         display: inline-flex;
         align-items: center;
@@ -544,27 +721,6 @@ export class EcoFlowHouseCardEditor extends LitElement {
         border-radius: 10px;
         border: 2px solid var(--primary-color);
         background: var(--secondary-background-color);
-      }
-      .disclosure {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-        border: none;
-        background: transparent;
-        color: var(--primary-text-color);
-        padding: 14px 4px 4px;
-        cursor: pointer;
-        font-size: 1em;
-      }
-      .disclosure span {
-        flex: 1;
-        text-align: left;
-        font-weight: 600;
-      }
-      .disclosure ha-icon {
-        --mdc-icon-size: 20px;
-        color: var(--secondary-text-color);
       }
       .slot {
         display: flex;

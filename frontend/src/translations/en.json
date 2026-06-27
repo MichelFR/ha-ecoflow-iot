@@ -29,6 +29,19 @@
     "from_grid": "From grid",
     "to_grid": "To grid",
     "idle": "Idle",
+    "page": {
+      "appearance": "Appearance",
+      "display": "What to show",
+      "battery": "Battery",
+      "entities": "Entities"
+    },
+    "short": {
+      "show_flows": "Flows",
+      "show_grid": "Grid",
+      "show_solar": "Solar",
+      "show_home": "Home",
+      "show_battery": "Battery"
+    },
     "mode": {
       "auto": "Automatic",
       "day": "Day",
@@ -46,11 +59,13 @@
       "style_n": "House {n}",
       "mode": "Day / night",
       "battery": "Battery",
+      "battery_hint": "Pick the device render that matches your setup. Shown in front of the house.",
       "custom": "Custom house image",
-      "custom_label": "Upload an image",
-      "custom_remove": "Remove custom image",
+      "custom_light": "Light / day image",
+      "custom_dark": "Dark / night image",
+      "custom_remove": "Remove",
       "uploading": "Uploading…",
-      "custom_hint": "Upload your own house render to use instead of the built-in styles. For a perfect fit, match the built-in 2340×1680 layout — download the full set below to trace over.",
+      "custom_hint": "Upload your own house render to use instead of the built-in styles. The dark image is shown at night (auto/night mode); upload only the light one to use it for both. For a perfect fit, match the built-in 2340×1680 layout — download the full set below to trace over.",
       "download_zip": "Download all house images (.zip)",
       "preparing": "Preparing download…",
       "entities": "Entities",
