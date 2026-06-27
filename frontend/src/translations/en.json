@@ -46,6 +46,13 @@
       "style_n": "House {n}",
       "mode": "Day / night",
       "battery": "Battery",
+      "custom": "Custom house image",
+      "custom_label": "Upload an image",
+      "custom_remove": "Remove custom image",
+      "uploading": "Uploading…",
+      "custom_hint": "Upload your own house render to use instead of the built-in styles. For a perfect fit, match the built-in 2340×1680 layout — download the full set below to trace over.",
+      "download_zip": "Download all house images (.zip)",
+      "preparing": "Preparing download…",
       "entities": "Entities",
       "entities_hint": "Override the auto-detected sensors that drive the scene. Leave empty to use the integration's defaults."
     },

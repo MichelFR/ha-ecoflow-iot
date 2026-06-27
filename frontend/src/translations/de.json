@@ -46,6 +46,13 @@
       "style_n": "Haus {n}",
       "mode": "Tag / Nacht",
       "battery": "Batterie",
+      "custom": "Eigenes Hausbild",
+      "custom_label": "Bild hochladen",
+      "custom_remove": "Eigenes Bild entfernen",
+      "uploading": "Wird hochgeladen …",
+      "custom_hint": "Lade dein eigenes Haus-Render hoch, um es statt der mitgelieferten Stile zu verwenden. Für eine perfekte Passung das mitgelieferte Format 2340×1680 übernehmen – lade unten den kompletten Satz zum Nachzeichnen herunter.",
+      "download_zip": "Alle Hausbilder herunterladen (.zip)",
+      "preparing": "Download wird vorbereitet …",
       "entities": "Entitäten",
       "entities_hint": "Überschreiben Sie die automatisch erkannten Sensoren, die die Darstellung steuern. Leer lassen, um die Standardwerte der Integration zu verwenden."
     },

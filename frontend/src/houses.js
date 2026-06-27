@@ -41,6 +41,19 @@ export function housePreviewUrl(style) {
   return `${ASSET_BASE}/houses/day_${key}.webp`;
 }
 
+/* Every bundled house render, as { name, url } — used by the editor to bundle
+ * the whole set into a zip so users can trace one into a custom illustration. */
+export function houseAssetFiles() {
+  const files = [];
+  for (const mode of ["day", "night"])
+    for (const key of HOUSE_STYLES)
+      files.push({
+        name: `${mode}_${key}.webp`,
+        url: `${ASSET_BASE}/houses/${mode}_${key}.webp`,
+      });
+  return files;
+}
+
 // The battery/inverter device renders that sit in front of the house. The app
 // picks one per device type; here it's selectable. Keys are the asset names;
 // friendly labels come from translations (house.battery.<key>).

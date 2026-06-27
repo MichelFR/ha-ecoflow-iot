@@ -253,7 +253,8 @@ export class EcoFlowHouseCard extends LitElement {
       <div class="stage">
         <img
           class="layer house"
-          src=${houseUrl(this._config.house, this._config.house_mode, this.hass)}
+          src=${this._config.house_image ||
+          houseUrl(this._config.house, this._config.house_mode, this.hass)}
           alt=""
         />
         <div class="layer flow z-bg" data-flow="solar"></div>
