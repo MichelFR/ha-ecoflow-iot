@@ -74,6 +74,7 @@ export class EcoFlowSpaceCardEditor extends LitElement {
 
   constructor() {
     super();
+    this._config = {}; // HA may render (after .hass) before setConfig runs
     this._page = null;
     this._sel = null; // selected overlay id (for the drag preview highlight)
     this._modes = {}; // transient value-source mode per overlay/tile id
@@ -574,27 +575,36 @@ export class EcoFlowSpaceCardEditor extends LitElement {
 
   /* -- small field helpers -- */
 
+  /* Text field via ha-form — a bare <ha-textfield> isn't reliably registered for
+   * a bundled custom card, so the inputs rendered invisible. ha-form loads its
+   * own components. */
   _textField(label, value, onChange, helper) {
-    return html`<ha-textfield
+    return html`<ha-form
       class="field"
-      .label=${label}
-      .value=${value}
-      .helper=${helper || ""}
-      @input=${(e) => onChange(e.target.value)}
-    ></ha-textfield>`;
+      .hass=${this.hass}
+      .data=${{ value: value ?? "" }}
+      .schema=${[{ name: "value", selector: { text: {} } }]}
+      .computeLabel=${() => label}
+      .computeHelper=${() => helper || ""}
+      @value-changed=${(ev) => {
+        ev.stopPropagation();
+        onChange(ev.detail.value.value ?? "");
+      }}
+    ></ha-form>`;
   }
 
   _numField(label, value, onChange) {
-    return html`<ha-textfield
+    return html`<ha-form
       class="field num"
-      type="number"
-      .label=${label}
-      .value=${String(value)}
-      @input=${(e) => {
-        const n = Number(e.target.value);
+      .hass=${this.hass}
+      .data=${{ value }}
+      .schema=${[{ name: "value", selector: { number: { min: 0, max: 100, mode: "box" } } }]}
+      .computeLabel=${() => label}
+      @value-changed=${(ev) => {
+        const n = Number(ev.detail.value.value);
         if (Number.isFinite(n)) onChange(Math.max(0, Math.min(100, Math.round(n))));
       }}
-    ></ha-textfield>`;
+    ></ha-form>`;
   }
 
   /* A dropdown via ha-form's select selector — reliable value binding (a raw
