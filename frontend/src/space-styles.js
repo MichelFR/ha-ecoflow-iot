@@ -426,16 +426,21 @@ export const spaceCardStyles = css`
     padding: 20px 16px;
     box-sizing: border-box;
     --primary-text-color: var(--sp-text);
-    --primary-background-color: transparent;
+    --primary-background-color: #14171b;
     --secondary-text-color: var(--sp-muted);
     --disabled-text-color: #6b7178;
-    --card-background-color: rgba(255, 255, 255, 0.05);
-    --ha-card-background: rgba(255, 255, 255, 0.05);
-    --secondary-background-color: rgba(255, 255, 255, 0.08);
+    /* Opaque surfaces — these vars also drive any dialog (more-info, etc.)
+       opened from an embedded card, so a translucent value here would make
+       those dialogs see-through. */
+    --card-background-color: #1c2026;
+    --ha-card-background: #1c2026;
+    --mdc-theme-surface: #22262d;
+    --dialog-background-color: #22262d;
+    --mdc-dialog-scrim-color: rgba(0, 0, 0, 0.6);
+    --secondary-background-color: #2a2f37;
     --divider-color: rgba(255, 255, 255, 0.1);
     --state-icon-color: var(--sp-text);
     --paper-item-icon-color: var(--sp-muted);
-    --mdc-theme-surface: #1a1d21;
     --ha-card-border-color: var(--sp-tile-border);
     --ha-card-box-shadow: none;
     color: var(--sp-text);
