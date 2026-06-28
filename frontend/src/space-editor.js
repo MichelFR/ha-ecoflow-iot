@@ -597,19 +597,21 @@ export class EcoFlowSpaceCardEditor extends LitElement {
     ></ha-textfield>`;
   }
 
+  /* A dropdown via ha-form's select selector — reliable value binding (a raw
+   * ha-select's @selected/index is flaky on re-render). */
   _selectField(label, options, value, onChange, labelFn) {
-    return html`<ha-select
+    const opts = options.map((o) => ({ value: o, label: labelFn ? labelFn(o) : o || "—" }));
+    return html`<ha-form
       class="field"
-      .label=${label}
-      .value=${value}
-      naturalMenuWidth
-      @selected=${(e) => onChange(options[e.target.index])}
-      @closed=${(e) => e.stopPropagation()}
-    >
-      ${options.map(
-        (o) => html`<mwc-list-item .value=${o}>${labelFn ? labelFn(o) : o}</mwc-list-item>`
-      )}
-    </ha-select>`;
+      .hass=${this.hass}
+      .data=${{ value }}
+      .schema=${[{ name: "value", selector: { select: { options: opts, mode: "dropdown" } } }]}
+      .computeLabel=${() => label}
+      @value-changed=${(ev) => {
+        ev.stopPropagation();
+        onChange(ev.detail.value.value ?? "");
+      }}
+    ></ha-form>`;
   }
 
   /* -- drag-to-position -- */

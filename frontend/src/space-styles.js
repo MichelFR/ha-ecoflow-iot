@@ -31,8 +31,18 @@ export const spaceCardStyles = css`
     position: relative;
     isolation: isolate;
     z-index: 0;
+    /* Fill the viewport in a panel view, but never exceed the container — so the
+       card-editor's short preview pane (and masonry layouts) cap it instead of
+       overflowing to full screen height. */
     height: var(--ef-view);
+    max-height: 100%;
     border: none;
+  }
+  /* In the card-editor preview, use a fixed, sensible height instead of the
+     full viewport so the preview pane isn't overrun. */
+  :host([in-preview]) ha-card {
+    height: 460px;
+    max-height: 460px;
     border-radius: 0;
     color: var(--sp-text);
     /* A subtle top-lit dark gradient, like the app backdrop. */

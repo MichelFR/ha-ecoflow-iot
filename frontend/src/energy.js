@@ -106,7 +106,10 @@ export function energyStatIds(prefs) {
 }
 
 /* Sum of today's `change` across the given statistic ids (their native unit,
- * typically kWh). */
+ * typically kWh). Mirrors the Energy card's working approach: request HOURLY
+ * buckets from local midnight and sum their per-hour change. (A single `day`
+ * bucket can come back as the lifetime total on some recorders, which is why we
+ * sum hours instead.) */
 async function todayChange(hass, statIds) {
   if (!hass?.callWS || !statIds.length) return 0;
   const now = new Date();
@@ -116,7 +119,7 @@ async function todayChange(hass, statIds) {
       type: "recorder/statistics_during_period",
       start_time: from.toISOString(),
       statistic_ids: statIds,
-      period: "day",
+      period: "hour",
       types: ["change"],
     });
     let sum = 0;

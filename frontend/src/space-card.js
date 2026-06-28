@@ -157,6 +157,20 @@ export class EcoFlowSpaceCard extends LitElement {
     this._energyTimer = null;
   }
 
+  firstUpdated() {
+    // When rendered inside the card-editor's preview (hui-card-preview), cap the
+    // height so the full-screen card doesn't overflow the short preview pane.
+    let node = this;
+    for (let i = 0; i < 8 && node; i++) {
+      const host = node.getRootNode?.()?.host;
+      if (host && /^hui-(card-preview|dialog-edit-card)/.test(host.localName || "")) {
+        this.toggleAttribute("in-preview", true);
+        break;
+      }
+      node = host;
+    }
+  }
+
   async _refreshEnergy() {
     if (!this.hass) return;
     // Only hit the WS if a preset tile actually needs Energy-dashboard data.
