@@ -3390,7 +3390,7 @@ var go=Object.create;var ca=Object.defineProperty;var vo=Object.getOwnPropertyDe
       </div>
       ${n?I`<div class="item-body">
             ${this._textField(this._t("space.f_label"),i.label||"",h=>this._updateItem("tabs",r,{label:h}))}
-            ${this._textField(this._t("space.f_icon"),i.icon||"",h=>this._updateItem("tabs",r,{icon:h}))}
+            ${this._iconField(this._t("space.f_icon"),i.icon,h=>this._updateItem("tabs",r,{icon:h}))}
             ${this._textField(this._t("space.f_path"),i.path||"",h=>this._updateItem("tabs",r,{path:h}),this._t("space.path_hint"))}
             <button class="del-btn" @click=${()=>this._removeItem("tabs",r)}>
               <ha-icon icon="mdi:delete-outline"></ha-icon><span>${this._t("space.remove")}</span>

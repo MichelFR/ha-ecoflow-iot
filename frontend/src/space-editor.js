@@ -598,7 +598,7 @@ export class EcoFlowSpaceCardEditor extends LitElement {
             ${this._textField(this._t("space.f_label"), tab.label || "", (v) =>
               this._updateItem("tabs", i, { label: v })
             )}
-            ${this._textField(this._t("space.f_icon"), tab.icon || "", (v) =>
+            ${this._iconField(this._t("space.f_icon"), tab.icon, (v) =>
               this._updateItem("tabs", i, { icon: v })
             )}
             ${this._textField(
