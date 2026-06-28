@@ -26,10 +26,18 @@ export const spaceCardStyles = css`
       --ef-view: calc(100dvh - var(--header-height, 56px));
     }
   }
-  /* Home Assistant Cast (e.g. a Nest Hub) has no top header, so don't reserve
-     room for one — otherwise an empty strip is left at the bottom. */
-  :host([cast]) {
+  /* Home Assistant Cast (e.g. a Nest Hub) and kiosk-mode (?kiosk / ?hide_header)
+     have no top header, so don't reserve room for one — otherwise an empty strip
+     is left at the bottom. */
+  :host([cast]),
+  :host([no-header]) {
     --ef-view: 100vh;
+  }
+  @supports (height: 100dvh) {
+    :host([cast]),
+    :host([no-header]) {
+      --ef-view: 100dvh;
+    }
   }
   ha-card {
     overflow: hidden;

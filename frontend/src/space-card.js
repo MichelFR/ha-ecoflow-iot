@@ -163,6 +163,7 @@ export class EcoFlowSpaceCard extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     ensureHaComponents();
+    this._reflectKiosk();
     // Preset tiles read the Energy dashboard; refresh now and every 5 minutes
     // (statistics only tick a few times an hour, so polling is cheap).
     this._refreshEnergy();
@@ -203,6 +204,21 @@ export class EcoFlowSpaceCard extends LitElement {
       /* ignore */
     }
     this.toggleAttribute("cast", cast);
+  }
+
+  /* The kiosk-mode plugin hides the HA header (via ?kiosk / ?hide_header) but
+   * leaves --header-height untouched, so the full-screen card would reserve room
+   * for a header that isn't there and leave an empty strip at the bottom. Detect
+   * the header-hiding params and fill the whole viewport (same as Cast). */
+  _reflectKiosk() {
+    let noHeader = false;
+    try {
+      const on = (s) => /[?&#](kiosk|hide_header)(?:=(?!false)[^&#]*)?(?:[&#]|$)/i.test(s);
+      noHeader = on(location.search) || on(location.hash);
+    } catch (e) {
+      /* ignore */
+    }
+    this.toggleAttribute("no-header", noHeader);
   }
 
   _formatClock() {
@@ -621,6 +637,7 @@ export class EcoFlowSpaceCard extends LitElement {
     super.updated(changed);
     this._syncTemplates();
     if (changed.has("hass")) this._reflectCast();
+    this._reflectKiosk();
 
     const onHome = this._activeTab().id === "home";
     if (onHome) {
