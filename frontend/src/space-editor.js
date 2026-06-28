@@ -62,6 +62,21 @@ const TOGGLES = [
 let UID = 0;
 const newId = (prefix) => `${prefix}_${Date.now().toString(36)}_${UID++}`;
 
+/* Parse a stored CSS colour (#hex or rgb(...)) to [r,g,b] for the native
+ * color_rgb selector; returns undefined for anything else (e.g. var(--…)). */
+function parseColor(v) {
+  if (typeof v !== "string") return undefined;
+  let m = v.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (m) {
+    let h = m[1];
+    if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  }
+  m = v.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+  if (m) return [+m[1], +m[2], +m[3]];
+  return undefined;
+}
+
 export class EcoFlowSpaceCardEditor extends LitElement {
   static get properties() {
     return {
@@ -336,7 +351,7 @@ export class EcoFlowSpaceCardEditor extends LitElement {
             ${this._textField(this._t("space.f_label"), ov.label || "", (v) =>
               this._updateItem("overlays", i, { label: v })
             )}
-            ${this._textField(this._t("space.f_icon"), ov.icon || "", (v) =>
+            ${this._iconField(this._t("space.f_icon"), ov.icon, (v) =>
               this._updateItem("overlays", i, { icon: v })
             )}
             ${ov.preset ? "" : this._renderSourceField("overlays", ov, i, mode)}
@@ -346,8 +361,8 @@ export class EcoFlowSpaceCardEditor extends LitElement {
             ${this._textField(this._t("space.f_secondary"), ov.secondary || "", (v) =>
               this._updateItem("overlays", i, { secondary: v || undefined })
             )}
-            ${this._textField(this._t("space.f_dot"), ov.dot || "", (v) =>
-              this._updateItem("overlays", i, { dot: v || undefined })
+            ${this._colorField(this._t("space.f_dot"), ov.dot, (v) =>
+              this._updateItem("overlays", i, { dot: v })
             )}
             ${this._selectField(
               this._t("space.f_anchor"),
@@ -360,8 +375,8 @@ export class EcoFlowSpaceCardEditor extends LitElement {
               ${this._numField("X %", ov.x ?? 50, (v) => this._updateItem("overlays", i, { x: v }))}
               ${this._numField("Y %", ov.y ?? 50, (v) => this._updateItem("overlays", i, { y: v }))}
             </div>
-            ${this._textField(this._t("space.f_color"), ov.color || "", (v) =>
-              this._updateItem("overlays", i, { color: v || undefined })
+            ${this._colorField(this._t("space.f_color"), ov.color, (v) =>
+              this._updateItem("overlays", i, { color: v })
             )}
             ${this._scaleField(this._t("space.f_size"), ov.size, (v) =>
               this._updateItem("overlays", i, { size: v === 1 ? undefined : v })
@@ -497,11 +512,11 @@ export class EcoFlowSpaceCardEditor extends LitElement {
             ${this._textField(this._t("space.f_label"), tile.label || "", (v) =>
               this._updateItem("tiles", i, { label: v })
             )}
-            ${this._textField(this._t("space.f_icon"), tile.icon || "", (v) =>
+            ${this._iconField(this._t("space.f_icon"), tile.icon, (v) =>
               this._updateItem("tiles", i, { icon: v })
             )}
-            ${this._textField(this._t("space.f_icon_color"), tile.color || "", (v) =>
-              this._updateItem("tiles", i, { color: v || undefined })
+            ${this._colorField(this._t("space.f_icon_color"), tile.color, (v) =>
+              this._updateItem("tiles", i, { color: v })
             )}
             ${tile.preset ? "" : this._renderSourceField("tiles", tile, i, mode)}
             ${this._textField(this._t("space.f_unit"), tile.unit ?? "", (v) =>
@@ -623,6 +638,38 @@ export class EcoFlowSpaceCardEditor extends LitElement {
       @value-changed=${(ev) => {
         ev.stopPropagation();
         onChange(ev.detail.value.value ?? "");
+      }}
+    ></ha-form>`;
+  }
+
+  /* Icon field using Home Assistant's native icon selector (mdi picker). */
+  _iconField(label, value, onChange) {
+    return html`<ha-form
+      class="field"
+      .hass=${this.hass}
+      .data=${{ value: value ?? "" }}
+      .schema=${[{ name: "value", selector: { icon: {} } }]}
+      .computeLabel=${() => label}
+      @value-changed=${(ev) => {
+        ev.stopPropagation();
+        onChange(ev.detail.value.value || undefined);
+      }}
+    ></ha-form>`;
+  }
+
+  /* Colour field using HA's native RGB colour picker; stored as a CSS
+   * "rgb(r, g, b)" string (cleared = removed). */
+  _colorField(label, value, onChange) {
+    return html`<ha-form
+      class="field"
+      .hass=${this.hass}
+      .data=${{ value: parseColor(value) }}
+      .schema=${[{ name: "value", selector: { color_rgb: {} } }]}
+      .computeLabel=${() => label}
+      @value-changed=${(ev) => {
+        ev.stopPropagation();
+        const v = ev.detail.value.value;
+        onChange(Array.isArray(v) ? `rgb(${v[0]}, ${v[1]}, ${v[2]})` : undefined);
       }}
     ></ha-form>`;
   }

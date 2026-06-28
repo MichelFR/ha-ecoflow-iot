@@ -26,6 +26,7 @@ import {
   mergeForecastWhHours,
 } from "./energy.js";
 import { renderForecastGraph } from "./views/forecast-graph.js";
+import { renderPanels } from "./views/panels.js";
 import { ensureHaComponents } from "./ha-components.js";
 import { localize } from "./localize.js";
 import {
@@ -281,6 +282,18 @@ export class EcoFlowSpaceCard extends LitElement {
     return this._map?.[slot];
   }
 
+  // Compatibility shims so the shared panels view (views/panels.js) can read
+  // the scene's per-string PV sensors from this card.
+  _state(slot) {
+    return this._slotState(slot);
+  }
+  _entityId(slot) {
+    return this._slotEntity(slot);
+  }
+  _moreInfoId(entityId) {
+    this._moreInfo(entityId);
+  }
+
   _slotState(slot) {
     const id = this._slotEntity(slot);
     return id ? this.hass.states[id] : undefined;
@@ -356,10 +369,14 @@ export class EcoFlowSpaceCard extends LitElement {
     return html`<ha-adaptive-dialog
       open
       width="large"
-      header-title=${this._t("card.today")}
+      header-title=${this._t("card.solar")}
       @closed=${() => (this._dialog = null)}
     >
-      <div class="dlg-body">${graph}</div>
+      <div class="dlg-body">
+        ${graph}
+        <div class="dlg-section">${this._t("panels.title")}</div>
+        ${renderPanels(this)}
+      </div>
     </ha-adaptive-dialog>`;
   }
 
@@ -588,8 +605,13 @@ export class EcoFlowSpaceCard extends LitElement {
     const tab = this._activeTab();
     const path = tab?.path || "";
 
-    if (path && path === this._embed.path) {
-      // Same view still mounted — just push the latest hass through.
+    if (path && path === this._embed.path && this._embed.els.length) {
+      // Same view: Lit re-creates an empty .embed-host each time we return to
+      // this tab, so re-attach the (detached) card elements if they're not in
+      // the current host, then push the latest hass through.
+      if (host.childElementCount === 0) {
+        for (const el of this._embed.els) host.appendChild(el);
+      }
       for (const el of this._embed.els) el.hass = this.hass;
       return;
     }

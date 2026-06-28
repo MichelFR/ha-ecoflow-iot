@@ -621,4 +621,73 @@ export const spaceCardStyles = css`
     fill: var(--primary-text-color);
     font-weight: 700;
   }
+
+  /* per-array solar production (shared views/panels.js) */
+  .dlg-section {
+    margin: 18px 4px 6px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .empty {
+    padding: 16px 8px;
+    color: var(--secondary-text-color);
+    text-align: center;
+  }
+  .panels {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .panel-row {
+    padding: 10px 8px;
+    border-radius: 10px;
+    transition: background-color 0.15s ease;
+  }
+  .panel-row.clickable {
+    cursor: pointer;
+  }
+  .panel-row:hover {
+    background: var(--secondary-background-color);
+  }
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-text-color);
+  }
+  .panel-name ha-icon {
+    --mdc-icon-size: 20px;
+    color: var(--energy-solar-color, #ff9800);
+  }
+  .panel-val {
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .pbar {
+    height: 7px;
+    border-radius: 4px;
+    background: var(--divider-color);
+    margin-top: 7px;
+    overflow: hidden;
+  }
+  .pfill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--energy-solar-color, #ff9800);
+    transition: width 0.4s ease;
+  }
+  .panel-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding: 10px 8px 2px;
+    border-top: 1px solid var(--divider-color);
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
 `;
