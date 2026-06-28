@@ -37,12 +37,6 @@ export const spaceCardStyles = css`
     height: var(--ef-view);
     max-height: 100%;
     border: none;
-  }
-  /* In the card-editor preview, use a fixed, sensible height instead of the
-     full viewport so the preview pane isn't overrun. */
-  :host([in-preview]) ha-card {
-    height: 460px;
-    max-height: 460px;
     border-radius: 0;
     color: var(--sp-text);
     /* A subtle top-lit dark gradient, like the app backdrop. */
@@ -53,6 +47,12 @@ export const spaceCardStyles = css`
         #101215 100%
       ),
       #0e1013;
+  }
+  /* In the card-editor preview, use a fixed, sensible height instead of the
+     full viewport so the preview pane isn't overrun. */
+  :host([in-preview]) ha-card {
+    height: 460px;
+    max-height: 460px;
   }
   .shell {
     display: flex;
@@ -151,6 +151,18 @@ export const spaceCardStyles = css`
   .topbar-right {
     justify-content: flex-end;
   }
+  .topbar-center {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+  }
+  .clock {
+    font-size: calc(1.5em * var(--ef-scale, 1));
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--sp-text);
+    font-variant-numeric: tabular-nums;
+  }
   .topbar-title {
     font-size: 1.05em;
     font-weight: 600;
@@ -168,7 +180,7 @@ export const spaceCardStyles = css`
     color: var(--sp-text);
     cursor: pointer;
     padding: 4px 6px;
-    font-size: 1.02em;
+    font-size: calc(1.02em * var(--ef-scale, 1));
     font-weight: 600;
   }
   .w-grp {
@@ -178,7 +190,7 @@ export const spaceCardStyles = css`
     white-space: nowrap;
   }
   .w-grp ha-icon {
-    --mdc-icon-size: 19px;
+    --mdc-icon-size: calc(19px * var(--ef-scale, 1));
     color: var(--sp-muted);
   }
   .w-grp.moon ha-icon {
@@ -251,27 +263,30 @@ export const spaceCardStyles = css`
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: clamp(10px, 1.5vw, 13px);
+    font-size: calc(clamp(10px, 1.5vw, 13px) * var(--ef-scale, 1));
     color: var(--sp-muted);
     font-weight: 500;
   }
   .ov-ic {
-    --mdc-icon-size: 14px;
+    --mdc-icon-size: calc(14px * var(--ef-scale, 1));
   }
   .ov-dot {
-    width: 7px;
-    height: 7px;
+    width: calc(7px * var(--ef-scale, 1));
+    height: calc(7px * var(--ef-scale, 1));
     border-radius: 50%;
     margin-left: 2px;
   }
+  /* The value block carries the scaled base size; unit/secondary are relative
+     to it so they scale together (--ef-scale set per overlay). */
   .ov-value {
     display: inline-flex;
     align-items: baseline;
     gap: 2px;
     line-height: 1.05;
+    font-size: calc(clamp(16px, 2.7vw, 26px) * var(--ef-scale, 1));
   }
   .ov-num {
-    font-size: clamp(16px, 2.7vw, 26px);
+    font-size: 1em;
     font-weight: 700;
     color: var(--ef-ov-color, var(--sp-text));
   }
@@ -282,33 +297,35 @@ export const spaceCardStyles = css`
     opacity: 0.8;
   }
   .ov-sec {
-    font-size: 0.78em;
+    font-size: 0.7em;
     font-weight: 700;
     color: var(--sp-pos);
     margin-left: 4px;
   }
 
   /* -- bottom tiles -- */
+  /* Smaller by default so the house gets more room; --ef-scale (set on .tiles)
+     resizes the whole row together. */
   .tiles {
     flex: 0 0 auto;
     display: flex;
-    gap: 14px;
-    padding: 10px 20px 20px;
+    gap: 12px;
+    padding: 6px 18px 14px;
     overflow-x: auto;
     z-index: 3;
   }
   .tile {
     flex: 1 1 0;
-    min-width: 150px;
+    min-width: 116px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: calc(5px * var(--ef-scale, 1));
     border: 1px solid var(--sp-tile-border);
     text-align: left;
     background: var(--sp-tile);
     color: var(--sp-text);
-    border-radius: 18px;
-    padding: 16px 18px;
+    border-radius: 14px;
+    padding: calc(10px * var(--ef-scale, 1)) calc(13px * var(--ef-scale, 1));
     cursor: default;
   }
   .tile.clickable {
@@ -324,12 +341,12 @@ export const spaceCardStyles = css`
     gap: 8px;
   }
   .tile-label {
-    font-size: 0.98em;
+    font-size: calc(0.82em * var(--ef-scale, 1));
     color: var(--sp-muted);
     line-height: 1.2;
   }
   .tile-head ha-icon {
-    --mdc-icon-size: 22px;
+    --mdc-icon-size: calc(18px * var(--ef-scale, 1));
     color: var(--sp-muted);
     flex: none;
   }
@@ -337,9 +354,10 @@ export const spaceCardStyles = css`
     display: flex;
     align-items: baseline;
     gap: 4px;
+    font-size: calc(clamp(17px, 2.2vw, 25px) * var(--ef-scale, 1));
   }
   .tile-num {
-    font-size: clamp(22px, 3vw, 32px);
+    font-size: 1em;
     font-weight: 800;
     line-height: 1;
   }
@@ -349,7 +367,7 @@ export const spaceCardStyles = css`
     color: var(--sp-muted);
   }
   .tile-secondary {
-    font-size: 0.8em;
+    font-size: calc(0.72em * var(--ef-scale, 1));
     color: var(--sp-muted);
   }
   .tile-secondary.pos {

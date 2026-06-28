@@ -249,7 +249,27 @@ export class EcoFlowSpaceCardEditor extends LitElement {
       ></ha-form>
       ${this._textField(this._t("space.f_low"), this._config.weather?.low || "", (v) =>
         this._setWeather("low", v)
-      )}`;
+      )}
+      ${this._scaleField(this._t("space.f_weather_size"), this._config.weather_size, (v) =>
+        this._set("weather_size", v, 1)
+      )}
+
+      <div class="section">
+        <ha-icon icon="mdi:clock-outline"></ha-icon>${this._t("space.clock_title")}
+      </div>
+      <div class="row">
+        <ha-icon icon="mdi:clock-outline"></ha-icon>
+        <span class="row-label">${this._t("space.clock_show")}</span>
+        <ha-switch
+          .checked=${this._config.clock ?? false}
+          @change=${(ev) => this._set("clock", ev.target.checked, false)}
+        ></ha-switch>
+      </div>
+      ${this._config.clock
+        ? this._scaleField(this._t("space.f_clock_size"), this._config.clock_size, (v) =>
+            this._set("clock_size", v, 1)
+          )
+        : ""}`;
   }
 
   _setWeather(key, value) {
@@ -334,6 +354,9 @@ export class EcoFlowSpaceCardEditor extends LitElement {
             </div>
             ${this._textField(this._t("space.f_color"), ov.color || "", (v) =>
               this._updateItem("overlays", i, { color: v || undefined })
+            )}
+            ${this._scaleField(this._t("space.f_size"), ov.size, (v) =>
+              this._updateItem("overlays", i, { size: v === 1 ? undefined : v })
             )}
             <button class="del-btn" @click=${() => this._removeItem("overlays", i)}>
               <ha-icon icon="mdi:delete-outline"></ha-icon><span>${this._t("space.remove")}</span>
@@ -435,6 +458,9 @@ export class EcoFlowSpaceCardEditor extends LitElement {
   _renderTiles() {
     const tiles = this._config.tiles || [];
     return html`<div class="hint top-hint">${this._t("space.tiles_hint")}</div>
+      ${this._scaleField(this._t("space.f_tiles_size"), this._config.tiles_size, (v) =>
+        this._set("tiles_size", v, 1)
+      )}
       ${tiles.map((tile, i) => this._renderTileEditor(tile, i))}
       <button class="add-btn" @click=${this._addTile}>
         <ha-icon icon="mdi:plus"></ha-icon><span>${this._t("space.add_tile")}</span>
@@ -603,6 +629,24 @@ export class EcoFlowSpaceCardEditor extends LitElement {
       @value-changed=${(ev) => {
         const n = Number(ev.detail.value.value);
         if (Number.isFinite(n)) onChange(Math.max(0, Math.min(100, Math.round(n))));
+      }}
+    ></ha-form>`;
+  }
+
+  /* A size multiplier (×) slider, 0.5–3, default 1. */
+  _scaleField(label, value, onChange) {
+    return html`<ha-form
+      class="field"
+      .hass=${this.hass}
+      .data=${{ value: value ?? 1 }}
+      .schema=${[
+        { name: "value", selector: { number: { min: 0.5, max: 3, step: 0.1, mode: "slider" } } },
+      ]}
+      .computeLabel=${() => label}
+      @value-changed=${(ev) => {
+        ev.stopPropagation();
+        const n = Number(ev.detail.value.value);
+        onChange(Number.isFinite(n) ? n : 1);
       }}
     ></ha-form>`;
   }

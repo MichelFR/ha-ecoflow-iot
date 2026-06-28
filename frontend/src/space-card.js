@@ -135,6 +135,9 @@ export class EcoFlowSpaceCard extends LitElement {
     // undefined = not fetched yet); refreshed on a timer.
     this._energy = undefined;
     this._energyTimer = null;
+    // Top-bar clock text; ticked once a second but only re-renders on change.
+    this._clock = "";
+    this._clockTimer = null;
   }
 
   connectedCallback() {
@@ -144,6 +147,14 @@ export class EcoFlowSpaceCard extends LitElement {
     // (statistics only tick a few times an hour, so polling is cheap).
     this._refreshEnergy();
     this._energyTimer = setInterval(() => this._refreshEnergy(), 5 * 60 * 1000);
+    this._clock = this._formatClock();
+    this._clockTimer = setInterval(() => {
+      const s = this._formatClock();
+      if (s !== this._clock) {
+        this._clock = s;
+        this.requestUpdate();
+      }
+    }, 1000);
   }
 
   disconnectedCallback() {
@@ -155,6 +166,20 @@ export class EcoFlowSpaceCard extends LitElement {
     this._tmplUnsub = {};
     if (this._energyTimer) clearInterval(this._energyTimer);
     this._energyTimer = null;
+    if (this._clockTimer) clearInterval(this._clockTimer);
+    this._clockTimer = null;
+  }
+
+  _formatClock() {
+    const d = new Date();
+    try {
+      return d.toLocaleTimeString(this.hass?.locale?.language || undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (e) {
+      return d.toTimeString().slice(0, 5);
+    }
   }
 
   firstUpdated() {
@@ -656,7 +681,17 @@ export class EcoFlowSpaceCard extends LitElement {
       <div class="topbar-left">
         ${title ? html`<div class="topbar-title">${title}</div>` : ""}
       </div>
-      ${this._renderWeather()}
+      ${this._renderClock()} ${this._renderWeather()}
+    </div>`;
+  }
+
+  _renderClock() {
+    if (!(this._config.clock ?? false)) return html`<span class="topbar-center"></span>`;
+    const scale = this._config.clock_size || 1;
+    return html`<div class="topbar-center">
+      <div class="clock" style=${`--ef-scale:${scale}`}>
+        ${this._clock || this._formatClock()}
+      </div>
     </div>`;
   }
 
@@ -677,8 +712,14 @@ export class EcoFlowSpaceCard extends LitElement {
       const fl = a.forecast[0].templow ?? a.forecast[0].temperature;
       if (fl != null) lowText = `${Math.round(fl)} ${tempUnit}`;
     }
+    const scale = this._config.weather_size || 1;
     return html`<div class="topbar-right">
-      <button class="weather" @click=${() => this._moreInfo(id)} title=${st.state}>
+      <button
+        class="weather"
+        style=${`--ef-scale:${scale}`}
+        @click=${() => this._moreInfo(id)}
+        title=${st.state}
+      >
         ${a.temperature != null
           ? html`<span class="w-grp"
               ><ha-icon icon="mdi:thermometer"></ha-icon
@@ -709,7 +750,7 @@ export class EcoFlowSpaceCard extends LitElement {
         const v = this._overlayView(ov);
         const style = `left:${ov.x ?? 50}%;top:${ov.y ?? 50}%;transform:${
           ANCHORS[ov.anchor] || ANCHORS.center
-        };${v.color ? `--ef-ov-color:${v.color};` : ""}`;
+        };--ef-scale:${ov.size || 1};${v.color ? `--ef-ov-color:${v.color};` : ""}`;
         return html`<button
           class="overlay ${v.entityId ? "clickable" : ""}"
           style=${style}
@@ -739,7 +780,8 @@ export class EcoFlowSpaceCard extends LitElement {
   _renderTiles() {
     const tiles = this._config.tiles || [];
     if (!tiles.length) return "";
-    return html`<div class="tiles">
+    const scale = this._config.tiles_size || 1;
+    return html`<div class="tiles" style=${`--ef-scale:${scale}`}>
       ${tiles.map((tile) => {
         const v = this._tileView(tile);
         const secCls = v.secondary.startsWith("+")
