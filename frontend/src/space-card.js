@@ -49,6 +49,7 @@ const SLOT_SOC = "sensor.cms_batt_soc";
 const SLOT_LOAD_FROM_GRID = "sensor.load_from_grid";
 const SLOT_LOAD_FROM_PV = "sensor.load_from_pv";
 const SLOT_LOAD_FROM_BAT = "sensor.load_from_bat";
+const SLOT_BACKUP = "number.backup_reserve";
 
 // Anchor -> CSS translate so x/y pin the chosen point of the overlay.
 const ANCHORS = {
@@ -329,7 +330,7 @@ export class EcoFlowSpaceCard extends LitElement {
     const route = parseInt(this._config.house || DEFAULT_HOUSE_STYLE, 10) || 1;
     // No device: a synthetic "sunny day" so every flow animates in the preview.
     if (!this._device) {
-      return deriveFlowStates({ grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, loadFromPv: 700, route });
+      return deriveFlowStates({ grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, backup: 20, loadFromPv: 700, route });
     }
     return deriveFlowStates({
       grid: this._grid(),
@@ -337,6 +338,7 @@ export class EcoFlowSpaceCard extends LitElement {
       load: numState(this._slotState(SLOT_LOAD)),
       bat: numState(this._slotState(SLOT_BAT)),
       soc: numState(this._slotState(SLOT_SOC)),
+      backup: numState(this._slotState(SLOT_BACKUP)),
       loadFromGrid: numState(this._slotState(SLOT_LOAD_FROM_GRID)),
       loadFromPv: numState(this._slotState(SLOT_LOAD_FROM_PV)),
       loadFromBat: numState(this._slotState(SLOT_LOAD_FROM_BAT)),
@@ -800,6 +802,7 @@ export class EcoFlowSpaceCard extends LitElement {
         <div class="layer flow z-box" data-flow="bat_soc"></div>
         <div class="layer flow z-box" data-flow="bat_chg"></div>
         <div class="layer flow z-box" data-flow="bat_dsg"></div>
+        <div class="layer flow z-box" data-flow="bat_backup"></div>
         ${this._renderOverlays()}
         ${warn ? this._renderSetupWarning() : ""}
       </div>

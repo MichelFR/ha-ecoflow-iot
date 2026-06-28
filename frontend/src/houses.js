@@ -88,9 +88,10 @@ export const BATTERY_BOXES = [
   "bk620",
   "re_space_system_battery",
   "re_space_system_battery_gateway",
+  "re305_device",
+  "re306_dpu_combo",
   "re305_or_re306_battery",
   "re305_or_re306_device",
-  "re305_device",
   "re306_device",
   "re306_dpu_battery",
   "po_space_re305_battery",
@@ -121,19 +122,24 @@ const BATTERY_WITH_OVERLAYS = new Set([
   "re_space_system_battery",
   "re_space_system_battery_gateway",
   "bk621",
+  "re305_device",
+  "re306_dpu_combo",
 ]);
 
 export function batteryHasOverlays(key) {
   return BATTERY_WITH_OVERLAYS.has(key || DEFAULT_BATTERY);
 }
 
-// The energy-flow theme a battery render drives. The BK renders use the Stream
-// family flow set (bkseriesmodule); everything else uses the original re_space
-// set the card shipped with.
+// The energy-flow theme a battery render drives. BK renders use the Stream
+// family set (bkseriesmodule); re305/re306 use the PowerOcean set (NewPO-
+// SystemEnergyView — re305 = single E7 battery, re306 = DPU / Delta Pro Ultra);
+// everything else uses the original re_space set the card shipped with.
 export function flowTheme(key) {
   const k = BATTERY_BOXES.includes(key) ? key : DEFAULT_BATTERY;
   if (k === "bk621") return "bk621";
   if (k === "bk620") return "bk620";
+  if (k === "re305_device") return "re305";
+  if (k === "re306_dpu_combo") return "re306";
   return "re_space";
 }
 
@@ -143,6 +149,15 @@ export function bkRoute(style) {
   const n = parseInt(style, 10) || 1;
   if (n === 8) return 3;
   if (n >= 9) return 6;
+  return Math.min(7, Math.max(1, n));
+}
+
+// Solar index for the PowerOcean (re305/re306) house renders. The theme ships
+// styles 1-7 + 9 (re305_theme_energy_flow.json); style 8 reuses 3.
+export function poRoute(style) {
+  const n = parseInt(style, 10) || 1;
+  if (n === 8) return 3;
+  if (n >= 9) return 9;
   return Math.min(7, Math.max(1, n));
 }
 

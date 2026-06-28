@@ -16,7 +16,7 @@
  * calls sync(). Containers whose key isn't in the active theme are hidden. */
 
 import lottie from "lottie-web/build/player/lottie_light";
-import { FLOWS, flowUrl, solarFlowName, bkRoute } from "./houses.js";
+import { FLOWS, flowUrl, solarFlowName, bkRoute, poRoute } from "./houses.js";
 
 // Power magnitude (W) below which a path is treated as idle (no flow shown).
 export const ACTIVE_W = 1;
@@ -83,6 +83,36 @@ export const FLOW_THEMES = {
       { key: "grid_out", zone: "bg", file: () => "bk621/device_to_grid_lottie", active: (s) => s.grid < -ACTIVE_W },
       { key: "grid_home", zone: "bg", file: () => "bk621/grid_to_home_lottie", active: (s) => s.gridToHome > ACTIVE_W },
       { key: "home", zone: "bg", file: () => "bk620/house_device_home_lottie", active: (s) => s.deviceToHome > ACTIVE_W },
+    ],
+  },
+  // PowerOcean (NewPOSystemEnergyView). Single-battery: grid by sign, like
+  // re_space, plus a seek-to-backup_reserve overlay. re305 = E7 battery, re306 =
+  // DPU (Delta Pro Ultra); both share the OceanPro grid/solar/home routes.
+  re305: {
+    layers: [
+      { key: "solar", zone: "bg", file: (s) => `re305/Space_Style${poRoute(s.route)}_Solar_OceanPro_Com`, active: (s) => s.solar > ACTIVE_W },
+      { key: "grid_in", zone: "bg", file: () => "re305/Space_Com_GridIn_OceanProOceanPanel_Com", active: (s) => s.grid > ACTIVE_W },
+      { key: "grid_out", zone: "bg", file: () => "re305/Space_Com_GridOut_OceanProAdvanced_Com", active: (s) => s.grid < -ACTIVE_W },
+      { key: "home", zone: "bg", file: () => "re305/Space_Com_DeviceToHome_OceanPro_Com", active: (s) => s.load > ACTIVE_W },
+      { key: "bat_in", zone: "bg", file: () => "re305/OceanPro_E7_Bat_In_Lottie", active: (s) => s.bat > ACTIVE_W },
+      { key: "bat_out", zone: "bg", file: () => "re305/OceanPro_E7_Bat_Out_Lottie", active: (s) => s.bat < -ACTIVE_W },
+      { key: "bat_soc", zone: "on", file: () => "re305/OceanPro_E7_BatSoc_Lottie", mode: "seek", seek: (s) => s.soc, active: (s) => s.soc != null },
+      { key: "bat_chg", zone: "on", file: () => "re305/OceanPro_E7_Bat_Charging_Lottie", active: (s) => s.bat > ACTIVE_W },
+      { key: "bat_dsg", zone: "on", file: () => "re305/OceanPro_E7_Bat_Discharging_Lottie", active: (s) => s.bat < -ACTIVE_W },
+      { key: "bat_backup", zone: "on", file: () => "re305/OceanPro_E7_Bat_Backup_Ratio_Lottie", mode: "seek", seek: (s) => s.backup, active: (s) => s.backup > 0 && s.backup < 100 },
+    ],
+  },
+  re306: {
+    layers: [
+      { key: "solar", zone: "bg", file: (s) => `re305/Space_Style${poRoute(s.route)}_Solar_OceanPro_Com`, active: (s) => s.solar > ACTIVE_W },
+      { key: "grid_in", zone: "bg", file: () => "re305/Space_Com_GridIn_OceanProOceanPanel_Com", active: (s) => s.grid > ACTIVE_W },
+      { key: "grid_out", zone: "bg", file: () => "re305/Space_Com_GridOut_OceanProAdvanced_Com", active: (s) => s.grid < -ACTIVE_W },
+      { key: "home", zone: "bg", file: () => "re305/Space_Com_DeviceToHome_OceanPro_Com", active: (s) => s.load > ACTIVE_W },
+      { key: "bat_in", zone: "bg", file: () => "re306/OceanPro_Panel_DpuBat_In_Lottie", active: (s) => s.bat > ACTIVE_W },
+      { key: "bat_out", zone: "bg", file: () => "re306/OceanPro_Panel_DpuBat_Out_Lottie", active: (s) => s.bat < -ACTIVE_W },
+      { key: "bat_soc", zone: "on", file: () => "re306/OceanPro_Panel_DpuBatSoc_Lottie", mode: "seek", seek: (s) => s.soc, active: (s) => s.soc != null },
+      { key: "bat_chg", zone: "on", file: () => "re306/OceanPro_Panel_DpuBat_Charging_Lottie", active: (s) => s.bat > ACTIVE_W },
+      { key: "bat_dsg", zone: "on", file: () => "re306/OceanPro_Panel_DpuBat_Discharging_Lottie", active: (s) => s.bat < -ACTIVE_W },
     ],
   },
 };

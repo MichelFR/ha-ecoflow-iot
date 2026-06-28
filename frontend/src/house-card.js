@@ -135,7 +135,7 @@ export class EcoFlowHouseCard extends LitElement {
     // for the preview (solar in, exporting, home load, battery charging). The
     // figures themselves stay blank — see _renderStats.
     if (!this._device) {
-      return deriveFlowStates({ grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, loadFromPv: 700, route });
+      return deriveFlowStates({ grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, backup: 20, loadFromPv: 700, route });
     }
 
     return deriveFlowStates({
@@ -144,6 +144,7 @@ export class EcoFlowHouseCard extends LitElement {
       load: numState(this._state("sensor.sys_load")),
       bat: numState(this._state("sensor.bat_power")),
       soc: numState(this._state("sensor.cms_batt_soc")),
+      backup: numState(this._state("number.backup_reserve")),
       loadFromGrid: numState(this._state("sensor.load_from_grid")),
       loadFromPv: numState(this._state("sensor.load_from_pv")),
       loadFromBat: numState(this._state("sensor.load_from_bat")),
@@ -212,6 +213,7 @@ export class EcoFlowHouseCard extends LitElement {
         <div class="layer flow z-box" data-flow="bat_soc"></div>
         <div class="layer flow z-box" data-flow="bat_chg"></div>
         <div class="layer flow z-box" data-flow="bat_dsg"></div>
+        <div class="layer flow z-box" data-flow="bat_backup"></div>
         ${this._renderLeaders()} ${this._renderStats()}
         ${showBattery ? this._renderBattery() : ""}
         ${notSetup ? this._renderSetupWarning() : ""}
