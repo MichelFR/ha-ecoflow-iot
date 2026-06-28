@@ -33,9 +33,10 @@ import {
   DEFAULT_HOUSE_STYLE,
   batteryBoxUrl,
   batteryHasOverlays,
+  flowTheme,
   houseImageUrl,
 } from "./houses.js";
-import { ACTIVE_W, FlowController } from "./flows.js";
+import { ACTIVE_W, FlowController, deriveFlowStates } from "./flows.js";
 import { spaceCardStyles } from "./space-styles.js";
 
 // The scene's auto-discovered sensor slots (same keys the House card reads).
@@ -45,6 +46,9 @@ const SLOT_SOLAR = "sensor.pv_total";
 const SLOT_LOAD = "sensor.sys_load";
 const SLOT_BAT = "sensor.bat_power";
 const SLOT_SOC = "sensor.cms_batt_soc";
+const SLOT_LOAD_FROM_GRID = "sensor.load_from_grid";
+const SLOT_LOAD_FROM_PV = "sensor.load_from_pv";
+const SLOT_LOAD_FROM_BAT = "sensor.load_from_bat";
 
 // Anchor -> CSS translate so x/y pin the chosen point of the overlay.
 const ANCHORS = {
@@ -325,16 +329,19 @@ export class EcoFlowSpaceCard extends LitElement {
     const route = parseInt(this._config.house || DEFAULT_HOUSE_STYLE, 10) || 1;
     // No device: a synthetic "sunny day" so every flow animates in the preview.
     if (!this._device) {
-      return { grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, route };
+      return deriveFlowStates({ grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, loadFromPv: 700, route });
     }
-    return {
+    return deriveFlowStates({
       grid: this._grid(),
       solar: numState(this._slotState(SLOT_SOLAR)),
       load: numState(this._slotState(SLOT_LOAD)),
       bat: numState(this._slotState(SLOT_BAT)),
       soc: numState(this._slotState(SLOT_SOC)),
+      loadFromGrid: numState(this._slotState(SLOT_LOAD_FROM_GRID)),
+      loadFromPv: numState(this._slotState(SLOT_LOAD_FROM_PV)),
+      loadFromBat: numState(this._slotState(SLOT_LOAD_FROM_BAT)),
       route,
-    };
+    });
   }
 
   _moreInfo(entityId) {
@@ -617,6 +624,7 @@ export class EcoFlowSpaceCard extends LitElement {
     if (onHome) {
       this._flows.sync(this.renderRoot, {
         hass: this.hass,
+        theme: flowTheme(this._config.battery),
         showFlows: this._show("show_flows"),
         batOverlays:
           this._show("show_battery") && batteryHasOverlays(this._config.battery),
@@ -778,6 +786,7 @@ export class EcoFlowSpaceCard extends LitElement {
         <div class="layer flow z-bg" data-flow="solar"></div>
         <div class="layer flow z-bg" data-flow="grid_in"></div>
         <div class="layer flow z-bg" data-flow="grid_out"></div>
+        <div class="layer flow z-bg" data-flow="grid_home"></div>
         <div class="layer flow z-bg" data-flow="home"></div>
         <div class="layer flow z-bg" data-flow="bat_in"></div>
         <div class="layer flow z-bg" data-flow="bat_out"></div>

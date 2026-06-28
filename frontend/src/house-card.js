@@ -25,9 +25,10 @@ import {
   DEFAULT_HOUSE_STYLE,
   batteryBoxUrl,
   batteryHasOverlays,
+  flowTheme,
   houseImageUrl,
 } from "./houses.js";
-import { ACTIVE_W, FlowController } from "./flows.js";
+import { ACTIVE_W, FlowController, deriveFlowStates } from "./flows.js";
 import { houseCardStyles } from "./house-styles.js";
 
 export class EcoFlowHouseCard extends LitElement {
@@ -134,16 +135,20 @@ export class EcoFlowHouseCard extends LitElement {
     // for the preview (solar in, exporting, home load, battery charging). The
     // figures themselves stay blank — see _renderStats.
     if (!this._device) {
-      return { grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, route };
+      return deriveFlowStates({ grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, loadFromPv: 700, route });
     }
 
-    const grid = this._grid();
-    const solar = numState(this._state("sensor.pv_total"));
-    const load = numState(this._state("sensor.sys_load"));
-    const bat = numState(this._state("sensor.bat_power"));
-    const soc = numState(this._state("sensor.cms_batt_soc"));
-
-    return { grid, solar, load, bat, soc, route };
+    return deriveFlowStates({
+      grid: this._grid(),
+      solar: numState(this._state("sensor.pv_total")),
+      load: numState(this._state("sensor.sys_load")),
+      bat: numState(this._state("sensor.bat_power")),
+      soc: numState(this._state("sensor.cms_batt_soc")),
+      loadFromGrid: numState(this._state("sensor.load_from_grid")),
+      loadFromPv: numState(this._state("sensor.load_from_pv")),
+      loadFromBat: numState(this._state("sensor.load_from_bat")),
+      route,
+    });
   }
 
   /* -- lottie lifecycle -- */
@@ -155,6 +160,7 @@ export class EcoFlowHouseCard extends LitElement {
     // battery render that has them.
     this._flows.sync(this.renderRoot, {
       hass: this.hass,
+      theme: flowTheme(this._config.battery),
       showFlows: this._show("show_flows"),
       batOverlays:
         this._show("show_battery") && batteryHasOverlays(this._config.battery),
@@ -192,6 +198,7 @@ export class EcoFlowHouseCard extends LitElement {
         <div class="layer flow z-bg" data-flow="solar"></div>
         <div class="layer flow z-bg" data-flow="grid_in"></div>
         <div class="layer flow z-bg" data-flow="grid_out"></div>
+        <div class="layer flow z-bg" data-flow="grid_home"></div>
         <div class="layer flow z-bg" data-flow="home"></div>
         <div class="layer flow z-bg" data-flow="bat_in"></div>
         <div class="layer flow z-bg" data-flow="bat_out"></div>

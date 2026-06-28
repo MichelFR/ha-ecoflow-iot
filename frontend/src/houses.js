@@ -78,7 +78,14 @@ export function houseAssetFiles(hass) {
 // The battery/inverter device renders that sit in front of the house. The app
 // picks one per device type; here it's selectable. Keys are the asset names;
 // friendly labels come from translations (house.battery.<key>).
+//
+// The BK renders are the real EcoFlow Stream family (SN prefix "BK"), reverse-
+// engineered from the app's bkseriesmodule: bk621 = STREAM Ultra / Ultra X (with
+// battery), bk620 = STREAM AC / AC Pro / Pro / Max / Microinverter (no battery).
+// Each drives its own flow theme (see flowTheme + FLOW_THEMES in flows.js).
 export const BATTERY_BOXES = [
+  "bk621",
+  "bk620",
   "re_space_system_battery",
   "re_space_system_battery_gateway",
   "re305_or_re306_battery",
@@ -105,17 +112,38 @@ export function batteryBoxUrl(key, hass) {
   return assetUrl(`${ASSET_BASE}/batteries/${k}.webp`, hass);
 }
 
-// The on-battery overlays (SoC fill, charge/discharge glow, battery flow lines)
-// are drawn at a fixed spot that only matches the Stream system battery, so
-// they're shown only for it; other renders display statically (the house-
-// anchored grid/solar/home flows still animate).
+// The on-battery overlays (SoC fill, charge/discharge glow) are drawn at a fixed
+// spot that only matches a battery render with a matching flow theme, so they're
+// shown only for those; other renders display statically (the house-anchored
+// grid/solar/home flows still animate). bk620 (microinverter, no battery) has no
+// SoC overlays.
 const BATTERY_WITH_OVERLAYS = new Set([
   "re_space_system_battery",
   "re_space_system_battery_gateway",
+  "bk621",
 ]);
 
 export function batteryHasOverlays(key) {
   return BATTERY_WITH_OVERLAYS.has(key || DEFAULT_BATTERY);
+}
+
+// The energy-flow theme a battery render drives. The BK renders use the Stream
+// family flow set (bkseriesmodule); everything else uses the original re_space
+// set the card shipped with.
+export function flowTheme(key) {
+  const k = BATTERY_BOXES.includes(key) ? key : DEFAULT_BATTERY;
+  if (k === "bk621") return "bk621";
+  if (k === "bk620") return "bk620";
+  return "re_space";
+}
+
+// Solar / device->home index for the BK house renders. The app ships styles 1-7
+// (oi/g.java); style 8 reuses 3 and 9 reuses 6, mirroring solarFlowName.
+export function bkRoute(style) {
+  const n = parseInt(style, 10) || 1;
+  if (n === 8) return 3;
+  if (n >= 9) return 6;
+  return Math.min(7, Math.max(1, n));
 }
 
 export function flowUrl(name, hass) {
