@@ -8,7 +8,7 @@
  * Entities are auto-discovered from the ecoflow_iot integration. */
 
 import { LitElement, html, svg } from "lit";
-import { CARD_TYPE } from "./const.js";
+import { CARD_TYPE, assetUrl } from "./const.js";
 import { deviceImageUrl, imageUrlForKey, webpVariant } from "./device-image.js";
 import { entityMap, streamDevices } from "./entities.js";
 import {
@@ -354,14 +354,17 @@ export class EcoFlowEnergyCard extends LitElement {
     </ha-adaptive-dialog>`;
   }
 
-  /* Resolved device image URL: explicit override, configured key, else auto. */
+  /* Resolved device image URL: explicit override, configured key, else auto.
+   * Rebased onto the HA instance so bundled images still load under Home
+   * Assistant Cast (see assetUrl). */
   _imageSrc(device) {
     const model = device?.device?.model;
-    return (
+    return assetUrl(
       this._config.image_url ||
-      (this._config.image
-        ? imageUrlForKey(this._config.image)
-        : deviceImageUrl(model))
+        (this._config.image
+          ? imageUrlForKey(this._config.image)
+          : deviceImageUrl(model)),
+      this.hass
     );
   }
 

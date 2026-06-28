@@ -7,7 +7,7 @@
  * the exact half-scale — so an overlay pinned to the same box aligns
  * pixel-perfectly with the house. */
 
-import { ASSET_BASE } from "./const.js";
+import { ASSET_BASE, assetUrl } from "./const.js";
 
 // The house architectural styles, each shipped as a "day" and a "night" render
 // (space_common_bg_day_<n> / _night_<n>).
@@ -32,7 +32,10 @@ export function resolveHouseMode(mode, hass) {
 
 export function houseUrl(style, mode, hass) {
   const key = HOUSE_STYLES.includes(style) ? style : DEFAULT_HOUSE_STYLE;
-  return `${ASSET_BASE}/houses/${resolveHouseMode(mode, hass)}_${key}.webp`;
+  return assetUrl(
+    `${ASSET_BASE}/houses/${resolveHouseMode(mode, hass)}_${key}.webp`,
+    hass
+  );
 }
 
 /* Whether a config carries a user-uploaded house image (light and/or dark). */
@@ -48,26 +51,26 @@ export function houseImageUrl(config, hass) {
   const dark = config?.house_image_dark;
   if (light || dark) {
     const mode = resolveHouseMode(config?.house_mode, hass);
-    return mode === "night" ? dark || light : light || dark;
+    return assetUrl(mode === "night" ? dark || light : light || dark, hass);
   }
   return houseUrl(config?.house, config?.house_mode, hass);
 }
 
 /* A fixed preview image (day render) for a style, used by the editor gallery. */
-export function housePreviewUrl(style) {
+export function housePreviewUrl(style, hass) {
   const key = HOUSE_STYLES.includes(style) ? style : DEFAULT_HOUSE_STYLE;
-  return `${ASSET_BASE}/houses/day_${key}.webp`;
+  return assetUrl(`${ASSET_BASE}/houses/day_${key}.webp`, hass);
 }
 
 /* Every bundled house render, as { name, url } — used by the editor to bundle
  * the whole set into a zip so users can trace one into a custom illustration. */
-export function houseAssetFiles() {
+export function houseAssetFiles(hass) {
   const files = [];
   for (const mode of ["day", "night"])
     for (const key of HOUSE_STYLES)
       files.push({
         name: `${mode}_${key}.webp`,
-        url: `${ASSET_BASE}/houses/${mode}_${key}.webp`,
+        url: assetUrl(`${ASSET_BASE}/houses/${mode}_${key}.webp`, hass),
       });
   return files;
 }
@@ -97,9 +100,9 @@ export const BATTERY_BOXES = [
 // EcoFlow Stream — the device this card is built around.
 export const DEFAULT_BATTERY = "re_space_system_battery";
 
-export function batteryBoxUrl(key) {
+export function batteryBoxUrl(key, hass) {
   const k = BATTERY_BOXES.includes(key) ? key : DEFAULT_BATTERY;
-  return `${ASSET_BASE}/batteries/${k}.webp`;
+  return assetUrl(`${ASSET_BASE}/batteries/${k}.webp`, hass);
 }
 
 // The on-battery overlays (SoC fill, charge/discharge glow, battery flow lines)
@@ -115,8 +118,8 @@ export function batteryHasOverlays(key) {
   return BATTERY_WITH_OVERLAYS.has(key || DEFAULT_BATTERY);
 }
 
-export function flowUrl(name) {
-  return `${ASSET_BASE}/flows/${name}.json`;
+export function flowUrl(name, hass) {
+  return assetUrl(`${ASSET_BASE}/flows/${name}.json`, hass);
 }
 
 // Solar flow drawn for the selected house (re_space_solar_1..7) — each house

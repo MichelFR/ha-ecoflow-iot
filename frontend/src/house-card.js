@@ -136,15 +136,22 @@ export class EcoFlowHouseCard extends LitElement {
   }
 
   _flowStates() {
+    // The solar flow is drawn for the chosen house, so its route follows the
+    // house style (house 1 -> re_space_solar_1, and so on).
+    const route = parseInt(this._config.house || DEFAULT_HOUSE_STYLE, 10) || 1;
+
+    // No device yet: feed a synthetic "sunny day" scene so every flow animates
+    // for the preview (solar in, exporting, home load, battery charging). The
+    // figures themselves stay blank — see _renderStats.
+    if (!this._device) {
+      return { grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, route };
+    }
+
     const grid = this._grid();
     const solar = numState(this._state("sensor.pv_total"));
     const load = numState(this._state("sensor.sys_load"));
     const bat = numState(this._state("sensor.bat_power"));
     const soc = numState(this._state("sensor.cms_batt_soc"));
-
-    // The solar flow is drawn for the chosen house, so its route follows the
-    // house style (house 1 -> re_space_solar_1, and so on).
-    const route = parseInt(this._config.house || DEFAULT_HOUSE_STYLE, 10) || 1;
 
     return { grid, solar, load, bat, soc, route };
   }
@@ -173,10 +180,17 @@ export class EcoFlowHouseCard extends LitElement {
   updated(changed) {
     super.updated(changed);
     this._syncFlows();
+    // Let the styles reserve the title row's height when fitting the card into a
+    // panel view (see --ef-title in house-styles); reflected as an attribute so
+    // it stays pure CSS with no extra render.
+    const hasTitle = !!(this._config?.title && !isTemplate(this._config.title));
+    this.toggleAttribute("has-title", hasTitle);
   }
 
   _syncFlows() {
-    if (!this.renderRoot || !this._device) return;
+    // Runs without a device too, so the no-device preview animates its demo
+    // scene (see _flowStates).
+    if (!this.renderRoot) return;
     const showFlows = this._show("show_flows");
     // The on-battery overlays only line up with a battery that has them.
     const batOverlays =
@@ -206,7 +220,7 @@ export class EcoFlowHouseCard extends LitElement {
         renderer: "svg",
         loop: mode !== "soc",
         autoplay: false,
-        path: flowUrl(file),
+        path: flowUrl(file, this.hass),
         // Top-align like the house image so the scene keeps a clear band at the
         // bottom for the battery readout (see the stage's aspect ratio).
         rendererSettings: { preserveAspectRatio: "xMidYMin meet" },
@@ -238,12 +252,11 @@ export class EcoFlowHouseCard extends LitElement {
   render() {
     if (!this.hass) return html``;
     const device = this._device;
-    if (!device) {
-      return html`<ha-card
-        ><div class="empty">${this._t("card.no_device")}</div></ha-card
-      >`;
-    }
-    this._map = entityMap(this.hass, device.ents);
+    // With no device configured, still render the full illustration (animated,
+    // see _flowStates) so the card can be previewed — just without any live
+    // values, plus a banner that it isn't set up yet.
+    const notSetup = !device;
+    this._map = device ? entityMap(this.hass, device.ents) : {};
 
     const title = this._config.title && !isTemplate(this._config.title) ? this._config.title : "";
     const showBattery = this._show("show_battery");
@@ -265,7 +278,7 @@ export class EcoFlowHouseCard extends LitElement {
         ${showBattery
           ? html`<img
               class="layer box"
-              src=${batteryBoxUrl(this._config.battery)}
+              src=${batteryBoxUrl(this._config.battery, this.hass)}
               alt=""
             />`
           : ""}
@@ -274,8 +287,18 @@ export class EcoFlowHouseCard extends LitElement {
         <div class="layer flow z-box" data-flow="bat_dsg"></div>
         ${this._renderLeaders()} ${this._renderStats()}
         ${showBattery ? this._renderBattery() : ""}
+        ${notSetup ? this._renderSetupWarning() : ""}
       </div>
     </ha-card>`;
+  }
+
+  /* Banner shown over the illustration when no device is configured: the card
+   * still previews (house + animated flows) but carries no live values. */
+  _renderSetupWarning() {
+    return html`<div class="setup-warning">
+      <ha-icon icon="mdi:alert-circle-outline"></ha-icon>
+      <span>${this._t("house.not_setup")}</span>
+    </div>`;
   }
 
   /* Thin leader lines dropping from each top figure into the scene, as the app
@@ -289,16 +312,20 @@ export class EcoFlowHouseCard extends LitElement {
   }
 
   _renderStats() {
+    // No device: keep the figures (so the layout reads normally) but show no
+    // values — neutral labels and a "–" for each. The flows still animate from
+    // the demo scene; only the readouts are blank.
+    const blank = !this._device;
     const s = this._flowStates();
     const cols = [];
     if (this._show("show_grid")) {
-      const importing = s.grid > ACTIVE_W;
-      const exporting = s.grid < -ACTIVE_W;
+      const importing = !blank && s.grid > ACTIVE_W;
+      const exporting = !blank && s.grid < -ACTIVE_W;
       cols.push({
         slot: "sensor.grid_power",
         fallback: "sensor.sys_grid_power",
         anchor: "col-grid",
-        value: s.grid != null ? Math.abs(s.grid) : null,
+        value: blank ? null : s.grid != null ? Math.abs(s.grid) : null,
         label: importing
           ? this._t("house.from_grid")
           : exporting
@@ -311,18 +338,18 @@ export class EcoFlowHouseCard extends LitElement {
       cols.push({
         slot: "sensor.pv_total",
         anchor: "col-solar",
-        value: s.solar,
+        value: blank ? null : s.solar,
         label: this._t("card.solar"),
-        cls: s.solar > ACTIVE_W ? "solar" : "",
+        cls: !blank && s.solar > ACTIVE_W ? "solar" : "",
       });
     }
     if (this._show("show_home")) {
       cols.push({
         slot: "sensor.sys_load",
         anchor: "col-home",
-        value: s.load,
+        value: blank ? null : s.load,
         label: this._t("house.home"),
-        cls: s.load > ACTIVE_W ? "home" : "",
+        cls: !blank && s.load > ACTIVE_W ? "home" : "",
       });
     }
     if (!cols.length) return "";

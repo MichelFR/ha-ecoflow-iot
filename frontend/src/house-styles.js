@@ -6,6 +6,20 @@ import { css } from "lit";
 export const houseCardStyles = css`
   :host {
     display: block;
+    /* Height the card may use: the viewport below the HA header. vh works on
+       every renderer (including older Cast receivers); dvh, when supported,
+       tracks mobile browser chrome better. --ef-title reserves the title row
+       when one is shown (see house-card's has-title reflection). */
+    --ef-view: calc(100vh - var(--header-height, 56px));
+    --ef-title: 0px;
+  }
+  @supports (height: 100dvh) {
+    :host {
+      --ef-view: calc(100dvh - var(--header-height, 56px));
+    }
+  }
+  :host([has-title]) {
+    --ef-title: 40px;
   }
   ha-card {
     overflow: hidden;
@@ -14,6 +28,10 @@ export const houseCardStyles = css`
        figures / lines can't paint over Home Assistant's nav. */
     isolation: isolate;
     z-index: 0;
+    /* Cap the whole card to the available height so a panel view (which hands
+       the card the full viewport) fits without scrolling. Shorter views never
+       reach this, so they're unaffected. */
+    max-height: var(--ef-view);
   }
   .title {
     font-size: 1.05em;
@@ -27,6 +45,41 @@ export const houseCardStyles = css`
     text-align: center;
   }
 
+  /* Banner centered over the illustration when the card has no device set up:
+     the scene still previews (and animates) but carries no live values. */
+  .setup-warning {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 86%;
+    padding: 8px 14px;
+    border-radius: 12px;
+    /* Solid card surface first as a fallback; tinted warning on top where
+       color-mix is supported. */
+    background: var(--ha-card-background, var(--card-background-color, #fff));
+    background: color-mix(
+      in srgb,
+      var(--warning-color, #ff9800) 16%,
+      var(--ha-card-background, var(--card-background-color, #fff))
+    );
+    color: var(--primary-text-color);
+    font-size: clamp(11px, 2.6vw, 14px);
+    font-weight: 600;
+    line-height: 1.3;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+    pointer-events: none;
+  }
+  .setup-warning ha-icon {
+    flex: none;
+    color: var(--warning-color, #ff9800);
+    --mdc-icon-size: 1.3em;
+  }
+
   /* The illustration: house render with overlays pinned to the same box. The
      2340×1680 house and 1170×840 overlays share an aspect ratio, so object-fit:
      contain on each lines them up exactly. */
@@ -36,8 +89,17 @@ export const houseCardStyles = css`
      mutually aligned and that band stays free of the illustration. */
   .stage {
     position: relative;
-    width: 100%;
+    /* Fill the card width, but cap it so the fixed-aspect illustration (and thus
+       the whole card) fits the available height. When height is the limit the
+       stage narrows and centers — letterboxed left/right — instead of
+       overflowing; when width is the limit (masonry / grid / mobile) the 100%
+       wins and the layout is unchanged. */
+    width: min(
+      100%,
+      calc((var(--ef-view) - var(--ef-title) - 8px) * 2340 / 1920)
+    );
     aspect-ratio: 2340 / 1920;
+    margin-inline: auto;
   }
   .layer {
     position: absolute;

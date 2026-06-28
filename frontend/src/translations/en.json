@@ -29,6 +29,7 @@
     "from_grid": "From grid",
     "to_grid": "To grid",
     "idle": "Idle",
+    "not_setup": "Card not set up — add the EcoFlow IoT integration",
     "page": {
       "appearance": "Appearance",
       "display": "What to show",

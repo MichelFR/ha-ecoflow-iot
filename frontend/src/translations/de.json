@@ -29,6 +29,7 @@
     "from_grid": "Vom Netz",
     "to_grid": "Ins Netz",
     "idle": "Bereit",
+    "not_setup": "Karte nicht eingerichtet – richten Sie die EcoFlow IoT-Integration ein",
     "page": {
       "appearance": "Darstellung",
       "display": "Anzeige",

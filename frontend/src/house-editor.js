@@ -194,7 +194,7 @@ export class EcoFlowHouseCardEditor extends LitElement {
             title=${this._t("house.editor.style_n", { n: key })}
             @click=${() => this._selectHouse(key)}
           >
-            <img src=${housePreviewUrl(key)} loading="lazy" alt=${key} />
+            <img src=${housePreviewUrl(key, this.hass)} loading="lazy" alt=${key} />
             <span class="house-label">${this._t("house.editor.style_n", { n: key })}</span>
           </button>`
         )}
@@ -279,7 +279,7 @@ export class EcoFlowHouseCardEditor extends LitElement {
           >
             <span
               class="batt-thumb"
-              style=${`background-image:url(${batteryBoxUrl(key)})`}
+              style=${`background-image:url(${batteryBoxUrl(key, this.hass)})`}
             ></span>
             <span class="batt-label">${this._t(`house.battery.${key}`)}</span>
           </button>`
@@ -385,7 +385,7 @@ export class EcoFlowHouseCardEditor extends LitElement {
     this._zipping = true;
     try {
       const files = await Promise.all(
-        houseAssetFiles().map(async ({ name, url }) => {
+        houseAssetFiles(this.hass).map(async ({ name, url }) => {
           const res = await fetch(url);
           if (!res.ok) throw new Error(`${url}: ${res.status}`);
           return { name, data: new Uint8Array(await res.arrayBuffer()) };
