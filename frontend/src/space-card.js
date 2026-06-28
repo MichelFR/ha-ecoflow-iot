@@ -185,6 +185,21 @@ export class EcoFlowSpaceCard extends LitElement {
     this._clockTimer = null;
   }
 
+  /* Under Home Assistant Cast the frontend is served from cast.home-assistant.io
+   * and proxies to the instance, so hassUrl() points at a different origin than
+   * the page. There's no HA header on Cast, so the card should fill the whole
+   * screen (see --ef-view / :host([cast])). */
+  _reflectCast() {
+    let cast = false;
+    try {
+      const u = this.hass?.hassUrl?.("/");
+      if (u) cast = new URL(u, location.href).origin !== location.origin;
+    } catch (e) {
+      /* ignore */
+    }
+    this.toggleAttribute("cast", cast);
+  }
+
   _formatClock() {
     const d = new Date();
     try {
@@ -596,6 +611,7 @@ export class EcoFlowSpaceCard extends LitElement {
   updated(changed) {
     super.updated(changed);
     this._syncTemplates();
+    if (changed.has("hass")) this._reflectCast();
 
     const onHome = this._activeTab().id === "home";
     if (onHome) {
