@@ -105,12 +105,36 @@ export function energyStatIds(prefs) {
   return r;
 }
 
-/* Sum of today's `change` across the given statistic ids (their native unit,
- * typically kWh). Mirrors the Energy card's working approach: request HOURLY
- * buckets from local midnight and sum their per-hour change. (A single `day`
- * bucket can come back as the lifetime total on some recorders, which is why we
- * sum hours instead.) */
-async function todayChange(hass, statIds) {
+/* Each statistic's stored unit, so today's change can be normalised to kWh.
+ * EcoFlow energy sensors are in Wh (the Energy card divides solar_energy by
+ * 1000); the Energy dashboard mixes Wh / kWh / MWh sources, so we must convert
+ * per statistic or the totals are off by 1000×. */
+async function fetchStatUnits(hass) {
+  try {
+    const list = (await hass.callWS({ type: "recorder/list_statistic_ids" })) || [];
+    const map = {};
+    for (const s of list) {
+      map[s.statistic_id] =
+        s.statistics_unit_of_measurement || s.unit_of_measurement || s.display_unit_of_measurement || "";
+    }
+    return map;
+  } catch (e) {
+    return {};
+  }
+}
+
+function toKWh(value, unit) {
+  const u = (unit || "").toLowerCase();
+  if (u === "wh") return value / 1000;
+  if (u === "mwh") return value * 1000;
+  return value; // kWh (or unknown) assumed already in kWh
+}
+
+/* Sum of today's `change` across the given statistic ids, each normalised to
+ * kWh by its stored unit. Mirrors the Energy card's working approach: request
+ * HOURLY buckets from local midnight and sum their per-hour change (a single
+ * `day` bucket can come back as the lifetime total on some recorders). */
+async function todayKWh(hass, statIds, units) {
   if (!hass?.callWS || !statIds.length) return 0;
   const now = new Date();
   const from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -123,11 +147,14 @@ async function todayChange(hass, statIds) {
       types: ["change"],
     });
     let sum = 0;
-    for (const id of statIds)
+    for (const id of statIds) {
+      let s = 0;
       for (const row of res?.[id] || []) {
         const c = Number(row.change);
-        if (Number.isFinite(c)) sum += c;
+        if (Number.isFinite(c)) s += c;
       }
+      sum += toKWh(s, units[id]);
+    }
     return sum;
   } catch (e) {
     return 0;
@@ -136,18 +163,18 @@ async function todayChange(hass, statIds) {
 
 /* Today's energy totals from the Energy dashboard: solar produced, grid
  * import/export, battery in/out, derived home consumption and self-sufficiency
- * (%). Null when the dashboard isn't configured. All values in the stats' unit
- * (kWh). */
+ * (%). Null when the dashboard isn't configured. All values in kWh. */
 export async function fetchEnergyTotals(hass) {
   const prefs = await fetchEnergyPrefs(hass);
   if (!prefs) return null;
   const ids = energyStatIds(prefs);
+  const units = await fetchStatUnits(hass);
   const [solar, gridImport, gridExport, batIn, batOut] = await Promise.all([
-    todayChange(hass, ids.solar),
-    todayChange(hass, ids.gridFrom),
-    todayChange(hass, ids.gridTo),
-    todayChange(hass, ids.batIn),
-    todayChange(hass, ids.batOut),
+    todayKWh(hass, ids.solar, units),
+    todayKWh(hass, ids.gridFrom, units),
+    todayKWh(hass, ids.gridTo, units),
+    todayKWh(hass, ids.batIn, units),
+    todayKWh(hass, ids.batOut, units),
   ]);
   // Standard HA energy balance: what the home actually consumed today.
   const consumption = solar + gridImport + batOut - gridExport - batIn;

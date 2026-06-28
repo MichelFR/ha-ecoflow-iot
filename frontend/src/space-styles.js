@@ -157,11 +157,23 @@ export const spaceCardStyles = css`
     justify-content: center;
   }
   .clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.05;
+    color: var(--sp-text);
+  }
+  .clock-time {
     font-size: calc(1.5em * var(--ef-scale, 1));
     font-weight: 600;
     letter-spacing: 0.5px;
-    color: var(--sp-text);
     font-variant-numeric: tabular-nums;
+  }
+  .clock-date {
+    font-size: calc(0.62em * var(--ef-scale, 1));
+    color: var(--sp-muted);
+    font-weight: 500;
+    margin-top: 1px;
   }
   .topbar-title {
     font-size: 1.05em;
@@ -445,5 +457,168 @@ export const spaceCardStyles = css`
   }
   .embed-msg ha-icon {
     --mdc-icon-size: 20px;
+  }
+
+  /* -- "Solar today" dialog (same forecast/production graph as the Energy
+     card; theme vars resolve to the normal HA theme inside the dialog) -- */
+  .dlg-body {
+    padding: 4px 4px 8px;
+  }
+  .fc-graph-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .fc-graph-title {
+    font-weight: 700;
+    font-size: 1.15em;
+    color: var(--primary-text-color);
+  }
+  .fc-graph-total {
+    background: var(--secondary-background-color);
+    border-radius: 14px;
+    padding: 5px 12px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .chart {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .fc-grid {
+    stroke: var(--divider-color);
+    stroke-width: 1;
+  }
+  .fc-axis {
+    fill: var(--secondary-text-color);
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .fc-axis-y,
+  .fc-unit {
+    text-anchor: end;
+  }
+  .fc-axis-x {
+    text-anchor: middle;
+  }
+  .fc-actual {
+    fill: var(--energy-solar-color, #ff9800);
+  }
+  .fc-line {
+    fill: none;
+    stroke: var(--primary-text-color);
+    stroke-width: 2;
+    stroke-dasharray: 6 5;
+    stroke-linejoin: round;
+    opacity: 0.85;
+  }
+  .fc-graph-legend {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: var(--secondary-text-color);
+  }
+  .lg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lg::before {
+    content: "";
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .lg-actual::before {
+    height: 12px;
+    width: 10px;
+    border-radius: 2px;
+    background: var(--energy-solar-color, #ff9800);
+  }
+  .lg-fc::before {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--primary-text-color) 0 6px,
+      transparent 6px 11px
+    );
+  }
+  .fc-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: -2px 0 12px;
+  }
+  .fc-progress-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 6px;
+    background: var(--secondary-background-color);
+    overflow: hidden;
+  }
+  .fc-progress-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: var(--energy-solar-color, #ff9800);
+    transition: width 0.5s ease;
+  }
+  .fc-progress-label {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+  }
+  .fc-current {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: fc-pulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 3px var(--energy-solar-color, #ff9800));
+  }
+  @keyframes fc-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scaleY(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scaleY(1.04);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fc-current {
+      animation: none;
+    }
+  }
+  .fc-hit {
+    fill: transparent;
+    pointer-events: all;
+    cursor: pointer;
+  }
+  .fc-band {
+    fill: var(--primary-text-color);
+    opacity: 0.06;
+  }
+  .fc-tip-box {
+    fill: var(--card-background-color, #1c1c1c);
+    stroke: var(--divider-color);
+    stroke-width: 1;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  }
+  .fc-tip-time {
+    fill: var(--primary-text-color);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .fc-tip-line {
+    fill: var(--secondary-text-color);
+    font-size: 14px;
+  }
+  .fc-tip-line .v {
+    fill: var(--primary-text-color);
+    font-weight: 700;
   }
 `;

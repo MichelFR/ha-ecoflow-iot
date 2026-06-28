@@ -258,6 +258,7 @@
     "f_tiles_size": "Tile size (×)",
     "clock_title": "Clock",
     "clock_show": "Show clock (top center)",
+    "clock_date": "Show date",
     "preset_none": "None (custom)",
     "preset_hint": "Auto-bound and styled. Set Preset to “None (custom)” to choose your own entity or template.",
     "today": "Today",

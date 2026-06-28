@@ -258,6 +258,7 @@
     "f_tiles_size": "Kachel-Größe (×)",
     "clock_title": "Uhr",
     "clock_show": "Uhr anzeigen (oben mittig)",
+    "clock_date": "Datum anzeigen",
     "preset_none": "Keine (benutzerdefiniert)",
     "preset_hint": "Automatisch verknüpft und gestylt. Setze die Vorlage auf „Keine“, um eine eigene Entität oder ein Template zu wählen.",
     "today": "Heute",

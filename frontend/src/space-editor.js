@@ -266,9 +266,17 @@ export class EcoFlowSpaceCardEditor extends LitElement {
         ></ha-switch>
       </div>
       ${this._config.clock
-        ? this._scaleField(this._t("space.f_clock_size"), this._config.clock_size, (v) =>
-            this._set("clock_size", v, 1)
-          )
+        ? html`<div class="row">
+              <ha-icon icon="mdi:calendar-outline"></ha-icon>
+              <span class="row-label">${this._t("space.clock_date")}</span>
+              <ha-switch
+                .checked=${this._config.clock_date ?? false}
+                @change=${(ev) => this._set("clock_date", ev.target.checked, false)}
+              ></ha-switch>
+            </div>
+            ${this._scaleField(this._t("space.f_clock_size"), this._config.clock_size, (v) =>
+              this._set("clock_size", v, 1)
+            )}`
         : ""}`;
   }
 

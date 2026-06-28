@@ -17,7 +17,15 @@ import { LitElement, html } from "lit";
 import { SPACE_CARD_TYPE } from "./const.js";
 import { entityMap, streamDevices } from "./entities.js";
 import { isEntityId, isTemplate, numState, splitKWh, splitPower } from "./format.js";
-import { fetchEnergyTotals } from "./energy.js";
+import {
+  fetchEnergyTotals,
+  fetchHourlyWh,
+  fetchSolarForecasts,
+  forecastHourly,
+  forecastTodayWh,
+  mergeForecastWhHours,
+} from "./energy.js";
+import { renderForecastGraph } from "./views/forecast-graph.js";
 import { ensureHaComponents } from "./ha-components.js";
 import { localize } from "./localize.js";
 import {
@@ -119,7 +127,7 @@ export class EcoFlowSpaceCard extends LitElement {
   static styles = spaceCardStyles;
 
   static get properties() {
-    return { hass: {}, _config: {}, _tab: { state: true } };
+    return { hass: {}, _config: {}, _tab: { state: true }, _dialog: { state: true } };
   }
 
   constructor() {
@@ -138,6 +146,12 @@ export class EcoFlowSpaceCard extends LitElement {
     // Top-bar clock text; ticked once a second but only re-renders on change.
     this._clock = "";
     this._clockTimer = null;
+    // "Solar today" dialog (reuses the Energy card's forecast graph).
+    this._dialog = null;
+    this._solarHourly = {};
+    this._solarTotalWh = undefined;
+    this._solarForecasts = {};
+    this._fcTip = null;
   }
 
   connectedCallback() {
@@ -304,6 +318,49 @@ export class EcoFlowSpaceCard extends LitElement {
         composed: true,
       })
     );
+  }
+
+  /* -- "Solar today" dialog (same hourly-production + forecast graph as the
+   * EcoFlow Energy card; opened from the solar overlay / tile) -- */
+
+  async _openSolar() {
+    this._dialog = "solar";
+    if (this._solarTotalWh === undefined) await this._refreshSolar();
+  }
+
+  async _refreshSolar() {
+    const id = this._slotEntity("sensor.solar_energy");
+    const ref = new Date();
+    const from = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+    const hours = id ? await fetchHourlyWh(this.hass, id, from) : null;
+    this._solarHourly = hours || {};
+    this._solarTotalWh = hours
+      ? Object.values(hours).reduce((s, w) => s + (w || 0), 0)
+      : null;
+    this._solarForecasts = await fetchSolarForecasts(this.hass);
+    this.requestUpdate();
+  }
+
+  _renderSolarDialog() {
+    const ref = new Date();
+    const merged = mergeForecastWhHours(this._solarForecasts || {});
+    const graph = renderForecastGraph(this, {
+      actual: this._solarHourly || {},
+      forecast: forecastHourly(merged, ref),
+      totalWh: this._solarTotalWh,
+      forecastWh: forecastTodayWh(merged, ref),
+      currentHour: ref.getHours(),
+      showForecast: Object.keys(merged).length > 0,
+      title: this._t("card.today"),
+    });
+    return html`<ha-adaptive-dialog
+      open
+      width="large"
+      header-title=${this._t("card.today")}
+      @closed=${() => (this._dialog = null)}
+    >
+      <div class="dlg-body">${graph}</div>
+    </ha-adaptive-dialog>`;
   }
 
   /* -- live templates for overlays / tiles -- */
@@ -627,6 +684,7 @@ export class EcoFlowSpaceCard extends LitElement {
           ${active.id === "home" ? this._renderHome() : this._renderEmbed()}
         </div>
       </div>
+      ${this._dialog === "solar" ? this._renderSolarDialog() : ""}
     </ha-card>`;
   }
 
@@ -690,9 +748,24 @@ export class EcoFlowSpaceCard extends LitElement {
     const scale = this._config.clock_size || 1;
     return html`<div class="topbar-center">
       <div class="clock" style=${`--ef-scale:${scale}`}>
-        ${this._clock || this._formatClock()}
+        <span class="clock-time">${this._clock || this._formatClock()}</span>
+        ${this._config.clock_date
+          ? html`<span class="clock-date">${this._formatDate()}</span>`
+          : ""}
       </div>
     </div>`;
+  }
+
+  _formatDate() {
+    try {
+      return new Date().toLocaleDateString(this.hass?.locale?.language || undefined, {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+      });
+    } catch (e) {
+      return "";
+    }
   }
 
   _renderWeather() {
@@ -751,10 +824,14 @@ export class EcoFlowSpaceCard extends LitElement {
         const style = `left:${ov.x ?? 50}%;top:${ov.y ?? 50}%;transform:${
           ANCHORS[ov.anchor] || ANCHORS.center
         };--ef-scale:${ov.size || 1};${v.color ? `--ef-ov-color:${v.color};` : ""}`;
+        const onTap =
+          ov.preset === "solar"
+            ? () => this._openSolar()
+            : () => this._moreInfo(v.entityId);
         return html`<button
-          class="overlay ${v.entityId ? "clickable" : ""}"
+          class="overlay ${v.entityId || ov.preset === "solar" ? "clickable" : ""}"
           style=${style}
-          @click=${() => this._moreInfo(v.entityId)}
+          @click=${onTap}
         >
           ${v.label
             ? html`<span class="ov-label"
@@ -789,9 +866,13 @@ export class EcoFlowSpaceCard extends LitElement {
           : v.secondary.startsWith("-")
             ? "neg"
             : "";
+        const onTap =
+          tile.preset === "solar_today"
+            ? () => this._openSolar()
+            : () => this._moreInfo(v.entityId);
         return html`<button
-          class="tile ${v.entityId ? "clickable" : ""}"
-          @click=${() => this._moreInfo(v.entityId)}
+          class="tile ${v.entityId || tile.preset === "solar_today" ? "clickable" : ""}"
+          @click=${onTap}
         >
           <div class="tile-head">
             <span class="tile-label">${v.label || ""}</span>
