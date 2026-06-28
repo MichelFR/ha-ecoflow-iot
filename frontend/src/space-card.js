@@ -420,6 +420,31 @@ export class EcoFlowSpaceCard extends LitElement {
     }
   }
 
+  /* Display an entity's state respecting its Home Assistant formatting (display
+   * precision, locale grouping, device_class), split into { num, unit } so they
+   * can be sized separately. Falls back to the raw state on older frontends or
+   * when reading an attribute. */
+  _entityDisplay(st, spec) {
+    const attrUnit = st.attributes?.unit_of_measurement || "";
+    if (!spec.attribute && typeof this.hass.formatEntityState === "function") {
+      try {
+        const full = this.hass.formatEntityState(st);
+        if (full != null && full !== "") {
+          let num = full;
+          if (attrUnit && full.endsWith(attrUnit)) {
+            num = full.slice(0, full.length - attrUnit.length).trim();
+          }
+          return { num, unit: spec.unit ?? (num === full ? "" : attrUnit) };
+        }
+      } catch (e) {
+        /* fall through to raw */
+      }
+    }
+    const raw = spec.attribute ? st.attributes?.[spec.attribute] : st.state;
+    const num = raw == null || raw === "" ? "–" : String(raw);
+    return { num, unit: num === "–" ? "" : spec.unit ?? (spec.attribute ? "" : attrUnit) };
+  }
+
   /* Format a raw value per a preset's format hint into { n, u }. */
   _fmt(format, raw) {
     const n = Number(raw);
@@ -460,18 +485,16 @@ export class EcoFlowSpaceCard extends LitElement {
         null;
       const st = eid ? this.hass.states[eid] : null;
       if (st) {
-        const raw = ov.attribute ? st.attributes?.[ov.attribute] : st.state;
         if (p?.format) {
+          const raw = ov.attribute ? st.attributes?.[ov.attribute] : st.state;
           const f = this._fmt(p.format, raw);
           view.num = f.n;
           view.unit = ov.unit ?? f.u;
           if (!view.color && p.color) view.color = p.color(Number(raw));
         } else {
-          view.num = raw == null || raw === "" ? "–" : String(raw);
-          view.unit =
-            view.num === "–"
-              ? ""
-              : ov.unit ?? (ov.attribute ? "" : st.attributes?.unit_of_measurement || "");
+          const d = this._entityDisplay(st, ov);
+          view.num = d.num;
+          view.unit = d.unit;
         }
         view.entityId = ov.tap_entity || eid;
         if (p?.secondarySlot) {
@@ -523,17 +546,15 @@ export class EcoFlowSpaceCard extends LitElement {
         null;
       const st = eid ? this.hass.states[eid] : null;
       if (st) {
-        const raw = tile.attribute ? st.attributes?.[tile.attribute] : st.state;
         if (p?.format) {
+          const raw = tile.attribute ? st.attributes?.[tile.attribute] : st.state;
           const f = this._fmt(p.format, raw);
           view.num = f.n;
           view.unit = tile.unit ?? f.u;
         } else {
-          view.num = raw == null || raw === "" ? "–" : String(raw);
-          view.unit =
-            view.num === "–"
-              ? ""
-              : tile.unit ?? (tile.attribute ? "" : st.attributes?.unit_of_measurement || "");
+          const d = this._entityDisplay(st, tile);
+          view.num = d.num;
+          view.unit = d.unit;
         }
         view.entityId = tile.tap_entity || eid;
       }
@@ -557,6 +578,13 @@ export class EcoFlowSpaceCard extends LitElement {
     if (isEntityId(value)) {
       const st = this.hass.states[value];
       if (!st) return "";
+      if (typeof this.hass.formatEntityState === "function") {
+        try {
+          return this.hass.formatEntityState(st);
+        } catch (e) {
+          /* fall through */
+        }
+      }
       const unit = st.attributes?.unit_of_measurement;
       return unit ? `${st.state} ${unit}` : st.state;
     }

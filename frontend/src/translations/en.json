@@ -284,6 +284,7 @@
     },
     "remove": "Remove",
     "embed_missing": "Lovelace view not found — check the path in the editor.",
-    "embed_empty": "No view path set for this tab."
+    "embed_empty": "No view path set for this tab.",
+    "clear_color": "Clear colour"
   }
 }

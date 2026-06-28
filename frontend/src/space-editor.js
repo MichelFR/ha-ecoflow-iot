@@ -658,20 +658,32 @@ export class EcoFlowSpaceCardEditor extends LitElement {
   }
 
   /* Colour field using HA's native RGB colour picker; stored as a CSS
-   * "rgb(r, g, b)" string (cleared = removed). */
+   * "rgb(r, g, b)" string. The picker has no clear control, so a reset button
+   * is shown once a colour is set (removes it / restores the default). */
   _colorField(label, value, onChange) {
-    return html`<ha-form
-      class="field"
-      .hass=${this.hass}
-      .data=${{ value: parseColor(value) }}
-      .schema=${[{ name: "value", selector: { color_rgb: {} } }]}
-      .computeLabel=${() => label}
-      @value-changed=${(ev) => {
-        ev.stopPropagation();
-        const v = ev.detail.value.value;
-        onChange(Array.isArray(v) ? `rgb(${v[0]}, ${v[1]}, ${v[2]})` : undefined);
-      }}
-    ></ha-form>`;
+    return html`<div class="color-field">
+      <ha-form
+        class="field"
+        .hass=${this.hass}
+        .data=${{ value: parseColor(value) }}
+        .schema=${[{ name: "value", selector: { color_rgb: {} } }]}
+        .computeLabel=${() => label}
+        @value-changed=${(ev) => {
+          ev.stopPropagation();
+          const v = ev.detail.value.value;
+          onChange(Array.isArray(v) ? `rgb(${v[0]}, ${v[1]}, ${v[2]})` : undefined);
+        }}
+      ></ha-form>
+      ${value
+        ? html`<button
+            class="color-clear"
+            title=${this._t("space.clear_color")}
+            @click=${() => onChange(undefined)}
+          >
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>`
+        : ""}
+    </div>`;
   }
 
   _numField(label, value, onChange) {
@@ -1068,6 +1080,35 @@ export class EcoFlowSpaceCardEditor extends LitElement {
       }
       .field {
         width: 100%;
+      }
+      .color-field {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .color-field .field {
+        flex: 1;
+        min-width: 0;
+      }
+      .color-clear {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--secondary-text-color);
+        cursor: pointer;
+      }
+      .color-clear:hover {
+        background: var(--secondary-background-color);
+        color: var(--primary-text-color);
+      }
+      .color-clear ha-icon {
+        --mdc-icon-size: 18px;
       }
       .xy {
         display: flex;

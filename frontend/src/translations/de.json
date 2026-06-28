@@ -284,6 +284,7 @@
     },
     "remove": "Entfernen",
     "embed_missing": "Lovelace-Ansicht nicht gefunden — Pfad im Editor prüfen.",
-    "embed_empty": "Für diesen Tab ist kein Ansichtspfad gesetzt."
+    "embed_empty": "Für diesen Tab ist kein Ansichtspfad gesetzt.",
+    "clear_color": "Farbe entfernen"
   }
 }
