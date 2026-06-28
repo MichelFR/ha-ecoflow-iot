@@ -193,6 +193,35 @@ artwork and flow animations.
 - Registers itself as a dashboard resource the same way as the Energy card; in **YAML mode**
   it's the same module: `/ecoflow_iot/ecoflow-energy-card.js`.
 
+### EcoFlow Space card
+
+A third bundled card, **EcoFlow Space**, is a **full-screen, fully configurable** whole-home
+dashboard modelled on the EcoFlow app's "space" view: the house illustration with a left
+icon **sidebar**, a top bar (**clock** + **weather**), **floating overlays** over the scene,
+and a row of **stat tiles** along the bottom.
+
+<p align="center">
+  <picture><source srcset="docs/images/space-card.webp" type="image/webp"><img src="docs/images/space-card.png" alt="EcoFlow Space card" width="680"></picture>
+</p>
+
+- **Add it:** **+ Add Card** → search for **EcoFlow Space**. Out of the box it auto-discovers
+  the integration and your Home Assistant **Energy dashboard**, so it looks like the app with
+  no manual wiring.
+- **Overlays & tiles:** each floating overlay and bottom tile can use a **preset** (Solar /
+  Grid / Battery; or today's Solar / Consumption / Energy-independence from the Energy
+  dashboard), an explicit **entity**, or a live **Jinja template** — with dynamic value
+  colours, per-overlay size, and Home Assistant's native icon/colour pickers in the editor.
+- **Sidebar tabs:** the first tab is the scene above; each additional tab **embeds an
+  existing Lovelace view by its path**, rendered inline. Icons, labels and alignment are
+  configurable.
+- **Top bar:** an optional **clock** (with date) and a **weather** widget, each with its own
+  size; the tile row scales too.
+- **Solar dialog:** tapping the Solar overlay or tile opens the same hourly-production +
+  forecast graph and **per-array breakdown** as the Energy card.
+- Drag overlays to position them in the visual editor; reuses the House card's artwork and
+  flow animations, and fills the screen when cast to a display (e.g. a Nest Hub). Same
+  bundled module / resource as the other cards.
+
 ## How data flows
 
 ```
