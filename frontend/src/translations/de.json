@@ -209,5 +209,74 @@
       "ac1": "AC-Steckdose 1",
       "ac2": "AC-Steckdose 2"
     }
+  },
+  "space": {
+    "page": {
+      "appearance": "Darstellung",
+      "weather": "Wetter",
+      "overlays": "Schwebende Overlays",
+      "tiles": "Kacheln unten",
+      "tabs": "Seitenleisten-Tabs"
+    },
+    "n_items": "{n} konfiguriert",
+    "weather_hint": "Wähle eine Wetter-Entität, um Temperatur und Luftfeuchte in der Kopfzeile zu zeigen. Leer lassen zum Ausblenden.",
+    "weather_entity": "Wetter-Entität",
+    "overlays_hint": "Schwebende Werte über dem Haus. Ziehe einen Chip in der Vorschau zum Positionieren oder nutze X/Y unten. Binde jeden an einen erkannten Sensor, eine Entität oder ein Template.",
+    "add_overlay": "Overlay hinzufügen",
+    "tiles_hint": "Die Kacheln am unteren Rand. Jede zeigt einen Wert aus Sensor, Entität oder Template.",
+    "add_tile": "Kachel hinzufügen",
+    "tabs_hint": "Die Seitenleisten-Buttons. Der erste ist immer Home (die Szene oben); jeder weitere Tab bettet eine vorhandene Lovelace-Ansicht per Pfad ein.",
+    "rail_labels": "Beschriftungen unter Symbolen anzeigen",
+    "rail_align": "Ausrichtung",
+    "align": {
+      "start": "Oben",
+      "center": "Mitte",
+      "end": "Unten"
+    },
+    "add_tab": "Tab hinzufügen",
+    "home_tab": "Home",
+    "path_hint": "Lovelace-Ansichtspfad, z. B. solar oder dashboard-name/solar",
+    "f_label": "Bezeichnung",
+    "f_icon": "Symbol (mdi:…)",
+    "f_unit": "Einheit",
+    "f_anchor": "Anker",
+    "f_color": "Wertfarbe (optional)",
+    "f_icon_color": "Symbolfarbe (optional)",
+    "f_dot": "Statuspunkt-Farbe (optional)",
+    "f_low": "Nacht-Tiefstwert (Text, Entität oder Template)",
+    "f_slot": "Sensor",
+    "f_secondary": "Zweite Zeile (Text, Entität oder Template)",
+    "f_path": "Ansichtspfad",
+    "f_co2_value": "CO₂ eingespart (Text, Entität oder Template)",
+    "f_co2_trees": "Baum-Äquivalent (optional)",
+    "co2_title": "CO₂-Chip",
+    "co2_hint": "Ein optionaler Chip in der Mitte der Kopfzeile, wie in der App.",
+    "f_preset": "Vorlage",
+    "preset_none": "Keine (benutzerdefiniert)",
+    "preset_hint": "Automatisch verknüpft und gestylt. Setze die Vorlage auf „Keine“, um eine eigene Entität oder ein Template zu wählen.",
+    "today": "Heute",
+    "preset": {
+      "solar": "Solarleistung",
+      "grid": "Netzleistung",
+      "battery": "Batterieleistung",
+      "solar_today": "Heute erzeugter Solarstrom",
+      "usage": "Verbrauch heute",
+      "energy_independence": "Energieunabhängigkeit"
+    },
+    "src_auto": "Auto",
+    "src_entity": "Entität",
+    "src_template": "Template",
+    "anchor": {
+      "center": "Mitte",
+      "top-left": "Oben links",
+      "top-center": "Oben mittig",
+      "top-right": "Oben rechts",
+      "bottom-left": "Unten links",
+      "bottom-center": "Unten mittig",
+      "bottom-right": "Unten rechts"
+    },
+    "remove": "Entfernen",
+    "embed_missing": "Lovelace-Ansicht nicht gefunden — Pfad im Editor prüfen.",
+    "embed_empty": "Für diesen Tab ist kein Ansichtspfad gesetzt."
   }
 }

@@ -13,16 +13,20 @@
  * ha-switch, ha-form, ha-icon, ha-state-icon); Lit and lottie-web are bundled
  * at build time so the module is self-contained. */
 
-import { CARD_TYPE, HOUSE_CARD_TYPE } from "./const.js";
+import { CARD_TYPE, HOUSE_CARD_TYPE, SPACE_CARD_TYPE } from "./const.js";
 import { EcoFlowEnergyCard } from "./card.js";
 import { EcoFlowEnergyCardEditor } from "./editor.js";
 import { EcoFlowHouseCard } from "./house-card.js";
 import { EcoFlowHouseCardEditor } from "./house-editor.js";
+import { EcoFlowSpaceCard } from "./space-card.js";
+import { EcoFlowSpaceCardEditor } from "./space-editor.js";
 
 customElements.define(CARD_TYPE, EcoFlowEnergyCard);
 customElements.define(`${CARD_TYPE}-editor`, EcoFlowEnergyCardEditor);
 customElements.define(HOUSE_CARD_TYPE, EcoFlowHouseCard);
 customElements.define(`${HOUSE_CARD_TYPE}-editor`, EcoFlowHouseCardEditor);
+customElements.define(SPACE_CARD_TYPE, EcoFlowSpaceCard);
+customElements.define(`${SPACE_CARD_TYPE}-editor`, EcoFlowSpaceCardEditor);
 
 window.customCards = window.customCards || [];
 window.customCards.push(
@@ -39,6 +43,14 @@ window.customCards.push(
     name: "EcoFlow House Card",
     description:
       "Whole-home energy-flow illustration: a house with the battery box and animated grid, solar, home and battery flows.",
+    preview: true,
+    documentationURL: "https://github.com/MichelFR/ha-ecoflow-iot",
+  },
+  {
+    type: SPACE_CARD_TYPE,
+    name: "EcoFlow Space Card",
+    description:
+      "Full-screen whole-home dashboard: the house illustration with configurable floating overlays, a weather widget, stat tiles and a sidebar that embeds other Lovelace views.",
     preview: true,
     documentationURL: "https://github.com/MichelFR/ha-ecoflow-iot",
   }

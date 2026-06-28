@@ -7,3 +7,6 @@ __pycache__/
 
 # Frontend card build (the bundled www/*.js IS committed; deps are not)
 frontend/node_modules/
+
+# Local Home Assistant dev rig (throwaway)
+dev/

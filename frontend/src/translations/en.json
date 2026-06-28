@@ -209,5 +209,74 @@
       "ac1": "AC socket 1",
       "ac2": "AC socket 2"
     }
+  },
+  "space": {
+    "page": {
+      "appearance": "Appearance",
+      "weather": "Weather",
+      "overlays": "Floating overlays",
+      "tiles": "Bottom tiles",
+      "tabs": "Sidebar tabs"
+    },
+    "n_items": "{n} configured",
+    "weather_hint": "Pick a weather entity to show the temperature and humidity in the top bar. Leave empty to hide it.",
+    "weather_entity": "Weather entity",
+    "overlays_hint": "Floating values over the house. Drag a chip on the preview to position it, or fine-tune with X/Y below. Bind each to an auto-detected sensor, any entity, or a template.",
+    "add_overlay": "Add overlay",
+    "tiles_hint": "The cards along the bottom. Each shows a value from a sensor, entity, or template.",
+    "add_tile": "Add tile",
+    "tabs_hint": "The sidebar buttons. The first is always Home (the scene above); each other tab embeds an existing Lovelace view by its path.",
+    "rail_labels": "Show labels under icons",
+    "rail_align": "Align items",
+    "align": {
+      "start": "Top",
+      "center": "Center",
+      "end": "Bottom"
+    },
+    "add_tab": "Add tab",
+    "home_tab": "Home",
+    "path_hint": "Lovelace view path, e.g. solar or dashboard-name/solar",
+    "f_label": "Label",
+    "f_icon": "Icon (mdi:…)",
+    "f_unit": "Unit",
+    "f_anchor": "Anchor",
+    "f_color": "Value color (optional)",
+    "f_icon_color": "Icon color (optional)",
+    "f_dot": "Status dot color (optional)",
+    "f_low": "Night low (text, entity or template)",
+    "f_slot": "Sensor",
+    "f_secondary": "Secondary line (text, entity or template)",
+    "f_path": "View path",
+    "f_co2_value": "CO₂ saved (text, entity or template)",
+    "f_co2_trees": "Trees equivalent (optional)",
+    "co2_title": "CO₂ chip",
+    "co2_hint": "An optional chip in the centre of the top bar, as in the app.",
+    "f_preset": "Preset",
+    "preset_none": "None (custom)",
+    "preset_hint": "Auto-bound and styled. Set Preset to “None (custom)” to choose your own entity or template.",
+    "today": "Today",
+    "preset": {
+      "solar": "Solar power",
+      "grid": "Grid power",
+      "battery": "Battery power",
+      "solar_today": "Solar produced today",
+      "usage": "Consumption today",
+      "energy_independence": "Energy independence"
+    },
+    "src_auto": "Auto",
+    "src_entity": "Entity",
+    "src_template": "Template",
+    "anchor": {
+      "center": "Center",
+      "top-left": "Top left",
+      "top-center": "Top center",
+      "top-right": "Top right",
+      "bottom-left": "Bottom left",
+      "bottom-center": "Bottom center",
+      "bottom-right": "Bottom right"
+    },
+    "remove": "Remove",
+    "embed_missing": "Lovelace view not found — check the path in the editor.",
+    "embed_empty": "No view path set for this tab."
   }
 }

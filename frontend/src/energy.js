@@ -77,6 +77,84 @@ export function forecastTodayWh(whHours, ref = new Date()) {
   return keys.reduce((sum, h) => sum + hours[h], 0);
 }
 
+/* The Energy dashboard's configured sources, grouped into the statistic ids the
+ * Space card's preset tiles read (solar production, grid in/out, battery
+ * in/out). Returns null when the dashboard isn't set up. */
+export async function fetchEnergyPrefs(hass) {
+  if (!hass?.callWS) return null;
+  try {
+    return (await hass.callWS({ type: "energy/get_prefs" })) || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+export function energyStatIds(prefs) {
+  const r = { solar: [], gridFrom: [], gridTo: [], batIn: [], batOut: [] };
+  for (const s of prefs?.energy_sources || []) {
+    if (s.type === "solar" && s.stat_energy_from) r.solar.push(s.stat_energy_from);
+    if (s.type === "battery") {
+      if (s.stat_energy_to) r.batIn.push(s.stat_energy_to);
+      if (s.stat_energy_from) r.batOut.push(s.stat_energy_from);
+    }
+    if (s.type === "grid") {
+      for (const f of s.flow_from || []) if (f.stat_energy_from) r.gridFrom.push(f.stat_energy_from);
+      for (const t of s.flow_to || []) if (t.stat_energy_to) r.gridTo.push(t.stat_energy_to);
+    }
+  }
+  return r;
+}
+
+/* Sum of today's `change` across the given statistic ids (their native unit,
+ * typically kWh). */
+async function todayChange(hass, statIds) {
+  if (!hass?.callWS || !statIds.length) return 0;
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  try {
+    const res = await hass.callWS({
+      type: "recorder/statistics_during_period",
+      start_time: from.toISOString(),
+      statistic_ids: statIds,
+      period: "day",
+      types: ["change"],
+    });
+    let sum = 0;
+    for (const id of statIds)
+      for (const row of res?.[id] || []) {
+        const c = Number(row.change);
+        if (Number.isFinite(c)) sum += c;
+      }
+    return sum;
+  } catch (e) {
+    return 0;
+  }
+}
+
+/* Today's energy totals from the Energy dashboard: solar produced, grid
+ * import/export, battery in/out, derived home consumption and self-sufficiency
+ * (%). Null when the dashboard isn't configured. All values in the stats' unit
+ * (kWh). */
+export async function fetchEnergyTotals(hass) {
+  const prefs = await fetchEnergyPrefs(hass);
+  if (!prefs) return null;
+  const ids = energyStatIds(prefs);
+  const [solar, gridImport, gridExport, batIn, batOut] = await Promise.all([
+    todayChange(hass, ids.solar),
+    todayChange(hass, ids.gridFrom),
+    todayChange(hass, ids.gridTo),
+    todayChange(hass, ids.batIn),
+    todayChange(hass, ids.batOut),
+  ]);
+  // Standard HA energy balance: what the home actually consumed today.
+  const consumption = solar + gridImport + batOut - gridExport - batIn;
+  const independence =
+    consumption > 0
+      ? Math.max(0, Math.min(100, Math.round((1 - gridImport / consumption) * 100)))
+      : null;
+  return { solar, gridImport, gridExport, batIn, batOut, consumption, independence };
+}
+
 /* Hourly produced energy (Wh per local hour) over [start, end] (default today),
  * from the recorder's statistics for a cumulative energy sensor. */
 export async function fetchHourlyWh(hass, statisticId, start, end) {
