@@ -231,6 +231,7 @@
     "tabs_hint": "The sidebar buttons. The first is always Home (the scene above); each other tab embeds an existing Lovelace view by its path.",
     "rail_labels": "Show labels under icons",
     "rail_align": "Align items",
+    "f_rail_size": "Sidebar size (×)",
     "align": {
       "start": "Top",
       "center": "Center",

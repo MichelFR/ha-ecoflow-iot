@@ -231,6 +231,7 @@
     "tabs_hint": "Die Seitenleisten-Buttons. Der erste ist immer Home (die Szene oben); jeder weitere Tab bettet eine vorhandene Lovelace-Ansicht per Pfad ein.",
     "rail_labels": "Beschriftungen unter Symbolen anzeigen",
     "rail_align": "Ausrichtung",
+    "f_rail_size": "Seitenleisten-Größe (×)",
     "align": {
       "start": "Oben",
       "center": "Mitte",

@@ -757,8 +757,9 @@ export class EcoFlowSpaceCard extends LitElement {
 
     const railLabels = this._config.rail_labels ?? false;
     const railAlign = this._config.rail_align || "start";
+    const railSize = this._config.rail_size || 1;
     return html`<ha-card>
-      <div class="shell">
+      <div class="shell" style=${`--rail-scale:${railSize}`}>
         <nav class="rail align-${railAlign} ${railLabels ? "has-labels" : ""}">
           ${tabs.map(
             (tab, i) => html`<button

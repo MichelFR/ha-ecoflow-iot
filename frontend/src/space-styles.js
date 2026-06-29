@@ -71,21 +71,33 @@ export const spaceCardStyles = css`
     display: flex;
     height: 100%;
     width: 100%;
+    position: relative;
   }
 
   /* -- left icon rail (minimal, app-style: just icons, no boxes) --
-     Vertical alignment of the items is configurable (start / center / end);
-     labels under the icons are an opt-in. */
+     The rail FLOATS above the main area: it's absolutely positioned, claims no
+     layout width of its own (so the house illustration uses the full card
+     width), and overlays the left edge. Its empty vertical space is click-
+     through (pointer-events) so only the buttons are interactive. Vertical
+     alignment of the items is configurable (start / center / end), labels under
+     the icons are an opt-in, and the icon+label size scales with --rail-scale
+     (the rail_size config option). */
   .rail {
-    flex: 0 0 var(--rail-w);
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: auto;
+    max-width: calc(96px * var(--rail-scale, 1));
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    gap: 26px;
+    gap: calc(26px * var(--rail-scale, 1));
     padding: 30px 6px;
     box-sizing: border-box;
-    z-index: 2;
+    z-index: 4;
+    pointer-events: none;
   }
   .rail.align-center {
     justify-content: center;
@@ -94,7 +106,7 @@ export const spaceCardStyles = css`
     justify-content: flex-end;
   }
   .rail.has-labels {
-    gap: 18px;
+    gap: calc(18px * var(--rail-scale, 1));
   }
   .rail-btn {
     display: flex;
@@ -107,7 +119,8 @@ export const spaceCardStyles = css`
     color: var(--sp-muted);
     cursor: pointer;
     padding: 4px;
-    width: 100%;
+    width: auto;
+    pointer-events: auto;
     transition: color 0.15s ease, opacity 0.15s ease;
     opacity: 0.7;
   }
@@ -120,10 +133,10 @@ export const spaceCardStyles = css`
     opacity: 1;
   }
   .rail-btn ha-icon {
-    --mdc-icon-size: 27px;
+    --mdc-icon-size: calc(27px * var(--rail-scale, 1));
   }
   .rail-label {
-    font-size: 0.6em;
+    font-size: calc(0.6em * var(--rail-scale, 1));
     line-height: 1.1;
     text-align: center;
     max-width: 100%;
@@ -132,7 +145,7 @@ export const spaceCardStyles = css`
     white-space: nowrap;
   }
 
-  /* -- main area -- */
+  /* -- main area (full width; the rail floats over its left edge) -- */
   .main {
     flex: 1 1 auto;
     min-width: 0;
@@ -150,7 +163,8 @@ export const spaceCardStyles = css`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 20px 0;
+    /* Clear the floating rail on the left so a title doesn't sit under it. */
+    padding: 12px 20px 0 calc(46px * var(--rail-scale, 1));
     gap: 12px;
     z-index: 3;
   }

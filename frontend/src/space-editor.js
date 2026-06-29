@@ -566,6 +566,9 @@ export class EcoFlowSpaceCardEditor extends LitElement {
         (v) => this._set("rail_align", v, "start"),
         (a) => this._t(`space.align.${a}`)
       )}
+      ${this._scaleField(this._t("space.f_rail_size"), this._config.rail_size, (v) =>
+        this._set("rail_size", v, 1)
+      )}
       <div class="hint top-hint" style="margin-top:14px">${this._t("space.tabs_hint")}</div>
       ${tabs.map((tab, i) =>
         i === 0 ? this._renderHomeTab(tab) : this._renderTabEditor(tab, i)
