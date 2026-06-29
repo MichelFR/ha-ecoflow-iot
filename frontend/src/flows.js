@@ -22,19 +22,29 @@ import { FLOWS, flowUrl, solarFlowName, bkRoute, poRoute } from "./houses.js";
 export const ACTIVE_W = 1;
 
 /* Derive the BK grid/home split the flow themes need from the raw readings.
- * Mirrors SystemEnergyView: grid divides into the part feeding the home
- * (gridToHome) and the part to/from the device (gridToDevice — positive charges
- * the battery, negative exports), and device->home is the load met by PV +
- * battery (deviceToHome). Uses the load_from_* sensors when present, else a sign
- * fallback. Pass-through fields (solar/bat/soc/route) are kept for the re_space
- * theme, which ignores the derived ones. */
+ * Mirrors SystemEnergyView: the home's grid draw (gridToHome) and the device's
+ * own grid exchange (gridToDevice — positive charges the battery, negative
+ * exports) flow on separate paths, and device->home is the load met by PV +
+ * battery (deviceToHome).
+ *
+ * gridToHome is the system value load_from_grid (the part of the home load met
+ * by the grid). gridToDevice is the Stream's own grid port (grid_power: +
+ * importing to charge, - exporting) — a DIFFERENT metering domain from
+ * load_from_grid, so the two must NOT be subtracted (doing so produced a phantom
+ * device->grid export whenever the home drew from the grid while the device sat
+ * idle). When the load-split sensors are absent we fall back to the old
+ * single-meter model (split one grid total between home and device).
+ *
+ * Pass-through fields (solar/bat/soc/route) are kept for the re_space theme,
+ * which ignores the derived ones. */
 export function deriveFlowStates(s) {
   const grid = Number.isFinite(s.grid) ? s.grid : 0;
   const load = Number.isFinite(s.load) ? s.load : 0;
-  const gridToHome = Number.isFinite(s.loadFromGrid)
+  const hasSplit = Number.isFinite(s.loadFromGrid);
+  const gridToHome = hasSplit
     ? Math.max(0, s.loadFromGrid)
     : Math.max(0, Math.min(grid, load));
-  const gridToDevice = grid - gridToHome;
+  const gridToDevice = hasSplit ? grid : grid - gridToHome;
   const deviceToHome =
     Number.isFinite(s.loadFromPv) || Number.isFinite(s.loadFromBat)
       ? (s.loadFromPv || 0) + (s.loadFromBat || 0)

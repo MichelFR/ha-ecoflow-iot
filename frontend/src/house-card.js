@@ -248,13 +248,27 @@ export class EcoFlowHouseCard extends LitElement {
     const s = this._flowStates();
     const cols = [];
     if (this._show("show_grid")) {
-      const importing = !blank && s.grid > ACTIVE_W;
-      const exporting = !blank && s.grid < -ACTIVE_W;
+      // "From grid" is the home load actually drawn from the grid
+      // (load_from_grid), not the Stream's own grid-port reading (grid_power),
+      // which only sees the device's charge/export. Export still reads grid_power
+      // (< 0); fall back to grid_power for import when the split sensor is absent
+      // (e.g. single-battery PowerOcean themes that have no load_from_grid).
+      const fromGrid =
+        blank || !Number.isFinite(s.loadFromGrid) ? null : Math.max(0, s.loadFromGrid);
+      const importing = !blank && (fromGrid != null ? fromGrid > ACTIVE_W : s.grid > ACTIVE_W);
+      const exporting = !blank && !importing && s.grid < -ACTIVE_W;
+      const importValue = fromGrid != null ? fromGrid : s.grid;
       cols.push({
-        slot: "sensor.grid_power",
+        slot: importing && fromGrid != null ? "sensor.load_from_grid" : "sensor.grid_power",
         fallback: "sensor.sys_grid_power",
         anchor: "col-grid",
-        value: blank ? null : s.grid != null ? Math.abs(s.grid) : null,
+        value: blank
+          ? null
+          : importing
+            ? importValue
+            : s.grid != null
+              ? Math.abs(s.grid)
+              : null,
         label: importing
           ? this._t("house.from_grid")
           : exporting
