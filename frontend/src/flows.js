@@ -21,35 +21,52 @@ import { FLOWS, flowUrl, solarFlowName, bkRoute, poRoute } from "./houses.js";
 // Power magnitude (W) below which a path is treated as idle (no flow shown).
 export const ACTIVE_W = 1;
 
-/* Derive the BK grid/home split the flow themes need from the raw readings.
- * Mirrors SystemEnergyView: the home's grid draw (gridToHome) and the device's
- * own grid exchange (gridToDevice — positive charges the battery, negative
- * exports) flow on separate paths, and device->home is the load met by PV +
- * battery (deviceToHome).
+/* Derive the BK grid/home/device split the flow themes need from the raw
+ * readings. Mirrors SystemEnergyView: the home draws from the grid (gridToHome)
+ * and from the device's PV+battery (deviceToHome); the grid charges the battery
+ * (chargeFromGrid) and the device exports its surplus to the grid.
  *
- * gridToHome is the system value load_from_grid (the part of the home load met
- * by the grid). gridToDevice is the Stream's own grid port (grid_power: +
- * importing to charge, - exporting) — a DIFFERENT metering domain from
- * load_from_grid, so the two must NOT be subtracted (doing so produced a phantom
- * device->grid export whenever the home drew from the grid while the device sat
- * idle). When the load-split sensors are absent we fall back to the old
- * single-meter model (split one grid total between home and device).
+ * The grid<->device flows are derived from PHYSICAL signals, not from the
+ * Stream's own grid-port reading (grid_power): that port is a different,
+ * much smaller metering domain than the system load_from_* values, so deriving
+ * the battery flow from it produced phantom flows whenever the home drew from
+ * the grid while the battery sat idle (a spurious device->grid export, then —
+ * once that was "fixed" — a spurious grid->device charge).
  *
- * Pass-through fields (solar/bat/soc/route) are kept for the re_space theme,
- * which ignores the derived ones. */
+ *   chargeFromGrid : the battery's charge power not already covered by the PV
+ *                    surplus -> the grid is charging the battery. An idle
+ *                    battery (bat <= 0) yields 0, so no grid->device flow is
+ *                    ever shown when the battery isn't charging; a PV-only
+ *                    charge also yields 0.
+ *   gridToHome     : load_from_grid (the part of the home load met by the grid).
+ *   deviceToHome   : load met by PV + battery.
+ *
+ * Device export is read straight off the grid sign in the themes (grid < 0).
+ * When the load_from_* sensors aren't available we fall back to the old
+ * single-meter split. Pass-through fields (solar/bat/soc/route) are kept for the
+ * re_space theme, which ignores the derived ones. */
 export function deriveFlowStates(s) {
   const grid = Number.isFinite(s.grid) ? s.grid : 0;
   const load = Number.isFinite(s.load) ? s.load : 0;
+  const solar = Number.isFinite(s.solar) ? s.solar : 0;
+  const bat = Number.isFinite(s.bat) ? s.bat : 0;
   const hasSplit = Number.isFinite(s.loadFromGrid);
+
   const gridToHome = hasSplit
     ? Math.max(0, s.loadFromGrid)
     : Math.max(0, Math.min(grid, load));
-  const gridToDevice = hasSplit ? grid : grid - gridToHome;
   const deviceToHome =
     Number.isFinite(s.loadFromPv) || Number.isFinite(s.loadFromBat)
       ? (s.loadFromPv || 0) + (s.loadFromBat || 0)
       : Math.max(0, load - gridToHome);
-  return { ...s, gridToHome, gridToDevice, deviceToHome };
+
+  const batCharge = Math.max(0, bat); // bat: + charging, - discharging
+  const pvSurplus = Math.max(0, solar - Math.max(0, s.loadFromPv || 0));
+  const chargeFromGrid = hasSplit
+    ? Math.max(0, batCharge - pvSurplus)
+    : Math.max(0, grid - gridToHome);
+
+  return { ...s, gridToHome, deviceToHome, chargeFromGrid };
 }
 
 /* A layer: { key, zone, file(states), active(states), mode?, seek? }.
@@ -78,8 +95,8 @@ export const FLOW_THEMES = {
   bk621: {
     layers: [
       { key: "solar", zone: "bg", file: (s) => `bk621/house_solar_lottie_${bkRoute(s.route)}`, active: (s) => s.solar > ACTIVE_W },
-      { key: "grid_in", zone: "bg", file: () => "bk621/grid_to_device_lottie", active: (s) => s.gridToDevice > ACTIVE_W },
-      { key: "grid_out", zone: "bg", file: () => "bk621/device_to_grid_lottie", active: (s) => s.gridToDevice < -ACTIVE_W },
+      { key: "grid_in", zone: "bg", file: () => "bk621/grid_to_device_lottie", active: (s) => s.chargeFromGrid > ACTIVE_W },
+      { key: "grid_out", zone: "bg", file: () => "bk621/device_to_grid_lottie", active: (s) => s.grid < -ACTIVE_W },
       { key: "grid_home", zone: "bg", file: () => "bk621/grid_to_home_lottie", active: (s) => s.gridToHome > ACTIVE_W },
       { key: "home", zone: "bg", file: (s) => `bk621/house_device_home_lottie_${bkRoute(s.route)}`, active: (s) => s.deviceToHome > ACTIVE_W },
       { key: "bat_soc", zone: "on", file: () => "bk621/house_soc_lottie", mode: "seek", seek: (s) => s.soc, active: (s) => s.soc != null },
