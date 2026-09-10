@@ -405,7 +405,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         state.online = True
         if full:
             state.last_full_ts = state.last_mqtt_ts
-        self.async_set_updated_data(self.data)
+        self._push_update()
 
     @callback
     def _handle_status(self, sn: str, online: bool) -> None:
@@ -413,7 +413,13 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         if state is None:
             return
         state.online = online
-        self.async_set_updated_data(self.data)
+        self._push_update()
+
+    @callback
+    def _push_update(self) -> None:
+        """Notify entities of an in-place MQTT update without touching the poll timer."""
+        self.last_update_success = True
+        self.async_update_listeners()
 
     @callback
     def _handle_state_change(self, state: ConnectionState) -> None:

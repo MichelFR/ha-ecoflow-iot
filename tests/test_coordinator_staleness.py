@@ -53,9 +53,10 @@ def install_ha_stub() -> None:
 
         def async_set_updated_data(self, data):
             self.data = data
+            self.set_updated_calls = getattr(self, "set_updated_calls", 0) + 1
 
         def async_update_listeners(self):
-            return None
+            self.listener_calls = getattr(self, "listener_calls", 0) + 1
 
         async def async_shutdown(self):
             return None
@@ -81,7 +82,17 @@ class EcoFlowError(Exception):
     """Stub API error."""
 
 
+class EcoFlowApiError(EcoFlowError):
+    """Stub API error carrying a code."""
+
+    def __init__(self, code: int = 0, message: str = "") -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+
+
 api.EcoFlowError = EcoFlowError
+api.EcoFlowApiError = EcoFlowApiError
 api.EcoFlowHttpClient = object
 api.EcoFlowMqttClient = object
 sys.modules["ecoflow_iot.api"] = api
@@ -311,3 +322,22 @@ def test_restart_is_single_flight(monkeypatch):
     asyncio.run(scenario())
 
     assert coord._mqtt.restarts == ["disconnect", "connect"]
+
+
+def test_mqtt_push_does_not_reset_refresh_timer(monkeypatch):
+    """Pushes must notify listeners without async_set_updated_data.
+
+    That helper reschedules the periodic refresh on every call; with a device
+    pushing every few seconds the HTTP resync and watchdog would never run.
+    """
+    monkeypatch.setattr(coordinator_module.time, "time", lambda: 1000.0)
+    coord = make_coordinator()
+
+    coord._handle_quota("fresh", {"a": 1}, False)
+    coord._handle_status("fresh", False)
+
+    assert getattr(coord, "set_updated_calls", 0) == 0
+    assert coord.listener_calls == 2
+    assert coord.last_update_success is True
+    assert coord.data["fresh"].quota["a"] == 1
+    assert coord.data["fresh"].online is False

@@ -155,15 +155,15 @@ class EcoFlowMqttClient:
     ) -> None:
         if rc != 0:
             _LOGGER.warning("EcoFlow MQTT connection refused (rc=%s)", rc)
-            self._loop.call_soon_threadsafe(self._set_state, ConnectionState.DISCONNECTED)
+            self._call_on_loop(self._set_state, ConnectionState.DISCONNECTED)
             if rc in _AUTH_FAILURE_CODES and self._on_auth_failure is not None:
-                self._loop.call_soon_threadsafe(self._schedule_auth_refresh)
+                self._call_on_loop(self._schedule_auth_refresh)
             return
 
         for sn in self._device_sns:
             for suffix in (TOPIC_QUOTA, TOPIC_STATUS, TOPIC_SET_REPLY, TOPIC_GET_REPLY):
                 client.subscribe(self._topic(sn, suffix), qos=1)
-        self._loop.call_soon_threadsafe(self._set_state, ConnectionState.CONNECTED)
+        self._call_on_loop(self._set_state, ConnectionState.CONNECTED)
 
     def _on_disconnect(
         self, _client: mqtt.Client, _userdata: Any, rc: int
@@ -171,7 +171,7 @@ class EcoFlowMqttClient:
         if rc != 0:
             _LOGGER.debug("EcoFlow MQTT unexpected disconnect (rc=%s)", rc)
         # paho auto-reconnects when the loop is running; reflect that we are down.
-        self._loop.call_soon_threadsafe(
+        self._call_on_loop(
             self._set_state,
             ConnectionState.CONNECTING if self._client else ConnectionState.DISCONNECTED,
         )
@@ -184,7 +184,14 @@ class EcoFlowMqttClient:
         except (ValueError, UnicodeDecodeError):
             _LOGGER.debug("EcoFlow MQTT: undecodable payload on …/%s", msg.topic.rsplit("/", 1)[-1])
             return
-        self._loop.call_soon_threadsafe(self._dispatch, msg.topic, payload)
+        self._call_on_loop(self._dispatch, msg.topic, payload)
+
+    def _call_on_loop(self, fn: Callable[..., Any], *args: Any) -> None:
+        """Marshal a paho-thread callback onto the HA loop (no-op once the loop is closed)."""
+        try:
+            self._loop.call_soon_threadsafe(fn, *args)
+        except RuntimeError:
+            pass
 
     # ---- dispatch (runs on the HA event loop) ----
 
