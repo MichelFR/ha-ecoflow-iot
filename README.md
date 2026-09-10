@@ -264,6 +264,50 @@ reload it after a network blip:
 In short: a temporary MQTT outage causes a short switch to slower HTTP polling and an
 automatic return to real-time MQTT once connectivity is restored.
 
+## FAQ / troubleshooting
+
+### The integration sets up fine but shows no devices or entities
+
+Almost always the EcoFlow **open API refuses to serve the device** with
+`EcoFlow API error 1006: current device is not allowed to get device info`.
+The device is listed on your account, but EcoFlow's servers deny access to its
+data. The integration cannot work around this: the decision is made on
+EcoFlow's side, before any data reaches Home Assistant.
+
+Since v0.44.9 such a device shows up as a Repair (Settings → Repairs, "EcoFlow
+device not served by the open API") and as a warning in the log. In diagnostics
+it appears under `unmapped_devices` with an empty quota.
+
+Two reasons we have seen so far:
+
+- **The device is not on the developer platform at all.** Delta Mini (`DBAB…`)
+  and River 2 (`R60…`) are not listed in EcoFlow's developer documentation and
+  always answer 1006 ([#13](https://github.com/MichelFR/ha-ecoflow-iot/issues/13)).
+  They are skipped silently; the app is the only way to reach them.
+- **Your developer account is not enabled for the product line.** Home-energy
+  systems such as PowerOcean are documented, but EcoFlow may still have to
+  grant API access per account
+  ([#16](https://github.com/MichelFR/ha-ecoflow-iot/issues/16)).
+
+What to check:
+
+1. The device is bound to the **same EcoFlow account** whose e-mail you used on
+   [developer.ecoflow.com](https://developer.ecoflow.com). Developer keys only
+   see devices of that account.
+2. The device is online and visible in the EcoFlow app.
+3. Settings → Devices & services → EcoFlow IoT → ⋮ → **Reload** after fixing
+   anything above (devices are only probed once, at startup).
+4. Still 1006? Ask EcoFlow developer support to enable API access for that
+   product on your account. If they confirm the device is served but the
+   integration still shows nothing, open an issue with the diagnostics
+   attached (Settings → Devices & services → EcoFlow IoT → ⋮ → *Download
+   diagnostics*; serial numbers are redacted).
+
+### The integration fails to set up with "returned no devices for these keys"
+
+The device list for your keys is empty. The keys belong to a developer account
+with no bound devices; see check 1 above.
+
 ## Manual test checklist
 
 1. Add the integration; confirm a device and its entities are created.
