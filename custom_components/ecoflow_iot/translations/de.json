@@ -78,6 +78,7 @@
           "unknown": "Unbekannt"
         }
       },
+      "last_mqtt_update": { "name": "Letztes MQTT-Update" },
       "cms_batt_soc": { "name": "Batterie" },
       "bat_power": { "name": "Batterieleistung" },
       "pv_total": { "name": "Solarleistung" },

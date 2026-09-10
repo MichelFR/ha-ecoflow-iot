@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -51,6 +52,13 @@ class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
     @property
     def _state(self) -> DeviceState | None:
         return self.coordinator.data.get(self._sn)
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        pushed = self.coordinator.pushed_sn
+        if pushed is not None and pushed != self._sn:
+            return
+        super()._handle_coordinator_update()
 
     @property
     def _quota(self) -> dict[str, Any]:

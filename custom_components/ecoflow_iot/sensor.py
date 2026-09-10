@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -16,7 +16,12 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from . import EcoFlowConfigEntry
-from .const import DATA_RESET_ENERGY_IDS, DOMAIN
+from .const import (
+    DATA_RESET_ENERGY_IDS,
+    DOMAIN,
+    INTEGRAL_WRITE_INTERVAL,
+    INTEGRAL_WRITE_THRESHOLD_WH,
+)
 from .coordinator import EcoFlowCoordinator
 from .devices.base import (
     EcoFlowIntegralSensorEntityDescription,
@@ -40,6 +45,7 @@ async def async_setup_entry(
     for sn, device in coordinator.devices.items():
         entities.append(EcoFlowConnectionSensor(coordinator, sn))
         entities.append(EcoFlowDataSourceSensor(coordinator, sn))
+        entities.append(EcoFlowLastUpdateSensor(coordinator, sn))
         for description in device.entity_descriptions(_PLATFORM):
             if isinstance(description, EcoFlowIntegralSensorEntityDescription):
                 entities.append(EcoFlowIntegralSensor(coordinator, sn, description))
@@ -120,6 +126,8 @@ class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
         self._energy_wh: float = 0.0
         self._last_power: float | None = None
         self._last_ts: datetime | None = None
+        self._written_wh: float | None = None
+        self._written_ts: datetime | None = None
 
     async def async_added_to_hass(self) -> None:
         """Restore the accumulated total and seed the first sample."""
@@ -159,6 +167,9 @@ class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Integrate the latest power sample, then write state."""
+        pushed = self.coordinator.pushed_sn
+        if pushed is not None and pushed != self._sn:
+            return
         self._accumulate(write=True)
 
     def _current_power(self) -> float | None:
@@ -186,8 +197,17 @@ class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
                 self._energy_wh += (power + self._last_power) / 2.0 * dt_hours
         self._last_ts = now
         self._last_power = power
-        if write:
+        if write and self._should_write(now):
+            self._written_wh = self._energy_wh
+            self._written_ts = now
             self.async_write_ha_state()
+
+    def _should_write(self, now: datetime) -> bool:
+        if self._written_ts is None or self._written_wh is None:
+            return True
+        if now - self._written_ts >= INTEGRAL_WRITE_INTERVAL:
+            return True
+        return self._energy_wh - self._written_wh >= INTEGRAL_WRITE_THRESHOLD_WH
 
 
 class EcoFlowConnectionSensor(EcoFlowEntity, SensorEntity):
@@ -220,19 +240,42 @@ class EcoFlowConnectionSensor(EcoFlowEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return data-source / broker / freshness diagnostics."""
+        """Return data-source / broker diagnostics."""
         state = self._state
-        last_ts = state.last_mqtt_ts if state else None
-        last_update = (
-            datetime.fromtimestamp(last_ts, tz=timezone.utc).isoformat()
-            if last_ts
-            else None
-        )
         return {
             "data_source": state.data_source.value if state else None,
             "broker": self.coordinator.broker,
-            "last_mqtt_update": last_update,
         }
+
+
+class EcoFlowLastUpdateSensor(EcoFlowEntity, SensorEntity):
+    """Timestamp of the most recent MQTT push for a device."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(self, coordinator: EcoFlowCoordinator, sn: str) -> None:
+        """Initialise the last-update sensor."""
+        description = EcoFlowSensorEntityDescription(
+            key="last_mqtt_update",
+            translation_key="last_mqtt_update",
+        )
+        super().__init__(coordinator, sn, description)
+
+    @property
+    def available(self) -> bool:
+        """Available whenever the device has coordinator state."""
+        return self._state is not None
+
+    @property
+    def native_value(self) -> datetime | None:
+        """Return the time of the last MQTT push, or None before the first."""
+        state = self._state
+        last_ts = state.last_mqtt_ts if state else None
+        if not last_ts:
+            return None
+        return datetime.fromtimestamp(last_ts, tz=timezone.utc)
 
 
 class EcoFlowDataSourceSensor(EcoFlowEntity, SensorEntity):

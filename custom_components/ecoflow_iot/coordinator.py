@@ -71,6 +71,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             update_interval=timedelta(seconds=poll_interval),
             config_entry=entry,
         )
+        self.pushed_sn: str | None = None
         self._http = http
         self._stale_seconds = stale_seconds
         self._refresh_interval = refresh_interval
@@ -405,7 +406,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         state.online = True
         if full:
             state.last_full_ts = state.last_mqtt_ts
-        self._push_update()
+        self._push_update(sn)
 
     @callback
     def _handle_status(self, sn: str, online: bool) -> None:
@@ -413,13 +414,17 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         if state is None:
             return
         state.online = online
-        self._push_update()
+        self._push_update(sn)
 
     @callback
-    def _push_update(self) -> None:
+    def _push_update(self, sn: str) -> None:
         """Notify entities of an in-place MQTT update without touching the poll timer."""
         self.last_update_success = True
-        self.async_update_listeners()
+        self.pushed_sn = sn
+        try:
+            self.async_update_listeners()
+        finally:
+            self.pushed_sn = None
 
     @callback
     def _handle_state_change(self, state: ConnectionState) -> None:

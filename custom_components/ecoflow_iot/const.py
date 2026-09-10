@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "ecoflow_iot"
@@ -58,6 +59,8 @@ OPERATE_LATEST_QUOTAS: Final = "latestQuotas"
 
 # Defaults / tuning.
 DEFAULT_POLL_INTERVAL: Final = 60  # seconds
+INTEGRAL_WRITE_INTERVAL: Final = timedelta(seconds=10)
+INTEGRAL_WRITE_THRESHOLD_WH: Final = 1.0
 DEFAULT_MQTT_STALE_SECONDS: Final = 120  # consider MQTT stale after this many seconds
 # How often to actively pull fresh data over MQTT by publishing a "latestQuotas"
 # get request (0 disables). The official app does this rather than relying purely
