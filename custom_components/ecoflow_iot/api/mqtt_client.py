@@ -129,7 +129,7 @@ class EcoFlowMqttClient:
         client.on_message = self._on_message
 
         self._client = client
-        self._set_state(ConnectionState.CONNECTING)
+        self._call_on_loop(self._set_state, ConnectionState.CONNECTING)
         client.connect_async(self._cert.host, self._cert.port, keepalive=60)
         client.loop_start()
 
