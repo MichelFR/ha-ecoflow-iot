@@ -123,6 +123,25 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             translation_placeholders={"prefix": prefix},
         )
 
+    @callback
+    def _notify_not_served(self, sn: str, message: str) -> None:
+        """Raise a repair issue for a device the open API refuses to serve."""
+        prefix = sn[:SN_PREFIX_LEN]
+        _LOGGER.warning(
+            "EcoFlow device %s is not served by the open API (%s); no entities created",
+            redact_sn(sn),
+            message,
+        )
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            f"device_not_served_{prefix}",
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="device_not_served",
+            translation_placeholders={"prefix": prefix, "message": message},
+        )
+
     async def async_setup(self) -> None:
         """Discover devices, seed data over HTTP and start MQTT."""
         try:
@@ -137,6 +156,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 continue
             state = DeviceState(sn=sn, online=bool(item.get("online", 1)))
             not_served = False
+            not_served_msg = ""
             try:
                 state.quota = await self._http.get_all_quota(sn)
                 state.data_source = DataSource.HTTP
@@ -144,23 +164,22 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             except EcoFlowApiError as err:
                 if err.code == API_CODE_DEVICE_NOT_ALLOWED:
                     not_served = True
-                    _LOGGER.info(
-                        "EcoFlow device %s is not served by the open API (%s); skipping",
-                        redact_sn(sn),
-                        err.message,
-                    )
+                    not_served_msg = err.message
                 else:
                     _LOGGER.warning("Initial quota fetch failed for %s: %s", redact_sn(sn), err)
             except EcoFlowError as err:
                 _LOGGER.warning("Initial quota fetch failed for %s: %s", redact_sn(sn), err)
             device = None if not_served else resolve_device(sn, state.quota)
             if device is None:
-                # Devices the open API refuses to serve (error 1006, e.g. Delta
-                # Mini / River 2) and known third-party devices (EcoFlow x Shelly)
-                # are skipped silently. Genuinely unknown devices raise a repair
-                # so support can be added.
-                if not not_served and not is_silenced(sn):
-                    self._notify_unsupported(sn)
+                # Known-unservable devices (Delta Mini / River 2, EcoFlow x
+                # Shelly) are skipped silently. Anything else the open API
+                # refuses (error 1006) raises a repair so the user knows why
+                # nothing showed up; genuinely unknown devices raise one too.
+                if not is_silenced(sn):
+                    if not_served:
+                        self._notify_not_served(sn, not_served_msg)
+                    else:
+                        self._notify_unsupported(sn)
                 self.unmapped[sn] = state
                 continue
             self.devices[sn] = device
@@ -174,13 +193,16 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             if self.unmapped:
                 # Everything on the account was unsupported or an excluded plug;
                 # stay set up (with no entities) rather than error-looping.
-                _LOGGER.info(
-                    "No mappable EcoFlow devices set up; %d device(s) were "
-                    "unsupported or excluded smart plugs",
+                _LOGGER.warning(
+                    "No EcoFlow devices set up; %d device(s) on the account were "
+                    "unsupported, refused by the open API or excluded smart plugs",
                     len(self.unmapped),
                 )
                 return
-            raise UpdateFailed("no supported EcoFlow devices found")
+            raise UpdateFailed(
+                "the EcoFlow open API returned no devices for these keys; make sure "
+                "the devices are bound to the same EcoFlow account as the developer keys"
+            )
 
         if self._enable_mqtt:
             await self._async_start_mqtt()

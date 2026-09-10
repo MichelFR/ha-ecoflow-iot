@@ -3,6 +3,10 @@
     "unsupported_device": {
       "title": "Unsupported EcoFlow device ({prefix})",
       "description": "An EcoFlow device with serial prefix `{prefix}` is bound to your account but is not supported yet by this integration, so no entities were created for it. Only the prefix is shown for privacy. To help add support, download this integration's diagnostics (Settings → Devices & Services → EcoFlow IoT → the ⋮ menu → Download diagnostics) — they include the device's raw data under `unmapped_devices` with the serial number removed — and open an issue on the project's GitHub repository including this prefix and the attached diagnostics."
+    },
+    "device_not_served": {
+      "title": "EcoFlow device not served by the open API ({prefix})",
+      "description": "An EcoFlow device with serial prefix `{prefix}` is bound to your account, but the EcoFlow open API refuses to return its data (`{message}`), so no entities were created for it. Only the prefix is shown for privacy.\n\nThis is decided on EcoFlow's side, not by this integration. Things to check: the device is bound to the same EcoFlow account whose email you registered on developer.ecoflow.com; the device is online and visible in the EcoFlow app; and your developer account is enabled for this product line (for home-energy systems such as PowerOcean, EcoFlow may need to grant API access to your account first — contact EcoFlow developer support). If it still fails, download this integration's diagnostics (Settings → Devices & Services → EcoFlow IoT → ⋮ → Download diagnostics) and open an issue on the project's GitHub repository including this prefix."
     }
   },
   "config": {

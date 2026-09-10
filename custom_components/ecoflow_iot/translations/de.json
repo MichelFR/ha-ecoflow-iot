@@ -3,6 +3,10 @@
     "unsupported_device": {
       "title": "Nicht unterstütztes EcoFlow-Gerät ({prefix})",
       "description": "Ein EcoFlow-Gerät mit dem Seriennummern-Präfix `{prefix}` ist mit Ihrem Konto verknüpft, wird von dieser Integration aber noch nicht unterstützt, daher wurden keine Entitäten dafür erstellt. Aus Datenschutzgründen wird nur das Präfix angezeigt. Um die Unterstützung voranzubringen, laden Sie die Diagnosedaten dieser Integration herunter (Einstellungen → Geräte & Dienste → EcoFlow IoT → Menü ⋮ → Diagnose herunterladen) — sie enthalten unter `unmapped_devices` die Rohdaten des Geräts ohne Seriennummer — und erstellen Sie ein Issue im GitHub-Repository des Projekts mit diesem Präfix und den angehängten Diagnosedaten."
+    },
+    "device_not_served": {
+      "title": "EcoFlow-Gerät wird von der offenen API nicht bereitgestellt ({prefix})",
+      "description": "Ein EcoFlow-Gerät mit dem Seriennummern-Präfix `{prefix}` ist mit Ihrem Konto verknüpft, aber die offene EcoFlow-API verweigert die Herausgabe seiner Daten (`{message}`), daher wurden keine Entitäten dafür erstellt. Aus Datenschutzgründen wird nur das Präfix angezeigt.\n\nDas entscheidet EcoFlow, nicht diese Integration. Bitte prüfen: Das Gerät ist mit demselben EcoFlow-Konto verknüpft, dessen E-Mail-Adresse auf developer.ecoflow.com registriert ist; das Gerät ist online und in der EcoFlow-App sichtbar; Ihr Entwicklerkonto ist für diese Produktlinie freigeschaltet (bei Heimspeichersystemen wie PowerOcean muss EcoFlow den API-Zugang ggf. erst für Ihr Konto aktivieren — wenden Sie sich an den EcoFlow-Entwicklersupport). Schlägt es weiterhin fehl, laden Sie die Diagnosedaten dieser Integration herunter (Einstellungen → Geräte & Dienste → EcoFlow IoT → ⋮ → Diagnose herunterladen) und erstellen Sie ein Issue im GitHub-Repository des Projekts mit diesem Präfix."
     }
   },
   "config": {
