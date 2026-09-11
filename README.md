@@ -266,7 +266,8 @@ automatic return to real-time MQTT once connectivity is restored.
 
 ## FAQ / troubleshooting
 
-### The integration sets up fine but shows no devices or entities
+<details>
+<summary><strong>The integration sets up fine but shows no devices or entities</strong></summary>
 
 Almost always the EcoFlow **open API refuses to serve the device** with
 `EcoFlow API error 1006: current device is not allowed to get device info`.
@@ -303,12 +304,18 @@ What to check:
    attached (Settings → Devices & services → EcoFlow IoT → ⋮ → *Download
    diagnostics*; serial numbers are redacted).
 
-### The integration fails to set up with "returned no devices for these keys"
+</details>
+
+<details>
+<summary><strong>The integration fails to set up with "returned no devices for these keys"</strong></summary>
 
 The device list for your keys is empty. The keys belong to a developer account
 with no bound devices; see check 1 above.
 
-### The database grows fast / the recorder writes a lot
+</details>
+
+<details>
+<summary><strong>The database grows fast / the recorder writes a lot</strong></summary>
 
 Stream-family devices push a full data snapshot over MQTT every ~2 s, and most
 live readings really do change between pushes (power jitters by a few watts
@@ -363,6 +370,8 @@ Which entities make sense to exclude:
 Purging what is already there: `recorder.purge_entities` with your entity_ids
 and `keep_days: 0`, then `recorder.purge` with `repack: true` to shrink the file.
 Statistics are never touched by either.
+
+</details>
 
 ## Manual test checklist
 
