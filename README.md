@@ -308,6 +308,62 @@ What to check:
 The device list for your keys is empty. The keys belong to a developer account
 with no bound devices; see check 1 above.
 
+### The database grows fast / the recorder writes a lot
+
+Stream-family devices push a full data snapshot over MQTT every ~2 s, and most
+live readings really do change between pushes (power jitters by a few watts
+while the unit regulates to zero grid). Home Assistant's recorder stores a row
+for every state change, so a handful of live sensors can dominate the `states`
+table: on a Stream Ultra with a Smart Meter, 18 power sensors produced roughly
+900 000 of the 2.3 M rows in a 10-day window
+([#17](https://github.com/MichelFR/ha-ecoflow-iot/issues/17)).
+
+What the integration already does about it:
+
+- Energy totals (Wh) are written at most every 10 s or on a ≥ 1 Wh step
+  (v0.44.8). Their precision is unchanged.
+- A push from one device only refreshes that device's entities (v0.44.8).
+- No fast-changing attributes: the last-update timestamp is a disabled-by-default
+  diagnostic sensor, and the battery charging icon can no longer produce
+  attribute-only state rows (v0.44.11).
+
+What it cannot do: Home Assistant offers integrations no way to keep an entity
+out of the recorder. Which history to keep is your decision, made in the
+recorder configuration. If you want the live readings in the UI and in
+automations but not on disk, exclude them:
+
+```yaml
+# configuration.yaml — adjust the globs to your entity_ids
+recorder:
+  exclude:
+    entity_globs:
+      - sensor.ecoflow_stream_*_power
+      - sensor.ecoflow_stream_load_from_*
+```
+
+Excluded entities keep updating in real time; only their history graph and
+long-term statistics disappear. Restart Home Assistant after changing it.
+
+Which entities make sense to exclude:
+
+- **Yes — instantaneous power (W):** battery, solar, per-string, grid, system
+  grid, load and load-from-* power, AC socket power, total AC power, available
+  charge power. They are what you watch live, not what you chart for months.
+- **Yes — live electrical readings:** string voltage/current, grid
+  voltage/frequency and, with a Smart Meter, per-phase voltage/current/power
+  factor. Two-decimal readings that change on every push.
+- **No — energy totals (Wh / kWh):** solar energy, grid import/export, battery
+  charge/discharge, socket energy, total charged/discharged, local meter
+  import/export. The Energy Dashboard is built from their statistics, and they
+  are already throttled.
+- **No — slow values with useful history:** battery level, health, temperatures,
+  cycles, time to full/empty, connection and mode entities. They change rarely
+  and cost almost nothing.
+
+Purging what is already there: `recorder.purge_entities` with your entity_ids
+and `keep_days: 0`, then `recorder.purge` with `repack: true` to shrink the file.
+Statistics are never touched by either.
+
 ## Manual test checklist
 
 1. Add the integration; confirm a device and its entities are created.
