@@ -32,6 +32,7 @@ from .entity import EcoFlowEntity
 from .models import ConnectionState, DataSource
 
 _PLATFORM = Platform.SENSOR
+_UNSET = object()
 
 
 async def async_setup_entry(
@@ -83,6 +84,17 @@ class EcoFlowSensor(EcoFlowEntity, SensorEntity):
 
     entity_description: EcoFlowSensorEntityDescription
 
+    def __init__(
+        self,
+        coordinator: EcoFlowCoordinator,
+        sn: str,
+        description: EcoFlowSensorEntityDescription,
+    ) -> None:
+        """Bind the sensor and start with no cached dynamic icon."""
+        super().__init__(coordinator, sn, description)
+        self._icon_for: Any = _UNSET
+        self._icon: str | None = None
+
     @property
     def native_value(self) -> Any:
         """Return the current sensor value."""
@@ -93,13 +105,20 @@ class EcoFlowSensor(EcoFlowEntity, SensorEntity):
 
     @property
     def icon(self) -> str | None:
-        """Dynamic icon (e.g. stepped charging battery), else static/auto icon."""
+        """Dynamic icon (e.g. stepped charging battery), else static/auto icon.
+
+        The dynamic icon is only re-evaluated when the sensor's value changes,
+        so a flag that flickers between pushes (e.g. charging around 0 W) does
+        not produce attribute-only state changes for the recorder.
+        """
         icon_fn = self.entity_description.icon_fn
-        if icon_fn is not None:
-            dynamic = icon_fn(self._quota)
-            if dynamic is not None:
-                return dynamic
-        return self.entity_description.icon
+        if icon_fn is None:
+            return self.entity_description.icon
+        value = self.native_value
+        if value != self._icon_for:
+            self._icon_for = value
+            self._icon = icon_fn(self._quota)
+        return self._icon if self._icon is not None else self.entity_description.icon
 
 
 class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
