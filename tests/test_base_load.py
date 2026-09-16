@@ -69,6 +69,9 @@ def install_ha_stub():
     const = types.ModuleType("homeassistant.const")
     const.__getattr__ = lambda name: Auto(name)
     sys.modules["homeassistant.const"] = const
+    exc = types.ModuleType("homeassistant.exceptions")
+    exc.HomeAssistantError = type("HomeAssistantError", (Exception,), {})
+    sys.modules["homeassistant.exceptions"] = exc
 
 
 install_ha_stub()
