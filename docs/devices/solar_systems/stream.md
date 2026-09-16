@@ -17,7 +17,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 |---|---|---|---|---|
 | Battery | battery | % | `cmsBattSoc` |  |
 | Battery (BMS) | battery | % | `bmsBattSoc` | 💤 |
-| Battery (precise) | battery | % | `f32ShowSoc` |  |
+| Battery (precise) | battery | % | `f32ShowSoc` | 💤 |
 | Battery health | — | % | `cmsBattSoh` | 🔧 |
 | Battery voltage | voltage | V | `vol` | 🔧 |
 | Battery current | current | A | `amp` | 🔧 |
