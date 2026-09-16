@@ -42,6 +42,9 @@ export function renderPanels(card) {
   const totalW = numState(card._state("sensor.pv_total"));
   const total =
     totalW != null ? totalW : panels.reduce((sum, p) => sum + (p.watts || 0), 0);
+  const totalMax = panels.every((p) => p.max)
+    ? panels.reduce((sum, p) => sum + p.max, 0)
+    : null;
 
   return html`<div class="panels">
     ${panels.map(
@@ -76,7 +79,11 @@ export function renderPanels(card) {
       @click=${totalId ? () => card._moreInfoId(totalId) : null}
     >
       <span>${t("panels.total")}</span>
-      <span>${fmtPower(total) ?? "–"}</span>
+      <span
+        >${fmtPower(total) ?? "–"}${totalMax
+          ? html`<span class="panel-max"> / ${fmtPower(totalMax)}</span>`
+          : ""}</span
+      >
     </div>
   </div>`;
 }
