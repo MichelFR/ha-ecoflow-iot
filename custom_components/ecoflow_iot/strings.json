@@ -151,6 +151,8 @@
       "ac_standby_time": { "name": "AC standby timeout" },
       "grid_code": { "name": "Grid code" },
       "device_role": { "name": "Device role" },
+      "local_ip": { "name": "Local IP address" },
+      "gateway_ip": { "name": "Gateway IP address" },
       "local_meter_power": { "name": "Local meter power" },
       "local_meter_import_energy": { "name": "Local meter import energy" },
       "local_meter_export_energy": { "name": "Local meter export energy" },

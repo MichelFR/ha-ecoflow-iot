@@ -36,6 +36,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Grid export energy | energy | Wh | `gridConnectionPower` |  |
 | Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | 🔧 💤 |
 | Device role | — | — | `seriesConnectDeviceStatus` | 🔧 💤 ⚠️ |
+| Local IP address | — | — | `iotIpAddress` | 🔧 💤 ⚠️ |
+| Gateway IP address | — | — | `iotGatewayAddress` | 🔧 💤 ⚠️ |
 | Feed-in power limit | power | W | `feedGridModePowLimit` | 🔧 |
 | Grid input power limit | power | W | `sysGridInPwrLimit` | 🔧 💤 ⚠️ |
 | Busbar power limit | power | W | `busbarPowLimit` | 🔧 💤 ⚠️ |
@@ -49,4 +51,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 26 — 24 sensor, 2 binary_sensor, 0 switch, 0 number, 0 select, 0 light._
+_Entity totals: 28 — 26 sensor, 2 binary_sensor, 0 switch, 0 number, 0 select, 0 light._

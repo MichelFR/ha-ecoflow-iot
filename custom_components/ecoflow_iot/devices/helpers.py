@@ -117,6 +117,23 @@ def abs_round(value: Any, ndigits: int = 2) -> float | None:
     return round(abs(float(value)), ndigits)
 
 
+def ipv4_le(value: Any) -> str | None:
+    """Format a little-endian packed IPv4 address as dotted-quad (None-safe).
+
+    EcoFlow reports network addresses as 32-bit integers with the first octet in
+    the low byte (``464693440`` -> ``192.168.178.27``); ``0`` means "not set".
+    """
+    if value is None:
+        return None
+    try:
+        raw = int(value)
+    except (TypeError, ValueError):
+        return None
+    if raw <= 0:
+        return None
+    return ".".join(str((raw >> shift) & 0xFF) for shift in (0, 8, 16, 24))
+
+
 def to_bool(value: Any) -> bool | None:
     """Coerce a quota value to bool (None-safe)."""
     if value is None:

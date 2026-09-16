@@ -80,6 +80,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | AC socket 2 energy | energy | Wh | _integrated_ |  |
 | Wi-Fi signal | signal_strength | dBm | `moduleWifiRssi` | 🔧 💤 |
 | Device role | — | — | `seriesConnectDeviceStatus` | 🔧 💤 ⚠️ |
+| Local IP address | — | — | `iotIpAddress` | 🔧 💤 ⚠️ |
+| Gateway IP address | — | — | `iotGatewayAddress` | 🔧 💤 ⚠️ |
 
 ## Binary sensors
 
@@ -129,4 +131,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 86 — 65 sensor, 11 binary_sensor, 4 switch, 4 number, 1 select, 1 light._
+_Entity totals: 88 — 67 sensor, 11 binary_sensor, 4 switch, 4 number, 1 select, 1 light._

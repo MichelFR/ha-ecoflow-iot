@@ -151,6 +151,8 @@
       "ac_standby_time": { "name": "AC-Standby-Zeit" },
       "grid_code": { "name": "Netzrichtlinie" },
       "device_role": { "name": "Geräterolle" },
+      "local_ip": { "name": "Lokale IP-Adresse" },
+      "gateway_ip": { "name": "Gateway-IP-Adresse" },
       "local_meter_power": { "name": "Lokaler Zähler Leistung" },
       "local_meter_import_energy": { "name": "Lokaler Zähler Bezugsenergie" },
       "local_meter_export_energy": { "name": "Lokaler Zähler Einspeiseenergie" },

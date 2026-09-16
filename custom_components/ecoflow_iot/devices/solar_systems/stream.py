@@ -47,6 +47,7 @@ from ..commands import build_stream_command
 from ..helpers import (
     abs_round as _abs_round,
     battery_charging_icon,
+    ipv4_le as _ipv4_le,
     milli as _scale_1000,
     quota_get,
     round2 as _round2,
@@ -853,6 +854,28 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         available_fn=lambda q: "seriesConnectDeviceStatus" in q,
         undocumented=True,
     ),
+    EcoFlowSensorEntityDescription(
+        key="local_ip",
+        translation_key="local_ip",
+        mqtt_key="iotIpAddress",
+        name="Local IP address",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_ipv4_le,
+        available_fn=lambda q: "iotIpAddress" in q,
+        undocumented=True,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="gateway_ip",
+        translation_key="gateway_ip",
+        mqtt_key="iotGatewayAddress",
+        name="Gateway IP address",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_ipv4_le,
+        available_fn=lambda q: "iotGatewayAddress" in q,
+        undocumented=True,
+    ),
 )
 
 _FEED_LIMIT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
@@ -1017,6 +1040,14 @@ _FAULT_FIELDS = (
     "bmsProtectState2",
     "bmsAlarmState1",
     "bmsAlarmState2",
+    "gridFault",
+    "invFault",
+    "invFaultLock",
+    "invCommFault",
+    "pfcFault",
+    "dabFault",
+    "dabFaultLock",
+    "mpptFaultComm",
 )
 
 

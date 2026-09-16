@@ -60,6 +60,15 @@ def test_coercion_and_flag():
     assert helpers.flag_is(0, 4) is False
 
 
+def test_ipv4_le():
+    # Little-endian packed: low byte is the first octet.
+    assert helpers.ipv4_le(464693440) == "192.168.178.27"
+    assert helpers.ipv4_le(28485824) == "192.168.178.1"
+    assert helpers.ipv4_le(0) is None
+    assert helpers.ipv4_le(None) is None
+    assert helpers.ipv4_le("nope") is None
+
+
 def test_battery_charging_icon():
     # Not charging -> None so HA uses the automatic battery icon.
     assert helpers.battery_charging_icon(76, False) is None
