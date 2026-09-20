@@ -19,6 +19,19 @@ Quota key reference:
   gridInfo.gridVol/gridFreq     — grid parameters
   backupChaDiscCfg.*            — charge/discharge thresholds
   loadChCurInfo.cur             — array[10] of per-channel configured current (A)
+  channelPower.infoList / infoList — array[12] of {powType, chWatt}: 10 load
+                                  channels + 2 battery ports (cmdSet=11, id=96,
+                                  undocumented; pushed unprefixed over MQTT)
+  loadChInfo.info               — array[10] of {iconNum, chName}: user-assigned
+                                  channel names as null-padded byte arrays (id=33)
+  heartbeat.energyInfos         — array[2] of per-battery-port state (SoC, power,
+                                  temperature, charge/discharge time, stateBean)
+  mainsLoadWatt.watth           — array[10]×24 hourly grid Wh per channel (id=48)
+  backupLoadWatt.watth          — array[10]×24 hourly battery Wh per channel (id=49)
+  topupLoadWatt.watth           — array[2]×24 hourly battery-port charge Wh (id=50)
+  chUseInfo.isEnable            — array[10] channel-configured flags (id=27)
+  selfCheck.vIn                 — array[10] per-channel input voltage (id=113)
+  splitPhaseInfo.cfgList        — array[10] of {linkMark, linkCh} 240V pairs (id=19)
 """
 
 from __future__ import annotations
@@ -41,6 +54,7 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfTemperature,
     UnitOfTime,
 )
 
@@ -124,6 +138,119 @@ def _ch_cfg_cur(quota: Mapping[str, Any], ch: int) -> float | None:
     if not cur or not isinstance(cur, list) or ch >= len(cur):
         return None
     return float(cur[ch])
+
+
+def _ch_watt_list(quota: Mapping[str, Any]) -> list[Any] | None:
+    """Return the per-channel power list (cmdSet=11, id=96).
+
+    MQTT pushes carry the params unprefixed (bare ``infoList``), while the
+    HTTP ``quota/all`` snapshot exposes the same data as
+    ``channelPower.infoList``; prefer the pushed copy — it refreshes every
+    second while the prefixed one only refreshes on full resyncs.
+    """
+    for key in ("infoList", "channelPower.infoList"):
+        infos = quota.get(key)
+        if (
+            isinstance(infos, list)
+            and infos
+            and isinstance(infos[0], dict)
+            and "chWatt" in infos[0]
+        ):
+            return infos
+    return None
+
+
+def _ch_watt(quota: Mapping[str, Any], ch: int) -> float | None:
+    """Return current power draw (W) for channel *ch*."""
+    infos = _ch_watt_list(quota)
+    if infos is None or ch >= len(infos) or not isinstance(infos[ch], dict):
+        return None
+    return _round2(infos[ch].get("chWatt"))
+
+
+def _ch_name_list(quota: Mapping[str, Any]) -> list[Any] | None:
+    """Return the loadChInfo.info list (nested object or flattened key)."""
+    info = quota.get("loadChInfo.info")
+    if info is None:
+        parent = quota.get("loadChInfo")
+        if isinstance(parent, dict):
+            info = parent.get("info")
+    return info if isinstance(info, list) else None
+
+
+def _ch_name(quota: Mapping[str, Any], ch: int) -> str | None:
+    """Decode the user-assigned name of channel *ch* from loadChInfo.info.
+
+    ``chName`` is a null-padded array of byte values; anything undecodable or
+    empty returns None.
+    """
+    info = _ch_name_list(quota)
+    if info is None or ch >= len(info) or not isinstance(info[ch], dict):
+        return None
+    raw = info[ch].get("chName")
+    if not isinstance(raw, list):
+        return None
+    try:
+        name = bytes(b for b in raw if isinstance(b, int) and 0 < b < 256).decode(
+            "utf-8", errors="ignore"
+        )
+    except ValueError:
+        return None
+    return name.strip() or None
+
+
+def _row_sum(quota: Mapping[str, Any], key: str, row: int) -> float | None:
+    """Sum one row of an hourly Wh matrix (mains/backup/topup LoadWatt)."""
+    matrix = quota.get(key)
+    if not isinstance(matrix, list) or row >= len(matrix):
+        return None
+    values = matrix[row]
+    if not isinstance(values, list):
+        return None
+    try:
+        return float(sum(values))
+    except TypeError:
+        return None
+
+
+def _energy_info(quota: Mapping[str, Any], port: int) -> Mapping[str, Any] | None:
+    """Return heartbeat.energyInfos[*port*] (one entry per battery port)."""
+    infos = quota.get("heartbeat.energyInfos")
+    if not isinstance(infos, list) or port >= len(infos):
+        return None
+    info = infos[port]
+    return info if isinstance(info, dict) else None
+
+
+def _energy_info_value(quota: Mapping[str, Any], port: int, field: str) -> Any:
+    info = _energy_info(quota, port)
+    if info is None:
+        return None
+    return info.get(field)
+
+
+def _energy_info_state(quota: Mapping[str, Any], port: int, flag: str) -> bool | None:
+    info = _energy_info(quota, port)
+    if info is None:
+        return None
+    bean = info.get("stateBean")
+    if not isinstance(bean, dict) or flag not in bean:
+        return None
+    return bool(int(bean[flag]))
+
+
+def _list_index(quota: Mapping[str, Any], key: str, idx: int) -> Any:
+    values = quota.get(key)
+    if not isinstance(values, list) or idx >= len(values):
+        return None
+    return values[idx]
+
+
+def _ch_split_phase(quota: Mapping[str, Any], ch: int) -> bool | None:
+    cfg = _list_index(quota, "splitPhaseInfo.cfgList", ch)
+    if not isinstance(cfg, dict) or "linkMark" not in cfg:
+        return None
+    return bool(int(cfg["linkMark"]))
 
 
 # ---------------------------------------------------------------------------
@@ -362,6 +489,67 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         label = ch + 1  # human-readable 1-based label
         descs.append(
             EcoFlowSensorEntityDescription(
+                key=f"ch{label}_watt",
+                name=f"Channel {label} power",
+                device_class=SensorDeviceClass.POWER,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfPower.WATT,
+                quota_value_fn=lambda q, c=ch: _ch_watt(q, c),
+                available_fn=lambda q: _ch_watt_list(q) is not None,
+                undocumented=True,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"ch{label}_name",
+                name=f"Channel {label} name",
+                entity_category=EntityCategory.DIAGNOSTIC,
+                icon="mdi:label-outline",
+                quota_value_fn=lambda q, c=ch: _ch_name(q, c),
+                available_fn=lambda q, c=ch: _ch_name(q, c) is not None,
+                undocumented=True,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"ch{label}_grid_watth",
+                name=f"Channel {label} grid energy today",
+                device_class=SensorDeviceClass.ENERGY,
+                state_class=SensorStateClass.TOTAL_INCREASING,
+                native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+                quota_value_fn=lambda q, c=ch: _row_sum(q, "mainsLoadWatt.watth", c),
+                available_fn=lambda q: "mainsLoadWatt.watth" in q,
+                undocumented=True,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"ch{label}_backup_watth",
+                name=f"Channel {label} battery energy today",
+                device_class=SensorDeviceClass.ENERGY,
+                state_class=SensorStateClass.TOTAL_INCREASING,
+                native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+                quota_value_fn=lambda q, c=ch: _row_sum(q, "backupLoadWatt.watth", c),
+                available_fn=lambda q: "backupLoadWatt.watth" in q,
+                undocumented=True,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"ch{label}_in_vol",
+                name=f"Channel {label} input voltage",
+                device_class=SensorDeviceClass.VOLTAGE,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+                entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, c=ch: _round2(_list_index(q, "selfCheck.vIn", c)),
+                available_fn=lambda q: "selfCheck.vIn" in q,
+                undocumented=True,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
                 key=f"ch{label}_ctrl_sta",
                 name=f"Channel {label} state",
                 quota_value_fn=lambda q, c=ch: _ch_ctrl_sta(q, c),
@@ -388,6 +576,166 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
                 entity_category=EntityCategory.DIAGNOSTIC,
                 quota_value_fn=lambda q, c=ch: _ch_priority(q, c),
                 available_fn=lambda q: "emergencyStrategy.chSta" in q,
+            )
+        )
+    return descs
+
+
+def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
+    """Sensors for the two battery ports (channelPower indices 10/11 and
+    heartbeat.energyInfos entries)."""
+    descs: list[EcoFlowSensorEntityDescription] = []
+    for port in range(2):
+        label = port + 1
+        idx = _CHANNEL_COUNT + port
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"battery_port{label}_watt",
+                name=f"Battery port {label} power",
+                device_class=SensorDeviceClass.POWER,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfPower.WATT,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, i=idx: _ch_watt(q, i),
+                available_fn=lambda q, i=idx: (
+                    (infos := _ch_watt_list(q)) is not None and len(infos) > i
+                ),
+                undocumented=True,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"battery_port{label}_soc",
+                name=f"Battery port {label} battery",
+                device_class=SensorDeviceClass.BATTERY,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=PERCENTAGE,
+                quota_value_fn=lambda q, p=port: _energy_info_value(
+                    q, p, "batteryPercentage"
+                ),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"battery_port{label}_output_watt",
+                name=f"Battery port {label} output power",
+                device_class=SensorDeviceClass.POWER,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfPower.WATT,
+                quota_value_fn=lambda q, p=port: _round2(
+                    _energy_info_value(q, p, "outputPower")
+                ),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"battery_port{label}_temp",
+                name=f"Battery port {label} temperature",
+                device_class=SensorDeviceClass.TEMPERATURE,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                entity_category=EntityCategory.DIAGNOSTIC,
+                quota_value_fn=lambda q, p=port: _energy_info_value(
+                    q, p, "emsBatTemp"
+                ),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"battery_port{label}_charge_time",
+                name=f"Battery port {label} charge time remaining",
+                device_class=SensorDeviceClass.DURATION,
+                native_unit_of_measurement=UnitOfTime.MINUTES,
+                entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, p=port: _energy_info_value(
+                    q, p, "chargeTime"
+                ),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"battery_port{label}_discharge_time",
+                name=f"Battery port {label} discharge time remaining",
+                device_class=SensorDeviceClass.DURATION,
+                native_unit_of_measurement=UnitOfTime.MINUTES,
+                entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, p=port: _energy_info_value(
+                    q, p, "dischargeTime"
+                ),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"battery_port{label}_full_cap",
+                name=f"Battery port {label} full capacity",
+                device_class=SensorDeviceClass.ENERGY_STORAGE,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+                entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, p=port: _energy_info_value(q, p, "fullCap"),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
+            )
+        )
+        descs.append(
+            EcoFlowSensorEntityDescription(
+                key=f"battery_port{label}_charge_watth",
+                name=f"Battery port {label} charge energy today",
+                device_class=SensorDeviceClass.ENERGY,
+                state_class=SensorStateClass.TOTAL_INCREASING,
+                native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+                quota_value_fn=lambda q, p=port: _row_sum(q, "topupLoadWatt.watth", p),
+                available_fn=lambda q: "topupLoadWatt.watth" in q,
+                undocumented=True,
+            )
+        )
+    return descs
+
+
+def _battery_port_binary_sensors() -> list[EcoFlowBinarySensorEntityDescription]:
+    """Binary sensors for the two battery ports (heartbeat.energyInfos stateBean)."""
+    descs: list[EcoFlowBinarySensorEntityDescription] = []
+    for port in range(2):
+        label = port + 1
+        descs.append(
+            EcoFlowBinarySensorEntityDescription(
+                key=f"battery_port{label}_connected",
+                name=f"Battery port {label} connected",
+                device_class=BinarySensorDeviceClass.CONNECTIVITY,
+                entity_category=EntityCategory.DIAGNOSTIC,
+                quota_value_fn=lambda q, p=port: _energy_info_state(q, p, "isConnect"),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
+            )
+        )
+        descs.append(
+            EcoFlowBinarySensorEntityDescription(
+                key=f"battery_port{label}_grid_charge",
+                name=f"Battery port {label} grid charging",
+                device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, p=port: _energy_info_state(
+                    q, p, "isGridCharge"
+                ),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
+            )
+        )
+        descs.append(
+            EcoFlowBinarySensorEntityDescription(
+                key=f"battery_port{label}_output",
+                name=f"Battery port {label} output",
+                device_class=BinarySensorDeviceClass.POWER,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, p=port: _energy_info_state(
+                    q, p, "isPowerOutput"
+                ),
+                available_fn=lambda q, p=port: _energy_info(q, p) is not None,
             )
         )
     return descs
@@ -424,6 +772,32 @@ def _channel_binary_sensors(count: int) -> list[EcoFlowBinarySensorEntityDescrip
                 quota_value_fn=lambda q, c=ch: _ch_emergency_enabled(q, c),
                 available_fn=lambda q: "emergencyStrategy.chSta" in q,
                 entity_registry_enabled_default=False,
+            )
+        )
+        descs.append(
+            EcoFlowBinarySensorEntityDescription(
+                key=f"ch{label}_in_use",
+                name=f"Channel {label} configured",
+                entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, c=ch: (
+                    None
+                    if (v := _list_index(q, "chUseInfo.isEnable", c)) is None
+                    else bool(v)
+                ),
+                available_fn=lambda q: "chUseInfo.isEnable" in q,
+                undocumented=True,
+            )
+        )
+        descs.append(
+            EcoFlowBinarySensorEntityDescription(
+                key=f"ch{label}_split_phase",
+                name=f"Channel {label} split phase linked",
+                entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
+                quota_value_fn=lambda q, c=ch: _ch_split_phase(q, c),
+                available_fn=lambda q: "splitPhaseInfo.cfgList" in q,
+                undocumented=True,
             )
         )
     return descs
@@ -487,11 +861,13 @@ class SmartHomePanelDevice(EcoFlowDevice):
             return [
                 *_GLOBAL_SENSORS,
                 *_channel_sensors(_CHANNEL_COUNT),
+                *_battery_port_sensors(),
             ]
         if platform == Platform.BINARY_SENSOR:
             return [
                 *_GLOBAL_BINARY_SENSORS,
                 *_channel_binary_sensors(_CHANNEL_COUNT),
+                *_battery_port_binary_sensors(),
             ]
         if platform == Platform.SWITCH:
             return [
