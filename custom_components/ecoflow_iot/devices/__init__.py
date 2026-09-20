@@ -116,7 +116,9 @@ def resolve_device(sn: str, quota: Mapping[str, Any]) -> EcoFlowDevice | None:
 #   SM2A / SM3A — EcoFlow x Shelly plug / Pro3EM meter (private app API only)
 #   DBAB        — Delta Mini, R60 — River 2 (quota/all answers API error 1006,
 #                 "current device is not allowed to get device info")
-SILENCED_SN_PREFIXES: tuple[str, ...] = ("SM2A", "SM3A", "DBAB", "R60")
+#   0151        — Everhome Ecotracker IR reader (error 1006; its phase powers
+#                 already surface via the Stream's cloudMetter quota)
+SILENCED_SN_PREFIXES: tuple[str, ...] = ("SM2A", "SM3A", "DBAB", "R60", "0151")
 
 
 def is_silenced(sn: str) -> bool:
