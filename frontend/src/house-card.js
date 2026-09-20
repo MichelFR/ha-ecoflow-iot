@@ -31,7 +31,7 @@ import {
   houseImageUrl,
 } from "./houses.js";
 import { ACTIVE_W, FlowController, deriveFlowStates } from "./flows.js";
-import { feedInOffBadge, gridReading } from "./grid.js";
+import { feedInOffBadge, gridInput, gridReading } from "./grid.js";
 import { houseCardStyles } from "./house-styles.js";
 
 export class EcoFlowHouseCard extends LitElement {
@@ -146,12 +146,12 @@ export class EcoFlowHouseCard extends LitElement {
   /* Grid power, positive = importing from the grid — the same sensor and sign
    * convention as the Energy card (grid_power has the invert_grid_sign fix
    * applied; sys_grid_power is the raw, oppositely-signed value). */
-  _grid() {
-    const grid = this._state("sensor.grid_power");
-    if (grid != null) return numState(grid);
-    // The raw sensor is export-positive, so flip it to import-positive.
-    const raw = numState(this._state("sensor.sys_grid_power"));
-    return raw == null ? raw : -raw;
+  _gridInput() {
+    return gridInput(
+      this._config,
+      (slot) => numState(this._state(slot)),
+      (id) => numState(this.hass.states[id])
+    );
   }
 
   _flowStates() {
@@ -166,17 +166,18 @@ export class EcoFlowHouseCard extends LitElement {
       return deriveFlowStates({ grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, backup: 20, loadFromPv: 700, route });
     }
 
-    const deviceGrid = this._config.grid_source === "device";
+    const { grid, overridden } = this._gridInput();
+    const noSplit = this._config.grid_source === "device" || overridden;
     return deriveFlowStates({
-      grid: this._grid(),
+      grid,
       solar: numState(this._state("sensor.pv_total")),
       load: numState(this._state("sensor.sys_load")),
       bat: numState(this._state("sensor.bat_power")),
       soc: numState(this._state("sensor.cms_batt_soc")),
       backup: numState(this._state("number.backup_reserve")),
-      loadFromGrid: deviceGrid ? null : numState(this._state("sensor.load_from_grid")),
-      loadFromPv: deviceGrid ? null : numState(this._state("sensor.load_from_pv")),
-      loadFromBat: deviceGrid ? null : numState(this._state("sensor.load_from_bat")),
+      loadFromGrid: noSplit ? null : numState(this._state("sensor.load_from_grid")),
+      loadFromPv: noSplit ? null : numState(this._state("sensor.load_from_pv")),
+      loadFromBat: noSplit ? null : numState(this._state("sensor.load_from_bat")),
       route,
     });
   }
@@ -191,6 +192,7 @@ export class EcoFlowHouseCard extends LitElement {
     for (const v of Object.values(this._config?.entities || {})) {
       if (isEntityId(v) && !isTemplate(v)) ids.push(v);
     }
+    if (this._config?.grid_entity) ids.push(this._config.grid_entity);
     // The auto day/night house render follows the sun.
     const mode = this._config?.house_mode;
     if (mode !== "day" && mode !== "night") ids.push("sun.sun");
@@ -294,13 +296,14 @@ export class EcoFlowHouseCard extends LitElement {
     const s = this._flowStates();
     const cols = [];
     if (this._show("show_grid")) {
-      const overridden = !!this._config.entities?.["sensor.grid_power"];
+      const { overridden, entityId } = this._gridInput();
       const r = blank
         ? { value: null, importing: false, exporting: false, fromSplit: false }
         : gridReading(s, overridden);
       cols.push({
         slot: r.importing && r.fromSplit ? "sensor.load_from_grid" : "sensor.grid_power",
         fallback: "sensor.sys_grid_power",
+        onTap: entityId ? () => this._moreInfoId(entityId) : undefined,
         anchor: "col-grid",
         value: r.value,
         badge: blank ? "" : feedInOffBadge(this),

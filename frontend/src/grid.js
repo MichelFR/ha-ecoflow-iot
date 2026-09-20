@@ -18,6 +18,28 @@ import { localize } from "./localize.js";
  * `overridden` marks a user-configured grid entity/template, which then IS the
  * figure (import-positive) — previously the derived split shadowed such an
  * override on the House card (#8, #9). */
+export function gridInput(config, readNum, readEntityNum) {
+  if (config.grid_source === "entity" && config.grid_entity) {
+    return {
+      grid: readEntityNum(config.grid_entity),
+      overridden: true,
+      entityId: config.grid_entity,
+    };
+  }
+  const ents = config.entities || {};
+  if (ents["sensor.grid_power"]) {
+    return { grid: readNum("sensor.grid_power"), overridden: true };
+  }
+  if (ents["sensor.sys_grid_power"]) {
+    const raw = readNum("sensor.sys_grid_power");
+    return { grid: raw == null ? null : -raw, overridden: true };
+  }
+  const grid = readNum("sensor.grid_power");
+  if (grid != null) return { grid, overridden: false };
+  const raw = readNum("sensor.sys_grid_power");
+  return { grid: raw == null ? null : -raw, overridden: false };
+}
+
 export function gridReading(s, overridden = false) {
   const grid = Number.isFinite(s.grid) ? s.grid : null;
   if (overridden) {
