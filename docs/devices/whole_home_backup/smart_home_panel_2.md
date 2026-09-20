@@ -17,6 +17,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Home power | power | W | `wattInfo.allHallWatt` |  |
 | Backup battery | battery | % | `backupIncreInfo.backupBatPer` |  |
 | Backup time remaining | duration | min | `backupInfo.backupDischargeTime` | 🔧 |
+| Backup charge time remaining | duration | min | `backupInfo.backupChargeTime` | 🔧 |
 | Home max current | current | A | `masterCur` | 🔧 |
 | Generator max output | power | W | `oilMaxOutputWatt` | 🔧 |
 | Charging power | power | W | `chargeWattPower` | 🔧 |
@@ -107,4 +108,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 71 — 42 sensor, 3 binary_sensor, 8 switch, 17 number, 1 select, 0 light._
+_Entity totals: 72 — 43 sensor, 3 binary_sensor, 8 switch, 17 number, 1 select, 0 light._

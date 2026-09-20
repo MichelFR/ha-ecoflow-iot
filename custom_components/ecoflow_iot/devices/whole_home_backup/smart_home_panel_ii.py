@@ -129,6 +129,14 @@ _SYSTEM_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
+        key="backup_charge_time",
+        mqtt_key="backupInfo.backupChargeTime",
+        name="Backup charge time remaining",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
         key="master_cur",
         mqtt_key="masterCur",
         name="Home max current",
