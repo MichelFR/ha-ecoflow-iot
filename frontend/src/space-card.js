@@ -29,7 +29,7 @@ import {
   houseImageUrl,
 } from "./houses.js";
 import { ACTIVE_W, FlowController, deriveFlowStates } from "./flows.js";
-import { feedInOffBadge, gridReading } from "./grid.js";
+import { feedInOffBadge, gridInput, gridReading } from "./grid.js";
 import { spaceCardStyles } from "./space-styles.js";
 
 // The scene's auto-discovered sensor slots (same keys the House card reads).
@@ -362,12 +362,12 @@ export class EcoFlowSpaceCard extends LitElement {
 
   /* Grid power, positive = importing (the grid_power sensor carries the
    * invert_grid_sign fix; sys_grid_power is the raw, oppositely-signed value). */
-  _grid() {
-    const grid = this._slotState(SLOT_GRID);
-    if (grid != null) return numState(grid);
-    // The raw sensor is export-positive, so flip it to import-positive.
-    const raw = numState(this._slotState(SLOT_GRID_RAW));
-    return raw == null ? raw : -raw;
+  _gridInput() {
+    return gridInput(
+      this._config,
+      (slot) => numState(this._slotState(slot)),
+      (id) => numState(this.hass.states[id])
+    );
   }
 
   _flowStates() {
@@ -376,17 +376,18 @@ export class EcoFlowSpaceCard extends LitElement {
     if (!this._device) {
       return deriveFlowStates({ grid: -400, solar: 1500, load: 700, bat: 500, soc: 65, backup: 20, loadFromPv: 700, route });
     }
-    const deviceGrid = this._config.grid_source === "device";
+    const { grid, overridden } = this._gridInput();
+    const noSplit = this._config.grid_source === "device" || overridden;
     return deriveFlowStates({
-      grid: this._grid(),
+      grid,
       solar: numState(this._slotState(SLOT_SOLAR)),
       load: numState(this._slotState(SLOT_LOAD)),
       bat: numState(this._slotState(SLOT_BAT)),
       soc: numState(this._slotState(SLOT_SOC)),
       backup: numState(this._slotState(SLOT_BACKUP)),
-      loadFromGrid: deviceGrid ? null : numState(this._slotState(SLOT_LOAD_FROM_GRID)),
-      loadFromPv: deviceGrid ? null : numState(this._slotState(SLOT_LOAD_FROM_PV)),
-      loadFromBat: deviceGrid ? null : numState(this._slotState(SLOT_LOAD_FROM_BAT)),
+      loadFromGrid: noSplit ? null : numState(this._slotState(SLOT_LOAD_FROM_GRID)),
+      loadFromPv: noSplit ? null : numState(this._slotState(SLOT_LOAD_FROM_PV)),
+      loadFromBat: noSplit ? null : numState(this._slotState(SLOT_LOAD_FROM_BAT)),
       route,
     });
   }
@@ -522,8 +523,9 @@ export class EcoFlowSpaceCard extends LitElement {
       !(ov.entity && isEntityId(ov.entity)) &&
       !ov.slot
     ) {
+      const { overridden, entityId } = this._gridInput();
       const s = this._flowStates();
-      const r = gridReading(s);
+      const r = gridReading(s, overridden);
       const f = this._fmt("power-abs", r.value ?? 0);
       view.num = f.n;
       view.unit = ov.unit ?? f.u;
@@ -539,6 +541,7 @@ export class EcoFlowSpaceCard extends LitElement {
       }
       view.entityId =
         ov.tap_entity ||
+        entityId ||
         (r.importing && r.fromSplit
           ? this._slotEntity(SLOT_LOAD_FROM_GRID)
           : null) ||
@@ -692,6 +695,7 @@ export class EcoFlowSpaceCard extends LitElement {
       add(tile.secondary);
     }
     add(this._config.weather?.entity);
+    add(this._config.grid_entity);
     // The auto day/night house render follows the sun.
     const mode = this._config.house_mode;
     if (mode !== "day" && mode !== "night") ids.push("sun.sun");

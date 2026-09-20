@@ -75,14 +75,36 @@ export function renderSelect(host, label, options, value, onChange, labelFn) {
 }
 
 export function renderGridSourceSelect(host) {
-  return renderSelect(
+  const source = host._config.grid_source || "app";
+  return html`${renderSelect(
     host,
     localize(host.hass, "editor.grid_source"),
-    ["app", "device"],
-    host._config.grid_source || "app",
+    ["app", "device", "entity"],
+    source,
     (v) => host._set("grid_source", v, "app"),
     (k) => localize(host.hass, `editor.grid_source_${k}`)
-  );
+  )}
+  ${source === "entity"
+    ? html`<ha-form
+          class="field"
+          .hass=${host.hass}
+          .data=${{ value: host._config.grid_entity || "" }}
+          .schema=${[
+            {
+              name: "value",
+              selector: { entity: { domain: "sensor" } },
+            },
+          ]}
+          .computeLabel=${() => localize(host.hass, "editor.grid_entity")}
+          @value-changed=${(ev) => {
+            ev.stopPropagation();
+            host._set("grid_entity", ev.detail.value.value ?? "", "");
+          }}
+        ></ha-form>
+        <div class="hint">
+          ${localize(host.hass, "editor.grid_entity_hint")}
+        </div>`
+    : ""}`;
 }
 
 export function renderHouseGallery(host, selected, onPick) {

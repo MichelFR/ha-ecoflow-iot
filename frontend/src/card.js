@@ -11,7 +11,7 @@ import { LitElement, html, svg } from "lit";
 import { CARD_TYPE, assetUrl } from "./const.js";
 import { deviceImageUrl, imageUrlForKey } from "./device-image.js";
 import { ACTIVE_W, deriveFlowStates } from "./flows.js";
-import { feedInOffBadge, gridReading } from "./grid.js";
+import { feedInOffBadge, gridInput, gridReading } from "./grid.js";
 import { entityMap, relevantStatesChanged, streamDevices } from "./entities.js";
 import {
   fetchHourlyWh,
@@ -172,6 +172,7 @@ export class EcoFlowEnergyCard extends LitElement {
     for (const item of Array.isArray(this._config?.stats) ? this._config.stats : []) {
       if (item?.entity) ids.push(item.entity);
     }
+    if (this._config?.grid_entity) ids.push(this._config.grid_entity);
     return relevantStatesChanged(changed.get("hass"), this.hass, ids);
   }
 
@@ -840,20 +841,25 @@ export class EcoFlowEnergyCard extends LitElement {
   }
 
   _gridReading() {
-    const deviceGrid = this._config.grid_source === "device";
-    const overridden = !!this._config.entities?.["sensor.grid_power"];
+    const { grid, overridden, entityId } = gridInput(
+      this._config,
+      (slot) => numState(this._state(slot)),
+      (id) => numState(this.hass.states[id])
+    );
+    const noSplit = this._config.grid_source === "device" || overridden;
     const s = deriveFlowStates({
-      grid: numState(this._state("sensor.grid_power")),
+      grid,
       solar: numState(this._state("sensor.pv_total")),
       load: numState(this._state("sensor.sys_load")),
       bat: numState(this._state("sensor.bat_power")),
-      loadFromGrid: deviceGrid ? null : numState(this._state("sensor.load_from_grid")),
-      loadFromPv: deviceGrid ? null : numState(this._state("sensor.load_from_pv")),
-      loadFromBat: deviceGrid ? null : numState(this._state("sensor.load_from_bat")),
+      loadFromGrid: noSplit ? null : numState(this._state("sensor.load_from_grid")),
+      loadFromPv: noSplit ? null : numState(this._state("sensor.load_from_pv")),
+      loadFromBat: noSplit ? null : numState(this._state("sensor.load_from_bat")),
     });
     const r = gridReading(s, overridden);
     return {
       ...r,
+      entityId,
       slot:
         r.importing && r.fromSplit
           ? "sensor.load_from_grid"
@@ -876,7 +882,8 @@ export class EcoFlowEnergyCard extends LitElement {
 
     return html`<div
       class="stat grid ${cls} clickable"
-      @click=${() => this._moreInfo(r.slot)}
+      @click=${() =>
+        r.entityId ? this._moreInfoId(r.entityId) : this._moreInfo(r.slot)}
     >
       <div class="stat-head"><ha-icon icon=${icon}></ha-icon>${this._t("card.grid")}</div>
       <div class="stat-value">
