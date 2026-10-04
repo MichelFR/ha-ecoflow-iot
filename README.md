@@ -45,6 +45,11 @@ the legacy **Delta Mini** and **River 2** (API error 1006), and the **EcoFlow x 
 plug / meter (use the native Shelly integration instead). They are skipped silently;
 the full list is in [`KNOWN_PREFIXES.md`](KNOWN_PREFIXES.md#recognised-but-not-supported-silenced--no-repair-raised).
 
+The **STREAM AC 5000** (`ES22`) and **STREAM 5000** (`ES21`) are not served by the
+open API yet either (error 1006, no developer docs). They will be supported as soon
+as EcoFlow makes them available on the developer platform
+([#19](https://github.com/MichelFR/ha-ecoflow-iot/issues/19)).
+
 ## Features
 
 - **MQTT-first, HTTP fallback** — real-time push updates over TLS MQTT; HTTP polling
@@ -287,6 +292,10 @@ Two reasons we have seen so far:
   and River 2 (`R60…`) are not listed in EcoFlow's developer documentation and
   always answer 1006 ([#13](https://github.com/MichelFR/ha-ecoflow-iot/issues/13)).
   They are skipped silently; the app is the only way to reach them.
+- **The device is too new for the developer platform.** The STREAM AC 5000
+  (`ES22…`) and STREAM 5000 (`ES21…`) answer 1006 and have no developer docs
+  yet ([#19](https://github.com/MichelFR/ha-ecoflow-iot/issues/19)). Support
+  will be added as soon as EcoFlow opens them up on the developer platform.
 - **Your developer account is not enabled for the product line.** Home-energy
   systems such as PowerOcean are documented, but EcoFlow may still have to
   grant API access per account

@@ -76,8 +76,13 @@ raising an "unsupported device" repair (see `SILENCED_SN_PREFIXES` in
 | `DBAB` | Delta Mini | Legacy model not served by the open API: `quota/all` answers error `1006` ("current device is not allowed to get device info"). Not in the developer docs. Field-observed, issue #13. |
 | `R60` | River 2 (256 Wh) | Same as above (`R61` River 2 Max is probably the same, unconfirmed). Field-observed, issue #13. |
 
-Any other device whose `quota/all` returns error `1006` is skipped silently as
-well, without needing a prefix entry here.
+Any other device whose `quota/all` returns error `1006` gets no entities and raises
+a "not served by the open API" repair instead. Known cases waiting on EcoFlow:
+
+| Prefix(es) | Model | Status |
+|---|---|---|
+| `ES22` | STREAM AC 5000 | Answers `1006`, no developer docs yet. Will be supported as soon as EcoFlow serves it on the open API. Issue #19. |
+| `ES21` | STREAM 5000 | Same as above (same product family, different model number). |
 
 ## Sources
 
