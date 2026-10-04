@@ -1,5 +1,7 @@
 # EcoFlow IoT for Home Assistant
 
+[![HACS Default](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
+
 A clean, production-ready custom integration for EcoFlow devices built on the
 **official EcoFlow Developer API** (the `accessKey`/`secretKey` IoT Open Platform).
 It uses **MQTT for live data and control**, and automatically **falls back to the
@@ -82,10 +84,10 @@ the full list is in [`KNOWN_PREFIXES.md`](KNOWN_PREFIXES.md#recognised-but-not-s
 
 [![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=MichelFR&repository=ha-ecoflow-iot&category=integration)
 
-1. Click the button above to add this repository to HACS — or add it manually:
-   **HACS → ⋮ (top-right) → Custom repositories**, URL
-   `https://github.com/MichelFR/ha-ecoflow-iot`, category **Integration**.
-2. Search for **EcoFlow IoT** in HACS and click **Download**.
+EcoFlow IoT is in the HACS default store — no custom repository needed.
+
+1. Click the button above, or open **HACS** and search for **EcoFlow IoT**.
+2. Click **Download**.
 3. **Restart Home Assistant.**
 
 ### Option B — Manual
