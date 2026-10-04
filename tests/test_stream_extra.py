@@ -149,6 +149,14 @@ check("local IP default-disabled", SENS["local_ip"].entity_registry_enabled_defa
 check("has_meter reads nested cloudMetter", raw_value(BIN["has_meter"], {"cloudMetter": {"hasMeter": True}}), True)
 check("meter phase A reads nested", raw_value(SENS["meter_phase_a"], {"cloudMetter": {"phaseAPower": 42.0}}), 42.0)
 check("meter phase A reads flattened", raw_value(SENS["meter_phase_a"], {"cloudMetter.phaseAPower": 41.0}), 41.0)
+check("meter phase B reads nested", raw_value(SENS["meter_phase_b"], {"cloudMetter": {"phaseBPower": 43.0}}), 43.0)
+check("meter phase C reads flattened", raw_value(SENS["meter_phase_c"], {"cloudMetter.phaseCPower": 44.0}), 44.0)
+check("meter phases disabled by default", [SENS[f"meter_phase_{p}"].entity_registry_enabled_default for p in "abc"], [False] * 3)
+
+check("remaining energy from SoC x capacity", raw_value(SENS["remain_energy"], {"cmsBattSoc": 60.0, "cmsBattFullEnergy": 1920}), 1152.0)
+check("remaining energy None without SoC", raw_value(SENS["remain_energy"], {"cmsBattFullEnergy": 1920}), None)
+check("remaining energy unavailable without capacity", available(SENS["remain_energy"], {"cmsBattSoc": 60.0}), False)
+check("remaining energy disabled by default", SENS["remain_energy"].entity_registry_enabled_default, False)
 
 check("no local meter -> no dynamic sensors", dev.dynamic_entity_descriptions(Platform.SENSOR, {"localMeter": {"online": 0, "model": "NONE", "sn": ""}}), [])
 check("meter discovery via model", dev.dynamic_entity_descriptions(Platform.SENSOR, {"localMeter": {"online": 0, "model": "SMR"}}) != [], True)

@@ -57,6 +57,14 @@ from ..helpers import (
 _BATTERY_MARKERS = ("cmsBattSoc", "bmsBattSoc", "soc")
 
 
+def _remaining_energy(quota: Mapping[str, Any]) -> float | None:
+    soc = quota.get("cmsBattSoc")
+    full = quota.get("cmsBattFullEnergy")
+    if not isinstance(soc, (int, float)) or not isinstance(full, (int, float)):
+        return None
+    return round(full * soc / 100, 1)
+
+
 def _computed_pv_power(quota: Mapping[str, Any], amp_key: str, vol_key: str) -> float | None:
     """Compute per-MPPT watts from current x voltage (newer-firmware fallback)."""
     amp = quota.get(amp_key)
@@ -218,6 +226,18 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
         entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="remain_energy",
+        translation_key="remain_energy",
+        name="Battery energy remaining",
+        device_class=SensorDeviceClass.ENERGY_STORAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+        quota_value_fn=_remaining_energy,
+        available_fn=lambda q: "cmsBattSoc" in q and "cmsBattFullEnergy" in q,
     ),
     EcoFlowSensorEntityDescription(
         key="cycles",
@@ -552,15 +572,19 @@ _GRID_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         undocumented=True,
     ),
     _GRID_CONNECTION_STATUS_SENSOR,
-    EcoFlowSensorEntityDescription(
-        key="meter_phase_a",
-        translation_key="meter_phase_a",
-        mqtt_key="cloudMetter.phaseAPower",
-        name="Meter phase A power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfPower.WATT,
-        entity_registry_enabled_default=False,
+    *(
+        EcoFlowSensorEntityDescription(
+            key=f"meter_phase_{phase.lower()}",
+            translation_key=f"meter_phase_{phase.lower()}",
+            mqtt_key=f"cloudMetter.phase{phase}Power",
+            name=f"Meter phase {phase} power",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement=UnitOfPower.WATT,
+            entity_registry_enabled_default=False,
+            undocumented=True,
+        )
+        for phase in ("A", "B", "C")
     ),
     EcoFlowSensorEntityDescription(
         key="grid_code",

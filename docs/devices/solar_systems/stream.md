@@ -23,6 +23,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery current | current | A | `amp` | 🔧 |
 | Battery temperature | temperature | °C | `temp` |  |
 | Battery capacity | energy_storage | Wh | `cmsBattFullEnergy` | 🔧 |
+| Battery energy remaining | energy_storage | Wh | _computed_ | 💤 |
 | Battery cycles | — | — | `cycles` | 🔧 |
 | Time to full | duration | min | `cmsChgRemTime` | 🔧 |
 | Time to empty | duration | min | `cmsDsgRemTime` | 🔧 |
@@ -53,7 +54,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Inverter temperature | temperature | °C | `invNtcTemp3` | 🔧 |
 | Total AC power | power | W | `acTotalActivePower` | ⚠️ |
 | Grid connection status | — | — | `gridConnectionSta` | 🔧 ⚠️ |
-| Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 |
+| Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 ⚠️ |
+| Meter phase B power | power | W | `cloudMetter.phaseBPower` | 💤 ⚠️ |
+| Meter phase C power | power | W | `cloudMetter.phaseCPower` | 💤 ⚠️ |
 | Grid code | — | — | `gridCodeSelection` | 🔧 💤 ⚠️ |
 | Solar power | power | W | `powGetPvSum` |  |
 | Solar string 1 power | power | W | _computed_ |  |
@@ -131,4 +134,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 88 — 67 sensor, 11 binary_sensor, 4 switch, 4 number, 1 select, 1 light._
+_Entity totals: 91 — 70 sensor, 11 binary_sensor, 4 switch, 4 number, 1 select, 1 light._

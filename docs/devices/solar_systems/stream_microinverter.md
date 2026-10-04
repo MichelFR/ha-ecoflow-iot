@@ -22,7 +22,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Inverter temperature | temperature | °C | `invNtcTemp3` | 🔧 |
 | Total AC power | power | W | `acTotalActivePower` | ⚠️ |
 | Grid connection status | — | — | `gridConnectionSta` | 🔧 ⚠️ |
-| Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 |
+| Meter phase A power | power | W | `cloudMetter.phaseAPower` | 💤 ⚠️ |
+| Meter phase B power | power | W | `cloudMetter.phaseBPower` | 💤 ⚠️ |
+| Meter phase C power | power | W | `cloudMetter.phaseCPower` | 💤 ⚠️ |
 | Grid code | — | — | `gridCodeSelection` | 🔧 💤 ⚠️ |
 | Solar power | power | W | `powGetPvSum` |  |
 | Solar string 1 power | power | W | _computed_ |  |
@@ -51,4 +53,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 28 — 26 sensor, 2 binary_sensor, 0 switch, 0 number, 0 select, 0 light._
+_Entity totals: 30 — 28 sensor, 2 binary_sensor, 0 switch, 0 number, 0 select, 0 light._
