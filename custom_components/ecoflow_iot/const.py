@@ -30,10 +30,12 @@ DATA_RESET_ENERGY_IDS: Final = "reset_energy_ids"
 # Regions -> REST base URL.
 REGION_EU: Final = "eu"
 REGION_GLOBAL: Final = "global"
+REGION_ASIA: Final = "asia"
 
 REGION_BASE_URLS: Final[dict[str, str]] = {
     REGION_EU: "https://api-e.ecoflow.com",
     REGION_GLOBAL: "https://api.ecoflow.com",
+    REGION_ASIA: "https://api-a.ecoflow.com",
 }
 DEFAULT_REGION: Final = REGION_EU
 

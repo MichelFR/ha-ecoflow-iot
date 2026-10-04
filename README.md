@@ -111,7 +111,7 @@ EcoFlow IoT is in the HACS default store — no custom repository needed.
 1. Go to **Settings → Devices & Services → Add Integration**, search for
    **EcoFlow IoT** (or use the button above).
 2. Choose your **Region** (Europe = `api-e.ecoflow.com`, Global/US =
-   `api.ecoflow.com`) and paste your **Access Key** and **Secret Key**.
+   `api.ecoflow.com`, Asia = `api-a.ecoflow.com`) and paste your **Access Key** and **Secret Key**.
 3. That's it — every device bound to your account is discovered automatically and
    its sensors/controls are created. Live values stream over MQTT within seconds.
 

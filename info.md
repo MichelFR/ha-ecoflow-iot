@@ -48,7 +48,7 @@ fleet from the official quota schemas. Each link lists every entity for that dev
 ## Configure
 
 1. Go to **Settings → Devices & Services → Add Integration**, search for **EcoFlow IoT**.
-2. Choose your **Region** (Europe = `api-e.ecoflow.com`, Global/US = `api.ecoflow.com`)
+2. Choose your **Region** (Europe = `api-e.ecoflow.com`, Global/US = `api.ecoflow.com`, Asia = `api-a.ecoflow.com`)
    and paste your **Access Key** and **Secret Key**.
 3. Every device bound to your account is discovered automatically and its
    sensors/controls are created. Live values stream over MQTT within seconds.

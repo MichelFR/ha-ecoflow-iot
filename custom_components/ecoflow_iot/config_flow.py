@@ -47,6 +47,7 @@ from .const import (
     DEFAULT_POLL_INTERVAL,
     DEFAULT_REGION,
     DOMAIN,
+    REGION_ASIA,
     REGION_EU,
     REGION_GLOBAL,
     RESET_ENERGY_KEYS,
@@ -55,6 +56,7 @@ from .const import (
 _REGION_OPTIONS = [
     SelectOptionDict(value=REGION_EU, label="Europe (api-e.ecoflow.com)"),
     SelectOptionDict(value=REGION_GLOBAL, label="Global / US (api.ecoflow.com)"),
+    SelectOptionDict(value=REGION_ASIA, label="Asia (api-a.ecoflow.com)"),
 ]
 
 
