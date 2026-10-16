@@ -40,6 +40,7 @@ from ..base import (
 from ..energy import consumption_energy, grid_import_export_signed
 from ..helpers import (
     deci as _scale_10,
+    quota_get,
     round2 as _round2,
 )
 
@@ -230,6 +231,43 @@ def _ac_channel_sensors(count: int = 3) -> tuple[EcoFlowSensorEntityDescription,
 _CIRCUIT_COUNT = 12
 
 
+def _circuit_field(quota: Mapping[str, Any], circuit: int, field: str) -> Any:
+    """Read MQTT-prefixed and HTTP circuit metadata, including nested quotas."""
+    key = f"loadIncreInfo.hall1IncreInfo.ch{circuit}Info.{field}"
+    value = quota_get(quota, f"pd303_mc.{key}")
+    return quota_get(quota, key) if value is None else value
+
+
+def _circuit_metadata(quota: Mapping[str, Any], circuit: int) -> dict[str, Any]:
+    """Expose app labels and validated reciprocal split-phase relationships.
+
+    These fields were verified in live SHP2 quota data. Keep the individual
+    leg's value and unique ID unchanged so existing history stays continuous.
+    Consumers can sum the two legs listed in circuit_numbers exactly once.
+    """
+    def partner(number: int) -> int | None:
+        mark = _circuit_field(quota, number, "splitphase.linkMark")
+        linked = _circuit_field(quota, number, "splitphase.linkCh")
+        if mark not in (True, 1) or isinstance(linked, bool):
+            return None
+        if not isinstance(linked, int) or not 1 <= linked <= _CIRCUIT_COUNT:
+            return None
+        return linked if linked != number else None
+
+    linked = partner(circuit)
+    paired = linked is not None and partner(linked) == circuit
+    members = sorted([circuit, linked]) if paired else [circuit]
+    raw_name = _circuit_field(quota, members[0], "chName")
+    name = raw_name.strip().strip("\x00").strip() if isinstance(raw_name, str) else ""
+    return {
+        "circuit_number": circuit,
+        "circuit_name": name or f"Circuit {members[0]}",
+        "split_phase": paired,
+        "paired_circuit": linked if paired else None,
+        "circuit_numbers": members,
+    }
+
+
 def _circuit_sensors(count: int = _CIRCUIT_COUNT) -> tuple[EcoFlowSensorEntityDescription, ...]:
     descs: list[EcoFlowSensorEntityDescription] = []
     for i in range(1, count + 1):
@@ -237,6 +275,7 @@ def _circuit_sensors(count: int = _CIRCUIT_COUNT) -> tuple[EcoFlowSensorEntityDe
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"circuit_{i}_watt",
+                attributes_fn=lambda q, _i=i: _circuit_metadata(q, _i),
                 name=f"Circuit {i} power",
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,

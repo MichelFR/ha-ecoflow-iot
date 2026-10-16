@@ -84,6 +84,8 @@ class _EcoFlowDescription:
 class EcoFlowSensorEntityDescription(_EcoFlowDescription, SensorEntityDescription):
     """Describes a read-only sensor."""
 
+    attributes_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]] | None = None
+
 
 # Given the full quota map, return the instantaneous power (in W) to integrate,
 # or None to pause integration (value missing / device offline).
