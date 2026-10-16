@@ -104,6 +104,12 @@ class EcoFlowSensor(EcoFlowEntity, SensorEntity):
         return self._raw_value()
 
     @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose device metadata without changing entity identity or readings."""
+        attributes_fn = self.entity_description.attributes_fn
+        return dict(attributes_fn(self._quota)) if attributes_fn else None
+
+    @property
     def icon(self) -> str | None:
         """Dynamic icon (e.g. stepped charging battery), else static/auto icon.
 
