@@ -27,6 +27,7 @@ Auto-generated per-device entity tables. Regenerate with `python3 scripts/gen_de
 ## Solar Systems
 
 - [EcoFlow PowerStream](solar_systems/power_stream.md)
+- [EcoFlow STREAM 5000](solar_systems/stream_5000.md)
 - [EcoFlow Smart Meter](solar_systems/smart_meter.md)
 - [EcoFlow Stream](solar_systems/stream.md)
 - [EcoFlow Stream Microinverter](solar_systems/stream_microinverter.md)

@@ -35,6 +35,7 @@ from .smart_living import (
 from .solar_systems import (
     PowerStreamDevice,
     SmartMeterDevice,
+    Stream5000Device,
     StreamDevice,
     StreamMicroinverterDevice,
 )
@@ -72,6 +73,7 @@ DEVICE_REGISTRY: tuple[type[EcoFlowDevice], ...] = (
     SmartMeterDevice,
     StreamMicroinverterDevice,
     StreamDevice,
+    Stream5000Device,
     PowerStreamDevice,
     # Whole-home backup
     SmartHomePanel2Device,

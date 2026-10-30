@@ -29,6 +29,14 @@ def build_stream_command(params: dict[str, Any]) -> dict[str, Any]:
     return {**STREAM_ENVELOPE, "params": params}
 
 
+STREAM_5000_ENVELOPE: dict[str, Any] = {**STREAM_ENVELOPE, "cmdId": 38}
+
+
+def build_stream_5000_command(params: dict[str, Any]) -> dict[str, Any]:
+    """Wrap a STREAM 5000 (BKW3) ``params`` payload in its routing envelope."""
+    return {**STREAM_5000_ENVELOPE, "params": params}
+
+
 def build_legacy_command(
     module_type: int, operate_type: str, params: dict[str, Any]
 ) -> dict[str, Any]:

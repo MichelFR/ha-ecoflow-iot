@@ -97,6 +97,7 @@ cases = [
     # it must not resolve as a Stream regardless of quota content (issue #5).
     ("BK21Z1BB7H500011", {}, "SmartMeterDevice"),
     ("BK21Z1BB7H500011", {"gridConnectionSta": "PANEL_GRID_IN"}, "SmartMeterDevice"),
+    ("ES21ZE1B2J6H0060", {}, "Stream5000Device"),
     ("HW513000SF767194", {}, "PowerStreamDevice"),
     ("HW52ZDH1RF3J0033", {}, "SmartPlugDevice"),
     # EcoFlow x Shelly devices are silenced (recognised, but not served by the

@@ -37,3 +37,17 @@ def test_build_stream_command_does_not_mutate_envelope():
     commands.build_stream_command({"b": 2})
     # The shared template must keep its original keys only.
     assert "params" not in commands.STREAM_ENVELOPE
+
+
+def test_build_stream_5000_command_uses_cmd_id_38():
+    payload = commands.build_stream_5000_command({"workMode": "SELF_CONSUMPTION"})
+    assert payload == {
+        "cmdId": 38,
+        "cmdFunc": 254,
+        "dirDest": 1,
+        "dirSrc": 1,
+        "dest": 2,
+        "needAck": True,
+        "params": {"workMode": "SELF_CONSUMPTION"},
+    }
+    assert commands.STREAM_ENVELOPE["cmdId"] == 17
