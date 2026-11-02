@@ -20,9 +20,9 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery voltage | voltage | V | `bmsMaster.vol` | 🔧 💤 |
 | Battery current | current | A | `bmsMaster.amp` | 🔧 💤 |
 | Battery health | — | % | `bmsMaster.soh` | 🔧 |
-| Battery design capacity | energy_storage | — | `bmsMaster.designCap` | 🔧 💤 |
-| Battery remaining capacity | energy_storage | — | `bmsMaster.remainCap` | 🔧 💤 |
-| Battery full capacity | energy_storage | — | `bmsMaster.fullCap` | 🔧 💤 |
+| Battery design capacity | — | mAh | `bmsMaster.designCap` | 🔧 💤 |
+| Battery remaining capacity | — | mAh | `bmsMaster.remainCap` | 🔧 💤 |
+| Battery full capacity | — | mAh | `bmsMaster.fullCap` | 🔧 💤 |
 | Battery time remaining | duration | min | `bmsMaster.remainTime` | 🔧 |
 | Battery max cell voltage | voltage | mV | `bmsMaster.maxCellVol` | 🔧 💤 |
 | Battery min cell voltage | voltage | mV | `bmsMaster.minCellVol` | 🔧 💤 |
