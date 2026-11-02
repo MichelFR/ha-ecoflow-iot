@@ -193,7 +193,8 @@
       "ac1": { "name": "AC-Steckdose 1" },
       "self_powered": { "name": "Eigenversorgungsmodus" },
       "feed_in": { "name": "Netzeinspeisung" },
-      "ac2": { "name": "AC-Steckdose 2" }
+      "ac2": { "name": "AC-Steckdose 2" },
+      "ac_socket": { "name": "AC-Steckdose" }
     },
     "light": {
       "led": { "name": "LED" }

@@ -23,6 +23,7 @@
     "discharge_limit": "Entladen ≥",
     "ac1": "AC 1",
     "ac2": "AC 2",
+    "ac": "AC",
     "off": "Aus",
     "confirm_action": "Sind Sie sicher?",
     "feed_in_off": "Netzeinspeisung ist aus"
@@ -226,7 +227,8 @@
     },
     "switch": {
       "ac1": "AC-Steckdose 1",
-      "ac2": "AC-Steckdose 2"
+      "ac2": "AC-Steckdose 2",
+      "ac_socket": "AC-Steckdose"
     }
   },
   "space": {

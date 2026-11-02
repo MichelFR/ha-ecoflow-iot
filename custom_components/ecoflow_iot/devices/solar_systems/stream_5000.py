@@ -1,4 +1,4 @@
-"""EcoFlow STREAM 5000 / 5000 AC (BKW3, ES21 serials).
+"""EcoFlow STREAM 5000 / 5000 AC (BKW3, ES21/ES22 serials).
 
 The open API exposes only a small system-level quota: the energy-flow summary,
 backup reserve, operating mode, feed-in limit switch and AC socket. HTTP returns
@@ -140,6 +140,7 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     ),
     EcoFlowSwitchEntityDescription(
         key="ac_socket",
+        translation_key="ac_socket",
         name="AC socket",
         quota_value_fn=_getter("devSwitch", "acSocketOnoff"),
         available_fn=_has("devSwitch", "acSocketOnoff"),
@@ -198,7 +199,7 @@ class Stream5000Device(EcoFlowDevice):
     """STREAM 5000 / 5000 AC system unit."""
 
     model = "EcoFlow STREAM 5000"
-    sn_prefixes = ("ES21",)
+    sn_prefixes = ("ES21", "ES22")
 
     def build_command(self, command: dict[str, Any]) -> dict[str, Any]:
         """Wrap the control params in the BKW3 routing envelope."""

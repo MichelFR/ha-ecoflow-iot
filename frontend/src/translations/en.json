@@ -23,6 +23,7 @@
     "discharge_limit": "Discharge ≥",
     "ac1": "AC 1",
     "ac2": "AC 2",
+    "ac": "AC",
     "off": "Off",
     "confirm_action": "Are you sure?",
     "feed_in_off": "Grid feed-in is off"
@@ -226,7 +227,8 @@
     },
     "switch": {
       "ac1": "AC socket 1",
-      "ac2": "AC socket 2"
+      "ac2": "AC socket 2",
+      "ac_socket": "AC socket"
     }
   },
   "space": {

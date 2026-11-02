@@ -722,11 +722,13 @@ export class EcoFlowEnergyCard extends LitElement {
     const sockets = [
       { sw: "switch.ac1", pw: "sensor.schuko1_power", label: this._t("card.ac1") },
       { sw: "switch.ac2", pw: "sensor.schuko2_power", label: this._t("card.ac2") },
+      // STREAM 5000: a single socket with no power reading.
+      { sw: "switch.ac_socket", pw: null, label: this._t("card.ac") },
     ]
       .map((s) => ({
         ...s,
         swState: this._state(s.sw),
-        pwState: this._state(s.pw),
+        pwState: s.pw ? this._state(s.pw) : undefined,
       }))
       .filter((s) => s.swState || s.pwState);
     if (!sockets.length) return "";
@@ -737,7 +739,7 @@ export class EcoFlowEnergyCard extends LitElement {
         const power = numState(s.pwState);
         return html`<div
           class="ac-socket clickable"
-          @click=${() => this._moreInfoId(this._entityId(s.pw) || this._entityId(s.sw))}
+          @click=${() => this._moreInfoId((s.pw && this._entityId(s.pw)) || this._entityId(s.sw))}
         >
           <ha-icon class="ac-icon ${on ? "on" : ""}" icon="mdi:power-socket-de"></ha-icon>
           <div class="ac-info">

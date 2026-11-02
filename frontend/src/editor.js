@@ -50,6 +50,7 @@ const PAGE_SLOTS = {
     ["sensor.solar_energy", "mdi:lightning-bolt"],
     ["switch.ac1", "mdi:power-socket-de"],
     ["switch.ac2", "mdi:power-socket-de"],
+    ["switch.ac_socket", "mdi:power-socket-de"],
     ["sensor.schuko1_power", "mdi:flash"],
     ["sensor.schuko2_power", "mdi:flash"],
   ],

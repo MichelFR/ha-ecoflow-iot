@@ -39,7 +39,7 @@ export const KNOWN_KEYS = {
   ],
   binary_sensor: ["battery_charging"],
   number: ["max_charge_soc", "min_discharge_soc", "backup_reserve"],
-  switch: ["ac1", "ac2", "feed_in"],
+  switch: ["ac1", "ac2", "ac_socket", "feed_in"],
 };
 
 export function ecoflowEntities(hass) {

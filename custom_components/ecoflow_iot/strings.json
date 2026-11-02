@@ -193,7 +193,8 @@
       "ac1": { "name": "AC socket 1" },
       "self_powered": { "name": "Self-powered mode" },
       "feed_in": { "name": "Grid feed-in" },
-      "ac2": { "name": "AC socket 2" }
+      "ac2": { "name": "AC socket 2" },
+      "ac_socket": { "name": "AC socket" }
     },
     "light": {
       "led": { "name": "LED" }

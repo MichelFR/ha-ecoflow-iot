@@ -60,16 +60,31 @@ _BATTERY_MARKERS = ("cmsBattSoc", "bmsBattSoc", "soc")
 _REM_TIME_UNKNOWN = 5938
 
 
+def _role(quota: Mapping[str, Any]) -> Any:
+    """System role; a unit stuck in ELECTION still reports its series-cable role."""
+    role = quota.get("distributedDeviceStatus")
+    if role != "MASTER" and quota.get("seriesConnectDeviceStatus") == "SLAVE":
+        return "SLAVE"
+    return role
+
+
 def _is_slave(quota: Mapping[str, Any]) -> bool:
-    return quota.get("distributedDeviceStatus") == "SLAVE"
+    return _role(quota) == "SLAVE"
+
+
+def _cms_empty(quota: Mapping[str, Any]) -> bool:
+    # SLAVE units (or ones mid-election) report a zeroed system battery.
+    return not quota.get("cmsBattSoc") and not quota.get("cmsBattFullEnergy")
 
 
 def _battery_soc(quota: Mapping[str, Any]) -> float | None:
-    return _round2(quota.get("bmsBattSoc" if _is_slave(quota) else "cmsBattSoc"))
+    use_bms = _is_slave(quota) or (_cms_empty(quota) and "bmsBattSoc" in quota)
+    return _round2(quota.get("bmsBattSoc" if use_bms else "cmsBattSoc"))
 
 
 def _battery_full_energy(quota: Mapping[str, Any]) -> Any:
-    return quota.get("bmsDesignCap" if _is_slave(quota) else "cmsBattFullEnergy")
+    use_bms = _is_slave(quota) or (_cms_empty(quota) and "bmsDesignCap" in quota)
+    return quota.get("bmsDesignCap" if use_bms else "cmsBattFullEnergy")
 
 
 def _rem_time(value: Any) -> Any:
@@ -897,6 +912,7 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         translation_key="device_role",
         mqtt_key="distributedDeviceStatus",
         name="Device role",
+        quota_value_fn=_role,
         entity_category=EntityCategory.DIAGNOSTIC,
         available_fn=lambda q: "distributedDeviceStatus" in q,
         undocumented=True,

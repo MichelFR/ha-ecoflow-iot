@@ -2,7 +2,7 @@
 
 <p align="center"><img src="../../../custom_components/ecoflow_iot/www/devices/stream-ultra.webp" alt="EcoFlow STREAM 5000" width="240"></p>
 
-**Category:** Solar Systems · **Auto-detected by SN prefix:** `ES21`
+**Category:** Solar Systems · **Auto-detected by SN prefix:** `ES21`, `ES22`
 
 > Generated from `custom_components/ecoflow_iot/devices/solar_systems/stream_5000.py` by `scripts/gen_device_docs.py` — do not edit by hand.
 > Every device also exposes an always-available **Connection** diagnostic sensor (MQTT state + data source).
