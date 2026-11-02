@@ -8,6 +8,27 @@ on:
     - cron: "0 6 * * 1"
 
 jobs:
+  tests:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install pytest
+        run: python -m pip install pytest
+      - name: Run standalone test scripts
+        run: |
+          for test_file in tests/test_*.py; do
+            case "$test_file" in
+              tests/test_helpers.py|tests/test_shp2_metadata.py) ;;
+              *) python "$test_file" ;;
+            esac
+          done
+      - name: Run pytest-style tests
+        run: python -m pytest -q tests/test_helpers.py tests/test_shp2_metadata.py
+
   hacs:
     name: HACS
     runs-on: ubuntu-latest

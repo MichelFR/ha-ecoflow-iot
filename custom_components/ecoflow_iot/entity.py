@@ -66,6 +66,14 @@ class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
         return state.quota if state else {}
 
     @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose dynamic metadata provided by the entity description."""
+        desc: _EcoFlowDescription = self.entity_description  # type: ignore[assignment]
+        if desc.attributes_fn is None:
+            return None
+        return dict(desc.attributes_fn(self._quota))
+
+    @property
     def available(self) -> bool:
         """Entity is available when the device is online and reporting."""
         state = self._state

@@ -406,7 +406,12 @@ The complete per-device entity tables (sensors, binary sensors, switches, number
 selects — with device class, unit, underlying quota key and diagnostic/disabled
 flags) are generated from the device definitions and live under
 [`docs/devices/`](docs/devices/README.md). See the per-device links in
-[Supported devices](#supported-devices) above. Regenerate them with:
+[Supported devices](#supported-devices) above. On the Smart Home Panel 2, the
+per-circuit power, max-current sensor, and max-current number also expose the
+app's `circuit_name`, `circuit_number`, `split_phase`, `paired_circuit`,
+and `circuit_numbers` as state attributes. Paired circuits prefer the first
+custom app name (lower circuit number first); per-leg entity IDs and history
+remain unchanged. Regenerate the tables with:
 
 ```bash
 python3 scripts/gen_device_docs.py
