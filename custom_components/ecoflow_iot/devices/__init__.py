@@ -122,7 +122,10 @@ def resolve_device(sn: str, quota: Mapping[str, Any]) -> EcoFlowDevice | None:
 #                 "current device is not allowed to get device info")
 #   0151        — Everhome Ecotracker IR reader (error 1006; its phase powers
 #                 already surface via the Stream's cloudMetter quota)
-SILENCED_SN_PREFIXES: tuple[str, ...] = ("SM2A", "SM3A", "DBAB", "R60", "0151")
+#   ES81        — Smart Meter Dual CT (error 1006; served only by the private
+#                 app API — no open-API quota, and it never publishes on the
+#                 open-API MQTT; grid power reads off the paired Stream instead)
+SILENCED_SN_PREFIXES: tuple[str, ...] = ("SM2A", "SM3A", "DBAB", "R60", "0151", "ES81")
 
 
 def is_silenced(sn: str) -> bool:
