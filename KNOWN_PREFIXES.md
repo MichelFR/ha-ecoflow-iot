@@ -52,6 +52,7 @@ correctly instead of raising an "unsupported device" repair.
 | `D3N`, `D3M` | Delta 3 Max / Delta 3 Max Plus | high (`D3M` shared — disambiguated by quota `powGetPv2`) |
 | `BK` (`BK0`–`BK6`, `BK11`, `BK12`) | Stream AC / AC Pro / Ultra / Ultra X / Pro / Microinverter | high (app registry) |
 | `BK21` | Smart Meter (Stream ecosystem; carved out of the broad `BK` Stream match) | high (field-observed serial, issue #5) |
+| `ES21`, `ES22` | STREAM 5000 / STREAM AC 5000 | high (field-observed, issues #19, #27) |
 | `HW51` | PowerStream | high (app registry) |
 | `HW52` | Smart Plug | high (app registry) |
 | `HJ3`, `J32` | PowerOcean | high (`HJ3` docs + app registry, `J32` field-observed) |
@@ -75,14 +76,17 @@ raising an "unsupported device" repair (see `SILENCED_SN_PREFIXES` in
 | `SM3A` | EcoFlow x Shelly Pro3EM meter (app `sm003`) | Same as above. |
 | `DBAB` | Delta Mini | Legacy model not served by the open API: `quota/all` answers error `1006` ("current device is not allowed to get device info"). Not in the developer docs. Field-observed, issue #13. |
 | `R60` | River 2 (256 Wh) | Same as above (`R61` River 2 Max is probably the same, unconfirmed). Field-observed, issue #13. |
+| `0151` | Everhome Ecotracker IR reader | Answers `1006`. Its phase powers already surface via the paired Stream's `cloudMetter` quota. |
+| `ES81` | Smart Meter Dual CT | Answers `1006`; served only by the private app API and never publishes on the open-API MQTT. Grid power reads off the paired Stream instead. |
 
 Any other device whose `quota/all` returns error `1006` gets no entities and raises
 a "not served by the open API" repair instead. Known cases waiting on EcoFlow:
 
 | Prefix(es) | Model | Status |
 |---|---|---|
-| `ES22` | STREAM AC 5000 | Answers `1006`, no developer docs yet. Will be supported as soon as EcoFlow serves it on the open API. Issue #19. |
-| `ES21` | STREAM 5000 | Same as above (same product family, different model number). |
+| `P351` | Delta 3 Plus | Answers `1006`, no developer docs. Issue #34. |
+| `P321` | Delta 3 Classic | Open API returns no data (raises "unsupported device"), no developer docs. Issue #7. |
+| `N011` | Stream Microinverter (US 120 V) | Open API returns an empty quota (raises "unsupported device"), no developer docs (only the EU `BK` family is documented). Issue #21. |
 
 ## Sources
 

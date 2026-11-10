@@ -26,7 +26,7 @@ lists every sensor / binary sensor / switch / number / select for that device
 | Category | Devices |
 |---|---|
 | **Power Stations** | [Delta 2](docs/devices/power_stations/delta_2.md) · [Delta 2 Max](docs/devices/power_stations/delta_2_max.md) · [Delta 3 Max](docs/devices/power_stations/delta_3_max.md) · [Delta 3 Max Plus](docs/devices/power_stations/delta_3_max_plus.md) · [Delta Pro](docs/devices/power_stations/delta_pro.md) · [Delta Pro 3](docs/devices/power_stations/delta_pro_3.md) · [Delta Pro Ultra](docs/devices/power_stations/delta_pro_ultra.md) · [River 2 Pro](docs/devices/power_stations/river_2_pro.md) |
-| **Solar Systems** | [Stream](docs/devices/solar_systems/stream.md) (Ultra / Ultra X / AC / AC Pro / Pro) · [Stream Microinverter](docs/devices/solar_systems/stream_microinverter.md) · [Smart Meter](docs/devices/solar_systems/smart_meter.md) · [PowerStream](docs/devices/solar_systems/power_stream.md) |
+| **Solar Systems** | [Stream](docs/devices/solar_systems/stream.md) (Ultra / Ultra X / AC / AC Pro / Pro) · [STREAM 5000](docs/devices/solar_systems/stream_5000.md) (5000 / AC 5000) · [Stream Microinverter](docs/devices/solar_systems/stream_microinverter.md) · [Smart Meter](docs/devices/solar_systems/smart_meter.md) · [PowerStream](docs/devices/solar_systems/power_stream.md) |
 | **Home Battery** | [PowerOcean](docs/devices/home_battery/power_ocean.md) |
 | **Smart Living** | [Glacier](docs/devices/smart_living/glacier.md) · [Power Kits](docs/devices/smart_living/power_kits.md) · [Smart Plug](docs/devices/smart_living/smart_plug.md) · [WAVE](docs/devices/smart_living/wave.md) |
 | **Whole-Home Backup** | [Smart Home Panel](docs/devices/whole_home_backup/smart_home_panel.md) · [Smart Home Panel 2](docs/devices/whole_home_backup/smart_home_panel_2.md) |
@@ -40,15 +40,28 @@ yet — check [`KNOWN_PREFIXES.md`](KNOWN_PREFIXES.md), and if it's missing plea
 [open an issue](https://github.com/MichelFR/ha-ecoflow-iot/issues) with the prefix (not your
 full serial) so it can be added.
 
-Some devices **cannot** be supported because EcoFlow's open API does not serve them:
-the legacy **Delta Mini** and **River 2** (API error 1006), and the **EcoFlow x Shelly**
-plug / meter (use the native Shelly integration instead). They are skipped silently;
-the full list is in [`KNOWN_PREFIXES.md`](KNOWN_PREFIXES.md#recognised-but-not-supported-silenced--no-repair-raised).
+### Unsupported devices
 
-The **STREAM AC 5000** (`ES22`) and **STREAM 5000** (`ES21`) are not served by the
-open API yet either (error 1006, no developer docs). They will be supported as soon
-as EcoFlow makes them available on the developer platform
-([#19](https://github.com/MichelFR/ha-ecoflow-iot/issues/19)).
+These devices are **known not to work** with this integration. The integration
+talks only to EcoFlow's official developer API, and EcoFlow does not serve
+these devices on it, so there is nothing the integration can read or control.
+This is a decision on EcoFlow's side, not a missing feature here.
+
+| Device | SN prefix | Why | What happens in HA |
+|---|---|---|---|
+| Delta 3 Plus | `P351` | API error 1006, not in the developer docs ([#34](https://github.com/MichelFR/ha-ecoflow-iot/issues/34)) | "Not served by the open API" repair |
+| Delta 3 Classic | `P321` | API returns no data, not in the developer docs ([#7](https://github.com/MichelFR/ha-ecoflow-iot/issues/7)) | "Unsupported device" repair |
+| Stream Microinverter (US 120 V) | `N011` | API returns no data, not in the developer docs ([#21](https://github.com/MichelFR/ha-ecoflow-iot/issues/21)) | "Unsupported device" repair |
+| Delta Mini | `DBAB` | API error 1006, not in the developer docs ([#13](https://github.com/MichelFR/ha-ecoflow-iot/issues/13)) | Skipped silently |
+| River 2 | `R60` | API error 1006, not in the developer docs ([#13](https://github.com/MichelFR/ha-ecoflow-iot/issues/13)) | Skipped silently |
+| Smart Meter Dual CT | `ES81` | API error 1006, private app API only. Grid power still shows on the paired Stream. | Skipped silently |
+| Everhome Ecotracker | `0151` | API error 1006. Its phase powers already show on the paired Stream. | Skipped silently |
+| EcoFlow x Shelly Plug / Pro3EM | `SM2A`, `SM3A` | Private app API only. Use Home Assistant's native **Shelly** integration. | Skipped silently |
+
+If your device is listed here, the only fix is on EcoFlow's side: ask EcoFlow
+support to enable it for the developer (IoT open) API. Once EcoFlow serves it and
+documents it, it can be added; please open an issue then. The prefix details are in
+[`KNOWN_PREFIXES.md`](KNOWN_PREFIXES.md#recognised-but-not-supported-silenced--no-repair-raised).
 
 ## Features
 
@@ -292,10 +305,11 @@ Two reasons we have seen so far:
   and River 2 (`R60…`) are not listed in EcoFlow's developer documentation and
   always answer 1006 ([#13](https://github.com/MichelFR/ha-ecoflow-iot/issues/13)).
   They are skipped silently; the app is the only way to reach them.
-- **The device is too new for the developer platform.** The STREAM AC 5000
-  (`ES22…`) and STREAM 5000 (`ES21…`) answer 1006 and have no developer docs
-  yet ([#19](https://github.com/MichelFR/ha-ecoflow-iot/issues/19)). Support
-  will be added as soon as EcoFlow opens them up on the developer platform.
+- **The device is too new for the developer platform.** The Delta 3 Plus
+  (`P351…`) answers 1006 and has no developer docs yet
+  ([#34](https://github.com/MichelFR/ha-ecoflow-iot/issues/34)). Support
+  will be added as soon as EcoFlow opens it up on the developer platform.
+  See [Unsupported devices](#unsupported-devices) for the full list.
 - **Your developer account is not enabled for the product line.** Home-energy
   systems such as PowerOcean are documented, but EcoFlow may still have to
   grant API access per account
