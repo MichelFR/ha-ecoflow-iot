@@ -28,7 +28,7 @@ from .devices.base import (
     EcoFlowSensorEntityDescription,
     GridRole,
 )
-from .entity import EcoFlowEntity
+from .entity import EcoFlowEntity, finite_or_none
 from .models import ConnectionState, DataSource
 
 _PLATFORM = Platform.SENSOR
@@ -200,7 +200,7 @@ class EcoFlowIntegralSensor(EcoFlowEntity, RestoreSensor):
         if role is GridRole.IMPORT or role is GridRole.EXPORT:
             signed = self._signed_grid_power()
             return None if signed is None else role.leg_power(signed)
-        return self.entity_description.power_fn(self._quota)
+        return finite_or_none(self.entity_description.power_fn(self._quota))
 
     def _accumulate(self, *, write: bool) -> None:
         """Add ``power * dt`` (trapezoidal) since the previous sample."""

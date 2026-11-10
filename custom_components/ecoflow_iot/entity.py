@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from homeassistant.core import callback
@@ -18,6 +19,19 @@ from .coordinator import EcoFlowCoordinator
 from .devices.base import _EcoFlowDescription
 from .devices.helpers import quota_get
 from .models import DeviceState
+
+
+def finite_or_none(value: Any) -> Any:
+    """Map NaN / ±inf floats to None (unknown); pass everything else through.
+
+    Some firmware reports ``NaN`` for values it has no reading for yet (e.g. the
+    Stream's local-meter energy totals before the meter's first sample). Home
+    Assistant rejects non-finite states on numeric sensors, so treat them as
+    "no value" instead.
+    """
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value
 
 
 class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
@@ -88,12 +102,12 @@ class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
         """Return the entity's value from quota, applying value/quota fns."""
         desc: _EcoFlowDescription = self.entity_description  # type: ignore[assignment]
         if desc.quota_value_fn is not None:
-            return desc.quota_value_fn(self._quota)
-        value = quota_get(self._quota, desc.mqtt_key)
+            return finite_or_none(desc.quota_value_fn(self._quota))
+        value = finite_or_none(quota_get(self._quota, desc.mqtt_key))
         if value is None:
             return None
         if desc.value_fn is not None:
-            return desc.value_fn(value)
+            return finite_or_none(desc.value_fn(value))
         return value
 
     @property
@@ -111,7 +125,7 @@ class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
     def _signed_grid_power(self) -> float | None:
         """Signed grid power (W) normalised to HA convention, or None."""
         desc: _EcoFlowDescription = self.entity_description  # type: ignore[assignment]
-        value = self._quota.get(desc.mqtt_key)
+        value = finite_or_none(self._quota.get(desc.mqtt_key))
         if value is None:
             return None
-        return self._grid_sign * float(value)
+        return finite_or_none(self._grid_sign * float(value))
