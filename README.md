@@ -91,18 +91,28 @@ documents it, it can be added; please open an issue then. The prefix details are
 
 ## Requirements
 
-1. An EcoFlow developer account at <https://developer.ecoflow.com> (EU:
+1. **Home Assistant 2026.11 or newer.**
+2. An EcoFlow developer account at <https://developer.ecoflow.com> (EU:
    <https://developer-eu.ecoflow.com>). Under **Security**, create an **AccessKey** and
    **SecretKey** (approval can take a few days).
-2. Your device must be bound to the same EcoFlow account.
+3. Your device must be bound to the same EcoFlow account.
 
 ## Installation
 
-### Option A — HACS (recommended)
+### Option A — Marketplace / HACS (recommended)
 
 [![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=MichelFR&repository=ha-ecoflow-iot&category=integration)
 
-EcoFlow IoT is in the HACS default store — no custom repository needed.
+EcoFlow IoT is in the HACS default store, so no custom repository is needed.
+
+**Home Assistant 2026.11 and newer** (HACS is built in as the Marketplace):
+
+1. Go to **Settings → Marketplace** and search for **EcoFlow IoT**.
+2. Click **Install**. Setup starts straight away; no restart is needed for a
+   first install. (Updates still need a restart; Home Assistant raises a repair
+   when one is due.)
+
+**Older Home Assistant versions** (separate HACS install):
 
 1. Click the button above, or open **HACS** and search for **EcoFlow IoT**.
 2. Click **Download**.

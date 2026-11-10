@@ -1,6 +1,7 @@
 {
   "domain": "ecoflow_iot",
   "name": "EcoFlow IoT",
+  "categories": ["energy.solar_batteries", "energy.backup_power"],
   "after_dependencies": ["recorder", "lovelace"],
   "codeowners": ["@MichelFR"],
   "config_flow": true,

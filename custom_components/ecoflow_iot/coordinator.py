@@ -47,6 +47,9 @@ from .models import Certification, ConnectionState, DataSource, DeviceState
 
 _LOGGER = logging.getLogger(__name__)
 
+# Repair-issue ids raised during device discovery; refreshed on every setup.
+_DISCOVERY_ISSUE_PATTERN = r"(?:unsupported_device|device_not_served)_"
+
 
 class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
     """Coordinates one EcoFlow developer account's devices."""
@@ -108,6 +111,28 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         """Return the MQTT broker endpoint, if known."""
         return self._mqtt.broker if self._mqtt else None
 
+    def _discovery_issue_refresh(self) -> ir.IssuesRefresh:
+        """Refresh the discovery repairs: any not raised again are deleted.
+
+        Clears repairs for devices that are now supported or no longer on the
+        account. Scoped to this entry's repairs when several entries exist; a
+        single entry also takes over repairs from before entry linking existed.
+        """
+        entries = self.hass.config_entries.async_entries(DOMAIN)
+        return ir.async_refresh_issues(
+            self.hass,
+            DOMAIN,
+            issue_id_pattern=_DISCOVERY_ISSUE_PATTERN,
+            config_entry_id=None if len(entries) <= 1 else self.config_entry.entry_id,
+        )
+
+    @callback
+    def _keep_discovery_issues(self, sn: str) -> None:
+        """Keep a device's repairs when it couldn't be checked this time."""
+        prefix = sn[:SN_PREFIX_LEN]
+        for issue_id in (f"unsupported_device_{prefix}", f"device_not_served_{prefix}"):
+            ir.async_keep_issue(self.hass, DOMAIN, issue_id)
+
     @callback
     def _notify_unsupported(self, sn: str) -> None:
         """Raise a repair issue for an unsupported device (prefix only)."""
@@ -117,6 +142,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             self.hass,
             DOMAIN,
             f"unsupported_device_{prefix}",
+            config_entry_id=self.config_entry.entry_id,
             is_fixable=False,
             severity=ir.IssueSeverity.WARNING,
             translation_key="unsupported_device",
@@ -136,6 +162,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             self.hass,
             DOMAIN,
             f"device_not_served_{prefix}",
+            config_entry_id=self.config_entry.entry_id,
             is_fixable=False,
             severity=ir.IssueSeverity.WARNING,
             translation_key="device_not_served",
@@ -150,40 +177,48 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             raise UpdateFailed(f"device list failed: {err}") from err
 
         states: dict[str, DeviceState] = {}
-        for item in listed:
-            sn = item.get("sn")
-            if not sn:
-                continue
-            state = DeviceState(sn=sn, online=bool(item.get("online", 1)))
-            not_served = False
-            not_served_msg = ""
-            try:
-                state.quota = await self._http.get_all_quota(sn)
-                state.data_source = DataSource.HTTP
-                state.last_full_ts = time.time()
-            except EcoFlowApiError as err:
-                if err.code == API_CODE_DEVICE_NOT_ALLOWED:
-                    not_served = True
-                    not_served_msg = err.message
-                else:
-                    _LOGGER.warning("Initial quota fetch failed for %s: %s", redact_sn(sn), err)
-            except EcoFlowError as err:
-                _LOGGER.warning("Initial quota fetch failed for %s: %s", redact_sn(sn), err)
-            device = None if not_served else resolve_device(sn, state.quota)
-            if device is None:
-                # Known-unservable devices (Delta Mini / River 2, EcoFlow x
-                # Shelly) are skipped silently. Anything else the open API
-                # refuses (error 1006) raises a repair so the user knows why
-                # nothing showed up; genuinely unknown devices raise one too.
-                if not is_silenced(sn):
-                    if not_served:
-                        self._notify_not_served(sn, not_served_msg)
+        with self._discovery_issue_refresh():
+            for item in listed:
+                sn = item.get("sn")
+                if not sn:
+                    continue
+                state = DeviceState(sn=sn, online=bool(item.get("online", 1)))
+                not_served = False
+                not_served_msg = ""
+                fetch_failed = False
+                try:
+                    state.quota = await self._http.get_all_quota(sn)
+                    state.data_source = DataSource.HTTP
+                    state.last_full_ts = time.time()
+                except EcoFlowApiError as err:
+                    if err.code == API_CODE_DEVICE_NOT_ALLOWED:
+                        not_served = True
+                        not_served_msg = err.message
                     else:
-                        self._notify_unsupported(sn)
-                self.unmapped[sn] = state
-                continue
-            self.devices[sn] = device
-            states[sn] = state
+                        fetch_failed = True
+                        _LOGGER.warning("Initial quota fetch failed for %s: %s", redact_sn(sn), err)
+                except EcoFlowError as err:
+                    fetch_failed = True
+                    _LOGGER.warning("Initial quota fetch failed for %s: %s", redact_sn(sn), err)
+                device = None if not_served else resolve_device(sn, state.quota)
+                if device is None:
+                    # Known-unservable devices (Delta Mini / River 2, EcoFlow x
+                    # Shelly) are skipped silently. Anything else the open API
+                    # refuses (error 1006) raises a repair so the user knows why
+                    # nothing showed up; genuinely unknown devices raise one too.
+                    if fetch_failed:
+                        # Not checked this time; don't let the refresh drop
+                        # an existing "not served" repair for it.
+                        self._keep_discovery_issues(sn)
+                    if not is_silenced(sn):
+                        if not_served:
+                            self._notify_not_served(sn, not_served_msg)
+                        else:
+                            self._notify_unsupported(sn)
+                    self.unmapped[sn] = state
+                    continue
+                self.devices[sn] = device
+                states[sn] = state
 
         self.data = states
         self._http_only_sns = {

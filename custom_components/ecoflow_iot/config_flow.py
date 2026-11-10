@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-import voluptuous as vol
+import probatio as vol
+from homeassistant import data_entry_flow
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -159,6 +160,10 @@ class EcoFlowConfigFlow(ConfigFlow, domain=DOMAIN):
         return EcoFlowOptionsFlow()
 
 
+# MQTT tuning fields are only shown while MQTT is enabled.
+_MQTT_ON = {"field": CONF_ENABLE_MQTT, "value": True}
+
+
 class EcoFlowOptionsFlow(OptionsFlow):
     """Handle integration options."""
 
@@ -169,6 +174,9 @@ class EcoFlowOptionsFlow(OptionsFlow):
         if user_input is not None:
             # The reset checkbox is an action, not a stored option: consume it.
             reset = user_input.pop(CONF_RESET_GRID_ENERGY, False)
+            # Fields hidden while MQTT is off are left out of the submitted data;
+            # keep their stored values so re-enabling MQTT restores them.
+            user_input = {**self.config_entry.options, **user_input}
             # Predict whether saving will change options (and thus reload).
             changed = dict(self.config_entry.options) != user_input
             if reset:
@@ -197,8 +205,9 @@ class EcoFlowOptionsFlow(OptionsFlow):
                         min=10, max=3600, step=5, mode=NumberSelectorMode.BOX
                     )
                 ),
-                vol.Required(
+                data_entry_flow.Required(
                     CONF_MQTT_STALE_SECONDS,
+                    visible=_MQTT_ON,
                     default=options.get(
                         CONF_MQTT_STALE_SECONDS, DEFAULT_MQTT_STALE_SECONDS
                     ),
@@ -207,8 +216,9 @@ class EcoFlowOptionsFlow(OptionsFlow):
                         min=30, max=3600, step=5, mode=NumberSelectorMode.BOX
                     )
                 ),
-                vol.Required(
+                data_entry_flow.Required(
                     CONF_MQTT_REFRESH_INTERVAL,
+                    visible=_MQTT_ON,
                     default=options.get(
                         CONF_MQTT_REFRESH_INTERVAL, DEFAULT_MQTT_REFRESH_INTERVAL
                     ),
@@ -217,8 +227,9 @@ class EcoFlowOptionsFlow(OptionsFlow):
                         min=0, max=600, step=5, mode=NumberSelectorMode.BOX
                     )
                 ),
-                vol.Required(
+                data_entry_flow.Required(
                     CONF_MQTT_INSECURE_TLS,
+                    visible=_MQTT_ON,
                     default=options.get(
                         CONF_MQTT_INSECURE_TLS, DEFAULT_MQTT_INSECURE_TLS
                     ),
