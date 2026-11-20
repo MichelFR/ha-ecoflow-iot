@@ -13,211 +13,211 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ## Sensors
 
-| Entity | Device class | Unit | Quota key | Flags |
-|---|---|---|---|---|
-| Backup battery | battery | % | `heartbeat.backupBatPer` |  |
-| Backup full capacity | energy_storage | Wh | `heartbeat.backupFullCap` | 🔧 |
-| Grid energy today | energy | Wh | `heartbeat.gridDayWatth` |  |
-| Backup energy today | energy | Wh | `heartbeat.backupDayWatth` |  |
-| Backup discharge time remaining | duration | min | `heartbeat.backupChaTime` | 🔧 |
-| Device work time | duration | min | `heartbeat.workTime` | 🔧 💤 |
-| Grid voltage | voltage | V | `gridInfo.gridVol` | 🔧 |
-| Grid frequency | frequency | Hz | `gridInfo.gridFreq` | 🔧 |
-| Charge upper threshold | battery | % | `backupChaDiscCfg.forceChargeHigh` | 🔧 |
-| Discharge lower threshold | battery | % | `backupChaDiscCfg.discLower` | 🔧 |
-| Channel 1 power | power | W | _computed_ | ⚠️ |
-| Channel 1 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 1 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 1 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 1 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 1 state | — | — | _computed_ |  |
-| Channel 1 configured current | current | A | _computed_ | 🔧 |
-| Channel 1 backup priority | — | — | _computed_ | 🔧 |
-| Channel 2 power | power | W | _computed_ | ⚠️ |
-| Channel 2 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 2 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 2 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 2 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 2 state | — | — | _computed_ |  |
-| Channel 2 configured current | current | A | _computed_ | 🔧 |
-| Channel 2 backup priority | — | — | _computed_ | 🔧 |
-| Channel 3 power | power | W | _computed_ | ⚠️ |
-| Channel 3 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 3 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 3 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 3 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 3 state | — | — | _computed_ |  |
-| Channel 3 configured current | current | A | _computed_ | 🔧 |
-| Channel 3 backup priority | — | — | _computed_ | 🔧 |
-| Channel 4 power | power | W | _computed_ | ⚠️ |
-| Channel 4 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 4 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 4 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 4 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 4 state | — | — | _computed_ |  |
-| Channel 4 configured current | current | A | _computed_ | 🔧 |
-| Channel 4 backup priority | — | — | _computed_ | 🔧 |
-| Channel 5 power | power | W | _computed_ | ⚠️ |
-| Channel 5 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 5 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 5 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 5 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 5 state | — | — | _computed_ |  |
-| Channel 5 configured current | current | A | _computed_ | 🔧 |
-| Channel 5 backup priority | — | — | _computed_ | 🔧 |
-| Channel 6 power | power | W | _computed_ | ⚠️ |
-| Channel 6 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 6 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 6 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 6 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 6 state | — | — | _computed_ |  |
-| Channel 6 configured current | current | A | _computed_ | 🔧 |
-| Channel 6 backup priority | — | — | _computed_ | 🔧 |
-| Channel 7 power | power | W | _computed_ | ⚠️ |
-| Channel 7 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 7 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 7 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 7 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 7 state | — | — | _computed_ |  |
-| Channel 7 configured current | current | A | _computed_ | 🔧 |
-| Channel 7 backup priority | — | — | _computed_ | 🔧 |
-| Channel 8 power | power | W | _computed_ | ⚠️ |
-| Channel 8 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 8 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 8 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 8 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 8 state | — | — | _computed_ |  |
-| Channel 8 configured current | current | A | _computed_ | 🔧 |
-| Channel 8 backup priority | — | — | _computed_ | 🔧 |
-| Channel 9 power | power | W | _computed_ | ⚠️ |
-| Channel 9 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 9 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 9 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 9 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 9 state | — | — | _computed_ |  |
-| Channel 9 configured current | current | A | _computed_ | 🔧 |
-| Channel 9 backup priority | — | — | _computed_ | 🔧 |
-| Channel 10 power | power | W | _computed_ | ⚠️ |
-| Channel 10 name | — | — | _computed_ | 🔧 ⚠️ |
-| Channel 10 grid energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 10 battery energy today | energy | Wh | _computed_ | ⚠️ |
-| Channel 10 input voltage | voltage | V | _computed_ | 🔧 💤 ⚠️ |
-| Channel 10 state | — | — | _computed_ |  |
-| Channel 10 configured current | current | A | _computed_ | 🔧 |
-| Channel 10 backup priority | — | — | _computed_ | 🔧 |
-| Battery port 1 power | power | W | _computed_ | 💤 ⚠️ |
-| Battery port 1 battery | battery | % | _computed_ |  |
-| Battery port 1 output power | power | W | _computed_ |  |
-| Battery port 1 temperature | temperature | °C | _computed_ | 🔧 |
-| Battery port 1 charge time remaining | duration | min | _computed_ | 🔧 💤 |
-| Battery port 1 discharge time remaining | duration | min | _computed_ | 🔧 💤 |
-| Battery port 1 full capacity | energy_storage | Wh | _computed_ | 🔧 💤 |
-| Battery port 1 charge energy today | energy | Wh | _computed_ | ⚠️ |
-| Battery port 2 power | power | W | _computed_ | 💤 ⚠️ |
-| Battery port 2 battery | battery | % | _computed_ |  |
-| Battery port 2 output power | power | W | _computed_ |  |
-| Battery port 2 temperature | temperature | °C | _computed_ | 🔧 |
-| Battery port 2 charge time remaining | duration | min | _computed_ | 🔧 💤 |
-| Battery port 2 discharge time remaining | duration | min | _computed_ | 🔧 💤 |
-| Battery port 2 full capacity | energy_storage | Wh | _computed_ | 🔧 💤 |
-| Battery port 2 charge energy today | energy | Wh | _computed_ | ⚠️ |
+| Entity | Device | Device class | Unit | Quota key | Flags |
+|---|---|---|---|---|---|
+| Backup battery | main | battery | % | `heartbeat.backupBatPer` |  |
+| Backup full capacity | main | energy_storage | Wh | `heartbeat.backupFullCap` | 🔧 |
+| Grid energy today | main | energy | Wh | `heartbeat.gridDayWatth` |  |
+| Backup energy today | main | energy | Wh | `heartbeat.backupDayWatth` |  |
+| Backup discharge time remaining | main | duration | min | `heartbeat.backupChaTime` | 🔧 |
+| Device work time | main | duration | min | `heartbeat.workTime` | 🔧 💤 |
+| Grid voltage | main | voltage | V | `gridInfo.gridVol` | 🔧 |
+| Grid frequency | main | frequency | Hz | `gridInfo.gridFreq` | 🔧 |
+| Charge upper threshold | main | battery | % | `backupChaDiscCfg.forceChargeHigh` | 🔧 |
+| Discharge lower threshold | main | battery | % | `backupChaDiscCfg.discLower` | 🔧 |
+| Power | Circuit 1 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 1 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 1 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 1 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 1 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 1 | — | — | _computed_ |  |
+| Configured current | Circuit 1 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 1 | — | — | _computed_ | 🔧 |
+| Power | Circuit 2 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 2 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 2 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 2 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 2 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 2 | — | — | _computed_ |  |
+| Configured current | Circuit 2 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 2 | — | — | _computed_ | 🔧 |
+| Power | Circuit 3 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 3 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 3 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 3 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 3 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 3 | — | — | _computed_ |  |
+| Configured current | Circuit 3 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 3 | — | — | _computed_ | 🔧 |
+| Power | Circuit 4 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 4 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 4 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 4 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 4 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 4 | — | — | _computed_ |  |
+| Configured current | Circuit 4 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 4 | — | — | _computed_ | 🔧 |
+| Power | Circuit 5 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 5 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 5 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 5 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 5 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 5 | — | — | _computed_ |  |
+| Configured current | Circuit 5 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 5 | — | — | _computed_ | 🔧 |
+| Power | Circuit 6 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 6 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 6 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 6 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 6 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 6 | — | — | _computed_ |  |
+| Configured current | Circuit 6 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 6 | — | — | _computed_ | 🔧 |
+| Power | Circuit 7 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 7 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 7 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 7 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 7 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 7 | — | — | _computed_ |  |
+| Configured current | Circuit 7 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 7 | — | — | _computed_ | 🔧 |
+| Power | Circuit 8 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 8 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 8 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 8 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 8 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 8 | — | — | _computed_ |  |
+| Configured current | Circuit 8 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 8 | — | — | _computed_ | 🔧 |
+| Power | Circuit 9 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 9 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 9 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 9 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 9 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 9 | — | — | _computed_ |  |
+| Configured current | Circuit 9 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 9 | — | — | _computed_ | 🔧 |
+| Power | Circuit 10 | power | W | _computed_ | ⚠️ |
+| Name | Circuit 10 | — | — | _computed_ | 🔧 ⚠️ |
+| Grid energy today | Circuit 10 | energy | Wh | _computed_ | ⚠️ |
+| Battery energy today | Circuit 10 | energy | Wh | _computed_ | ⚠️ |
+| Input voltage | Circuit 10 | voltage | V | _computed_ | 🔧 💤 ⚠️ |
+| State | Circuit 10 | — | — | _computed_ |  |
+| Configured current | Circuit 10 | current | A | _computed_ | 🔧 |
+| Backup priority | Circuit 10 | — | — | _computed_ | 🔧 |
+| Power | Battery port 1 | power | W | _computed_ | 💤 ⚠️ |
+| Battery | Battery port 1 | battery | % | _computed_ |  |
+| Output power | Battery port 1 | power | W | _computed_ |  |
+| Temperature | Battery port 1 | temperature | °C | _computed_ | 🔧 |
+| Charge time remaining | Battery port 1 | duration | min | _computed_ | 🔧 💤 |
+| Discharge time remaining | Battery port 1 | duration | min | _computed_ | 🔧 💤 |
+| Full capacity | Battery port 1 | energy_storage | Wh | _computed_ | 🔧 💤 |
+| Charge energy today | Battery port 1 | energy | Wh | _computed_ | ⚠️ |
+| Power | Battery port 2 | power | W | _computed_ | 💤 ⚠️ |
+| Battery | Battery port 2 | battery | % | _computed_ |  |
+| Output power | Battery port 2 | power | W | _computed_ |  |
+| Temperature | Battery port 2 | temperature | °C | _computed_ | 🔧 |
+| Charge time remaining | Battery port 2 | duration | min | _computed_ | 🔧 💤 |
+| Discharge time remaining | Battery port 2 | duration | min | _computed_ | 🔧 💤 |
+| Full capacity | Battery port 2 | energy_storage | Wh | _computed_ | 🔧 💤 |
+| Charge energy today | Battery port 2 | energy | Wh | _computed_ | ⚠️ |
 
 ## Binary sensors
 
-| Entity | Device class | Quota key | Flags |
-|---|---|---|---|
-| Grid status | power | `heartbeat.gridSta` |  |
-| EPS mode | running | `epsModeInfo.eps` |  |
-| Channel 1 on | power | _computed_ |  |
-| Channel 1 grid source | plug | _computed_ | 💤 |
-| Channel 1 emergency enabled | — | _computed_ | 💤 |
-| Channel 1 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 1 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 2 on | power | _computed_ |  |
-| Channel 2 grid source | plug | _computed_ | 💤 |
-| Channel 2 emergency enabled | — | _computed_ | 💤 |
-| Channel 2 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 2 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 3 on | power | _computed_ |  |
-| Channel 3 grid source | plug | _computed_ | 💤 |
-| Channel 3 emergency enabled | — | _computed_ | 💤 |
-| Channel 3 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 3 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 4 on | power | _computed_ |  |
-| Channel 4 grid source | plug | _computed_ | 💤 |
-| Channel 4 emergency enabled | — | _computed_ | 💤 |
-| Channel 4 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 4 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 5 on | power | _computed_ |  |
-| Channel 5 grid source | plug | _computed_ | 💤 |
-| Channel 5 emergency enabled | — | _computed_ | 💤 |
-| Channel 5 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 5 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 6 on | power | _computed_ |  |
-| Channel 6 grid source | plug | _computed_ | 💤 |
-| Channel 6 emergency enabled | — | _computed_ | 💤 |
-| Channel 6 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 6 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 7 on | power | _computed_ |  |
-| Channel 7 grid source | plug | _computed_ | 💤 |
-| Channel 7 emergency enabled | — | _computed_ | 💤 |
-| Channel 7 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 7 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 8 on | power | _computed_ |  |
-| Channel 8 grid source | plug | _computed_ | 💤 |
-| Channel 8 emergency enabled | — | _computed_ | 💤 |
-| Channel 8 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 8 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 9 on | power | _computed_ |  |
-| Channel 9 grid source | plug | _computed_ | 💤 |
-| Channel 9 emergency enabled | — | _computed_ | 💤 |
-| Channel 9 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 9 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 10 on | power | _computed_ |  |
-| Channel 10 grid source | plug | _computed_ | 💤 |
-| Channel 10 emergency enabled | — | _computed_ | 💤 |
-| Channel 10 configured | — | _computed_ | 🔧 💤 ⚠️ |
-| Channel 10 split phase linked | — | _computed_ | 🔧 💤 ⚠️ |
-| Battery port 1 connected | connectivity | _computed_ | 🔧 |
-| Battery port 1 grid charging | battery_charging | _computed_ | 💤 |
-| Battery port 1 output | power | _computed_ | 💤 |
-| Battery port 2 connected | connectivity | _computed_ | 🔧 |
-| Battery port 2 grid charging | battery_charging | _computed_ | 💤 |
-| Battery port 2 output | power | _computed_ | 💤 |
+| Entity | Device | Device class | Quota key | Flags |
+|---|---|---|---|---|
+| Grid status | main | power | `heartbeat.gridSta` |  |
+| EPS mode | main | running | `epsModeInfo.eps` |  |
+| On | Circuit 1 | power | _computed_ |  |
+| Grid source | Circuit 1 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 1 | — | _computed_ | 💤 |
+| Configured | Circuit 1 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 1 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 2 | power | _computed_ |  |
+| Grid source | Circuit 2 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 2 | — | _computed_ | 💤 |
+| Configured | Circuit 2 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 2 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 3 | power | _computed_ |  |
+| Grid source | Circuit 3 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 3 | — | _computed_ | 💤 |
+| Configured | Circuit 3 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 3 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 4 | power | _computed_ |  |
+| Grid source | Circuit 4 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 4 | — | _computed_ | 💤 |
+| Configured | Circuit 4 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 4 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 5 | power | _computed_ |  |
+| Grid source | Circuit 5 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 5 | — | _computed_ | 💤 |
+| Configured | Circuit 5 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 5 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 6 | power | _computed_ |  |
+| Grid source | Circuit 6 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 6 | — | _computed_ | 💤 |
+| Configured | Circuit 6 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 6 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 7 | power | _computed_ |  |
+| Grid source | Circuit 7 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 7 | — | _computed_ | 💤 |
+| Configured | Circuit 7 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 7 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 8 | power | _computed_ |  |
+| Grid source | Circuit 8 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 8 | — | _computed_ | 💤 |
+| Configured | Circuit 8 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 8 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 9 | power | _computed_ |  |
+| Grid source | Circuit 9 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 9 | — | _computed_ | 💤 |
+| Configured | Circuit 9 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 9 | — | _computed_ | 🔧 💤 ⚠️ |
+| On | Circuit 10 | power | _computed_ |  |
+| Grid source | Circuit 10 | plug | _computed_ | 💤 |
+| Emergency enabled | Circuit 10 | — | _computed_ | 💤 |
+| Configured | Circuit 10 | — | _computed_ | 🔧 💤 ⚠️ |
+| Split phase linked | Circuit 10 | — | _computed_ | 🔧 💤 ⚠️ |
+| Connected | Battery port 1 | connectivity | _computed_ | 🔧 |
+| Grid charging | Battery port 1 | battery_charging | _computed_ | 💤 |
+| Output | Battery port 1 | power | _computed_ | 💤 |
+| Connected | Battery port 2 | connectivity | _computed_ | 🔧 |
+| Grid charging | Battery port 2 | battery_charging | _computed_ | 💤 |
+| Output | Battery port 2 | power | _computed_ | 💤 |
 
 ## Switches
 
-| Entity | Quota key | Flags |
-|---|---|---|
-| EPS mode | `epsModeInfo.eps` |  |
-| Channel 1 | _computed_ |  |
-| Channel 2 | _computed_ |  |
-| Channel 3 | _computed_ |  |
-| Channel 4 | _computed_ |  |
-| Channel 5 | _computed_ |  |
-| Channel 6 | _computed_ |  |
-| Channel 7 | _computed_ |  |
-| Channel 8 | _computed_ |  |
-| Channel 9 | _computed_ |  |
-| Channel 10 | _computed_ |  |
-| Channel 1 emergency enable | _computed_ | 💤 |
-| Channel 2 emergency enable | _computed_ | 💤 |
-| Channel 3 emergency enable | _computed_ | 💤 |
-| Channel 4 emergency enable | _computed_ | 💤 |
-| Channel 5 emergency enable | _computed_ | 💤 |
-| Channel 6 emergency enable | _computed_ | 💤 |
-| Channel 7 emergency enable | _computed_ | 💤 |
-| Channel 8 emergency enable | _computed_ | 💤 |
-| Channel 9 emergency enable | _computed_ | 💤 |
-| Channel 10 emergency enable | _computed_ | 💤 |
+| Entity | Device | Quota key | Flags |
+|---|---|---|---|
+| EPS mode | main | `epsModeInfo.eps` |  |
+| ch1_load_switch | Circuit 1 | _computed_ |  |
+| ch2_load_switch | Circuit 2 | _computed_ |  |
+| ch3_load_switch | Circuit 3 | _computed_ |  |
+| ch4_load_switch | Circuit 4 | _computed_ |  |
+| ch5_load_switch | Circuit 5 | _computed_ |  |
+| ch6_load_switch | Circuit 6 | _computed_ |  |
+| ch7_load_switch | Circuit 7 | _computed_ |  |
+| ch8_load_switch | Circuit 8 | _computed_ |  |
+| ch9_load_switch | Circuit 9 | _computed_ |  |
+| ch10_load_switch | Circuit 10 | _computed_ |  |
+| Emergency enable | Circuit 1 | _computed_ | 💤 |
+| Emergency enable | Circuit 2 | _computed_ | 💤 |
+| Emergency enable | Circuit 3 | _computed_ | 💤 |
+| Emergency enable | Circuit 4 | _computed_ | 💤 |
+| Emergency enable | Circuit 5 | _computed_ | 💤 |
+| Emergency enable | Circuit 6 | _computed_ | 💤 |
+| Emergency enable | Circuit 7 | _computed_ | 💤 |
+| Emergency enable | Circuit 8 | _computed_ | 💤 |
+| Emergency enable | Circuit 9 | _computed_ | 💤 |
+| Emergency enable | Circuit 10 | _computed_ | 💤 |
 
 ## Numbers
 
-| Entity | Unit | Range | Quota key | Flags |
-|---|---|---|---|---|
-| Charge upper threshold | % | 0–100 (step 1) | `backupChaDiscCfg.forceChargeHigh` |  |
-| Discharge lower threshold | % | 0–100 (step 1) | `backupChaDiscCfg.discLower` |  |
+| Entity | Device | Unit | Range | Quota key | Flags |
+|---|---|---|---|---|---|
+| Charge upper threshold | main | % | 0–100 (step 1) | `backupChaDiscCfg.forceChargeHigh` |  |
+| Discharge lower threshold | main | % | 0–100 (step 1) | `backupChaDiscCfg.discLower` |  |
 
 ---
 
-_Entity totals: 187 — 106 sensor, 58 binary_sensor, 21 switch, 2 number, 0 select, 0 light._
+_Entity totals: 187 — 106 sensor, 58 binary_sensor, 21 switch, 2 number, 0 select, 0 light, 0 button._

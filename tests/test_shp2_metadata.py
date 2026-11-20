@@ -99,7 +99,8 @@ def test_metadata_updates_and_entity_identity_remains_per_leg() -> None:
 
     quota["pd303_mc.loadIncreInfo.hall1IncreInfo.ch6Info.chName"] = "Mini Split"
     assert sensor.extra_state_attributes["circuit_name"] == "Mini Split"
-    assert description.name == "Circuit 6 power"
+    assert description.name == "Power"
+    assert description.child_device.key == "circuit_6"
     assert description.key == "circuit_6_watt"
 
 

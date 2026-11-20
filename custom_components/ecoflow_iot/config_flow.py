@@ -11,7 +11,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithReload,
 )
 from homeassistant.components.recorder import get_instance
 from homeassistant.const import Platform
@@ -164,7 +164,7 @@ class EcoFlowConfigFlow(ConfigFlow, domain=DOMAIN):
 _MQTT_ON = {"field": CONF_ENABLE_MQTT, "value": True}
 
 
-class EcoFlowOptionsFlow(OptionsFlow):
+class EcoFlowOptionsFlow(OptionsFlowWithReload):
     """Handle integration options."""
 
     async def async_step_init(
@@ -177,13 +177,13 @@ class EcoFlowOptionsFlow(OptionsFlow):
             # Fields hidden while MQTT is off are left out of the submitted data;
             # keep their stored values so re-enabling MQTT restores them.
             user_input = {**self.config_entry.options, **user_input}
-            # Predict whether saving will change options (and thus reload).
+            # Predict whether saving will change options (and thus auto-reload).
             changed = dict(self.config_entry.options) != user_input
             if reset:
                 await self._reset_grid_energy()
             result = self.async_create_entry(title="", data=user_input)
             if reset and not changed:
-                # Nothing else changed, so the update listener won't reload;
+                # Nothing else changed, so OptionsFlowWithReload won't reload;
                 # force one so the queued reset reaches the rebuilt entities.
                 self.hass.async_create_task(
                     self.hass.config_entries.async_reload(self.config_entry.entry_id)

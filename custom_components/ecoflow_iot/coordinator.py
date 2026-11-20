@@ -90,6 +90,9 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         self._watchdog_warned = False
         self._restart_lock = asyncio.Lock()
         self.devices: dict[str, EcoFlowDevice] = {}
+        # Device-registry id of each main device, filled during entry setup;
+        # child devices reference it as their parent.
+        self.parent_device_ids: dict[str, str] = {}
         # Devices found on the account that got no entities — either unsupported
         # or a smart plug excluded by the opt-in option. Their raw quota is kept
         # so it can be surfaced in diagnostics for future entity mapping.

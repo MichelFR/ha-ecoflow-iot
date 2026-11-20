@@ -94,6 +94,10 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | AC standby time | duration | min | `inv.standbyMins` | 🔧 |
 | Inverter error code | — | — | `inv.errCode` | 🔧 💤 |
 | AC charging mode | — | — | `inv.cfgAcWorkMode` | 🔧 |
+| Inverter fan | enum | — | `inv.fanState` |  |
+| Configured AC output voltage | voltage | V | `inv.cfgAcOutVol` | 🔧 |
+| Configured AC output frequency | frequency | Hz | `inv.cfgAcOutFreq` | 🔧 |
+| AC charging speed switch | enum | — | `inv.acDipSwitch` | 🔧 |
 | Solar input power | power | W | `mppt.inWatts` |  |
 | Solar input voltage | voltage | V | `mppt.inVol` | 🔧 |
 | Solar input current | current | A | `mppt.inAmp` | 🔧 |
@@ -115,6 +119,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | AC max charging power | power | W | `mppt.cfgChgWatts` | 🔧 |
 | AC standby (MPPT) | duration | min | `mppt.acStandbyMins` | 🔧 💤 |
 | Car charger standby time | duration | min | `mppt.carStandbyMin` | 🔧 |
+| Screen standby time (MPPT) | duration | min | `mppt.scrStandbyMin` | 🔧 💤 |
+| Power standby time (MPPT) | duration | min | `mppt.powStandbyMin` | 🔧 💤 |
 | XT60 paddle type | — | — | `mppt.x60ChgType` | 🔧 💤 |
 | Configured charging type | — | — | `mppt.cfgChgType` | 🔧 💤 |
 | MPPT fault code | — | — | `mppt.faultCode` | 🔧 💤 |
@@ -173,4 +179,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 137 — 108 sensor, 11 binary_sensor, 5 switch, 12 number, 1 select, 0 light._
+_Entity totals: 143 — 114 sensor, 11 binary_sensor, 5 switch, 12 number, 1 select, 0 light, 0 button._

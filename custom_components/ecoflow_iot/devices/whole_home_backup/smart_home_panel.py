@@ -46,7 +46,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
     Platform,
     UnitOfElectricCurrent,
@@ -54,11 +53,13 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
 
 from ..base import (
+    ChildDevice,
     EcoFlowBinarySensorEntityDescription,
     EcoFlowDevice,
     EcoFlowNumberEntityDescription,
@@ -76,6 +77,21 @@ _SN_PREFIX = "SP10"
 
 # Number of load channels on the panel.
 _CHANNEL_COUNT = 10
+
+
+# ---------------------------------------------------------------------------
+# Child devices
+# ---------------------------------------------------------------------------
+
+
+def _circuit_child(ch: int) -> ChildDevice:
+    """Child device for load channel *ch* (0-indexed)."""
+    return ChildDevice(f"circuit_{ch + 1}", f"Circuit {ch + 1}")
+
+
+def _battery_port_child(port: int) -> ChildDevice:
+    """Child device for battery port *port* (0-indexed)."""
+    return ChildDevice(f"battery_port_{port + 1}", f"Battery port {port + 1}")
 
 
 # ---------------------------------------------------------------------------
@@ -325,7 +341,7 @@ _GLOBAL_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Backup battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         value_fn=_round2,
     ),
     EcoFlowSensorEntityDescription(
@@ -396,7 +412,7 @@ _GLOBAL_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Charge upper threshold",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
@@ -405,7 +421,7 @@ _GLOBAL_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Discharge lower threshold",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
@@ -455,7 +471,7 @@ _GLOBAL_NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="backupChaDiscCfg.forceChargeHigh",
         name="Charge upper threshold",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=100,
         native_step=1,
@@ -467,7 +483,7 @@ _GLOBAL_NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="backupChaDiscCfg.discLower",
         name="Discharge lower threshold",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=100,
         native_step=1,
@@ -490,7 +506,8 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ch{label}_watt",
-                name=f"Channel {label} power",
+                name="Power",
+                child_device=_circuit_child(ch),
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfPower.WATT,
@@ -502,7 +519,8 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ch{label}_name",
-                name=f"Channel {label} name",
+                name="Name",
+                child_device=_circuit_child(ch),
                 entity_category=EntityCategory.DIAGNOSTIC,
                 icon="mdi:label-outline",
                 quota_value_fn=lambda q, c=ch: _ch_name(q, c),
@@ -513,7 +531,8 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ch{label}_grid_watth",
-                name=f"Channel {label} grid energy today",
+                name="Grid energy today",
+                child_device=_circuit_child(ch),
                 device_class=SensorDeviceClass.ENERGY,
                 state_class=SensorStateClass.TOTAL_INCREASING,
                 native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -525,7 +544,8 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ch{label}_backup_watth",
-                name=f"Channel {label} battery energy today",
+                name="Battery energy today",
+                child_device=_circuit_child(ch),
                 device_class=SensorDeviceClass.ENERGY,
                 state_class=SensorStateClass.TOTAL_INCREASING,
                 native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -537,7 +557,8 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ch{label}_in_vol",
-                name=f"Channel {label} input voltage",
+                name="Input voltage",
+                child_device=_circuit_child(ch),
                 device_class=SensorDeviceClass.VOLTAGE,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -551,7 +572,8 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ch{label}_ctrl_sta",
-                name=f"Channel {label} state",
+                name="State",
+                child_device=_circuit_child(ch),
                 quota_value_fn=lambda q, c=ch: _ch_ctrl_sta(q, c),
                 available_fn=lambda q: "heartbeat.loadCmdChCtrlInfos" in q,
             )
@@ -559,7 +581,8 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ch{label}_cfg_cur",
-                name=f"Channel {label} configured current",
+                name="Configured current",
+                child_device=_circuit_child(ch),
                 device_class=SensorDeviceClass.CURRENT,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -571,7 +594,8 @@ def _channel_sensors(count: int) -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ch{label}_priority",
-                name=f"Channel {label} backup priority",
+                name="Backup priority",
+                child_device=_circuit_child(ch),
                 state_class=SensorStateClass.MEASUREMENT,
                 entity_category=EntityCategory.DIAGNOSTIC,
                 quota_value_fn=lambda q, c=ch: _ch_priority(q, c),
@@ -591,7 +615,8 @@ def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"battery_port{label}_watt",
-                name=f"Battery port {label} power",
+                name="Power",
+                child_device=_battery_port_child(port),
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfPower.WATT,
@@ -606,10 +631,11 @@ def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"battery_port{label}_soc",
-                name=f"Battery port {label} battery",
+                name="Battery",
+                child_device=_battery_port_child(port),
                 device_class=SensorDeviceClass.BATTERY,
                 state_class=SensorStateClass.MEASUREMENT,
-                native_unit_of_measurement=PERCENTAGE,
+                native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
                 quota_value_fn=lambda q, p=port: _energy_info_value(
                     q, p, "batteryPercentage"
                 ),
@@ -619,7 +645,8 @@ def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"battery_port{label}_output_watt",
-                name=f"Battery port {label} output power",
+                name="Output power",
+                child_device=_battery_port_child(port),
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfPower.WATT,
@@ -632,7 +659,8 @@ def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"battery_port{label}_temp",
-                name=f"Battery port {label} temperature",
+                name="Temperature",
+                child_device=_battery_port_child(port),
                 device_class=SensorDeviceClass.TEMPERATURE,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -646,7 +674,8 @@ def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"battery_port{label}_charge_time",
-                name=f"Battery port {label} charge time remaining",
+                name="Charge time remaining",
+                child_device=_battery_port_child(port),
                 device_class=SensorDeviceClass.DURATION,
                 native_unit_of_measurement=UnitOfTime.MINUTES,
                 entity_category=EntityCategory.DIAGNOSTIC,
@@ -660,7 +689,8 @@ def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"battery_port{label}_discharge_time",
-                name=f"Battery port {label} discharge time remaining",
+                name="Discharge time remaining",
+                child_device=_battery_port_child(port),
                 device_class=SensorDeviceClass.DURATION,
                 native_unit_of_measurement=UnitOfTime.MINUTES,
                 entity_category=EntityCategory.DIAGNOSTIC,
@@ -674,7 +704,8 @@ def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"battery_port{label}_full_cap",
-                name=f"Battery port {label} full capacity",
+                name="Full capacity",
+                child_device=_battery_port_child(port),
                 device_class=SensorDeviceClass.ENERGY_STORAGE,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -687,7 +718,8 @@ def _battery_port_sensors() -> list[EcoFlowSensorEntityDescription]:
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"battery_port{label}_charge_watth",
-                name=f"Battery port {label} charge energy today",
+                name="Charge energy today",
+                child_device=_battery_port_child(port),
                 device_class=SensorDeviceClass.ENERGY,
                 state_class=SensorStateClass.TOTAL_INCREASING,
                 native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -707,7 +739,8 @@ def _battery_port_binary_sensors() -> list[EcoFlowBinarySensorEntityDescription]
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"battery_port{label}_connected",
-                name=f"Battery port {label} connected",
+                name="Connected",
+                child_device=_battery_port_child(port),
                 device_class=BinarySensorDeviceClass.CONNECTIVITY,
                 entity_category=EntityCategory.DIAGNOSTIC,
                 quota_value_fn=lambda q, p=port: _energy_info_state(q, p, "isConnect"),
@@ -717,7 +750,8 @@ def _battery_port_binary_sensors() -> list[EcoFlowBinarySensorEntityDescription]
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"battery_port{label}_grid_charge",
-                name=f"Battery port {label} grid charging",
+                name="Grid charging",
+                child_device=_battery_port_child(port),
                 device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
                 entity_registry_enabled_default=False,
                 quota_value_fn=lambda q, p=port: _energy_info_state(
@@ -729,7 +763,8 @@ def _battery_port_binary_sensors() -> list[EcoFlowBinarySensorEntityDescription]
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"battery_port{label}_output",
-                name=f"Battery port {label} output",
+                name="Output",
+                child_device=_battery_port_child(port),
                 device_class=BinarySensorDeviceClass.POWER,
                 entity_registry_enabled_default=False,
                 quota_value_fn=lambda q, p=port: _energy_info_state(
@@ -749,7 +784,8 @@ def _channel_binary_sensors(count: int) -> list[EcoFlowBinarySensorEntityDescrip
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"ch{label}_on",
-                name=f"Channel {label} on",
+                name="On",
+                child_device=_circuit_child(ch),
                 device_class=BinarySensorDeviceClass.POWER,
                 quota_value_fn=lambda q, c=ch: _ch_is_on(q, c),
                 available_fn=lambda q: "heartbeat.loadCmdChCtrlInfos" in q,
@@ -758,7 +794,8 @@ def _channel_binary_sensors(count: int) -> list[EcoFlowBinarySensorEntityDescrip
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"ch{label}_grid",
-                name=f"Channel {label} grid source",
+                name="Grid source",
+                child_device=_circuit_child(ch),
                 device_class=BinarySensorDeviceClass.PLUG,
                 quota_value_fn=lambda q, c=ch: _ch_from_grid(q, c),
                 available_fn=lambda q: "heartbeat.loadCmdChCtrlInfos" in q,
@@ -768,7 +805,8 @@ def _channel_binary_sensors(count: int) -> list[EcoFlowBinarySensorEntityDescrip
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"ch{label}_emergency_enabled",
-                name=f"Channel {label} emergency enabled",
+                name="Emergency enabled",
+                child_device=_circuit_child(ch),
                 quota_value_fn=lambda q, c=ch: _ch_emergency_enabled(q, c),
                 available_fn=lambda q: "emergencyStrategy.chSta" in q,
                 entity_registry_enabled_default=False,
@@ -777,7 +815,8 @@ def _channel_binary_sensors(count: int) -> list[EcoFlowBinarySensorEntityDescrip
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"ch{label}_in_use",
-                name=f"Channel {label} configured",
+                name="Configured",
+                child_device=_circuit_child(ch),
                 entity_category=EntityCategory.DIAGNOSTIC,
                 entity_registry_enabled_default=False,
                 quota_value_fn=lambda q, c=ch: (
@@ -792,7 +831,8 @@ def _channel_binary_sensors(count: int) -> list[EcoFlowBinarySensorEntityDescrip
         descs.append(
             EcoFlowBinarySensorEntityDescription(
                 key=f"ch{label}_split_phase",
-                name=f"Channel {label} split phase linked",
+                name="Split phase linked",
+                child_device=_circuit_child(ch),
                 entity_category=EntityCategory.DIAGNOSTIC,
                 entity_registry_enabled_default=False,
                 quota_value_fn=lambda q, c=ch: _ch_split_phase(q, c),
@@ -811,7 +851,9 @@ def _channel_switches(count: int) -> list[EcoFlowSwitchEntityDescription]:
         descs.append(
             EcoFlowSwitchEntityDescription(
                 key=f"ch{label}_load_switch",
-                name=f"Channel {label}",
+                # The circuit's main control: takes the child device name.
+                name=None,
+                child_device=_circuit_child(ch),
                 quota_value_fn=lambda q, c=ch: _ch_is_on(q, c),
                 available_fn=lambda q: "heartbeat.loadCmdChCtrlInfos" in q,
                 command_fn=lambda value, q, c=ch: _load_channel_command(c, value, q),
@@ -828,7 +870,8 @@ def _channel_enable_switches(count: int) -> list[EcoFlowSwitchEntityDescription]
         descs.append(
             EcoFlowSwitchEntityDescription(
                 key=f"ch{label}_emergency_enable_switch",
-                name=f"Channel {label} emergency enable",
+                name="Emergency enable",
+                child_device=_circuit_child(ch),
                 quota_value_fn=lambda q, c=ch: _ch_emergency_enabled(q, c),
                 available_fn=lambda q: "emergencyStrategy.chSta" in q,
                 entity_registry_enabled_default=False,

@@ -54,6 +54,12 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Power In/Out port max charge power | power | W | `plugInInfo5p8ChgPowMax` | 🔧 💤 |
 | Power In/Out port max discharge power | power | W | `plugInInfo5p8DsgPowMax` | 🔧 💤 |
 | AC max discharge power | power | W | `plugInInfoAcOutDsgPowMax` | 🔧 💤 |
+| AC max charge power (hardware limit) | power | W | `plugInInfoAcInChgHalPowMax` | 🔧 💤 |
+| Power In/Out port max charge power (hardware limit) | power | W | `plugInInfo5p8ChgHalPowMax` | 🔧 💤 |
+| Extra battery port 1 operating status | — | — | `plugInInfo4p81RunState` | 🔧 💤 |
+| Extra battery port 2 operating status | — | — | `plugInInfo4p82RunState` | 🔧 💤 |
+| Power In/Out port operating status | — | — | `plugInInfo5p8RunState` | 🔧 💤 |
+| Power In/Out port charge/discharge type | — | — | `plugInInfo5p8DsgChg` | 🔧 💤 |
 | AC output frequency | frequency | Hz | `acOutFreq` | 🔧 |
 | Screen timeout | duration | s | `screenOffTime` | 🔧 💤 |
 | AC standby timeout | duration | min | `acStandbyTime` | 🔧 💤 |
@@ -66,6 +72,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Screen brightness | — | % | `lcdLight` | 🔧 💤 |
 | Charge/discharge state | — | — | `cmsChgDsgState` | 🔧 💤 |
 | Multi-battery charge/discharge mode | — | — | `multiBpChgDsgMode` | 🔧 💤 |
+| Main battery charge/discharge state | enum | — | `bmsChgDsgState` | 🔧 💤 |
+| Charging power mode | enum | — | `fastChargeSwitch` | 🔧 💤 |
 | Solar energy | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
@@ -98,6 +106,19 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Low-voltage AC output active | power | `flowInfoAcLvOut` | 🔧 |
 | 12V output active | power | `flowInfo12v` | 🔧 💤 |
 | AC input active | power | `flowInfoAcIn` | 🔧 💤 |
+| Low-voltage solar input active | power | `flowInfoPvL` | 🔧 💤 |
+| High-voltage solar input active | power | `flowInfoPvH` | 🔧 💤 |
+| USB-C port 1 output active | power | `flowInfoTypec1` | 🔧 💤 |
+| USB-C port 2 output active | power | `flowInfoTypec2` | 🔧 💤 |
+| USB-A port 1 output active | power | `flowInfoQcusb1` | 🔧 💤 |
+| USB-A port 2 output active | power | `flowInfoQcusb2` | 🔧 💤 |
+| 24V output active | power | `flowInfo24v` | 🔧 💤 |
+| Extra battery port 1 input active | power | `flowInfo4p81In` | 🔧 💤 |
+| Extra battery port 1 output active | power | `flowInfo4p81Out` | 🔧 💤 |
+| Extra battery port 2 input active | power | `flowInfo4p82In` | 🔧 💤 |
+| Extra battery port 2 output active | power | `flowInfo4p82Out` | 🔧 💤 |
+| Power In/Out port input active | power | `flowInfo5p8In` | 🔧 💤 |
+| Power In/Out port output active | power | `flowInfo5p8Out` | 🔧 💤 |
 
 ## Switches
 
@@ -129,6 +150,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | AC standby timeout | min | 0–720 (step 30) | `acStandbyTime` |  |
 | DC standby timeout | min | 0–720 (step 30) | `dcStandbyTime` |  |
 | Device standby timeout | min | 0–720 (step 30) | `devStandbyTime` |  |
+| Bluetooth timeout | h | 0–720 (step 1) | `bleStandbyTime` |  |
 
 ## Selects
 
@@ -138,4 +160,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 102 — 54 sensor, 26 binary_sensor, 8 switch, 13 number, 1 select, 0 light._
+_Entity totals: 124 — 62 sensor, 39 binary_sensor, 8 switch, 14 number, 1 select, 0 light, 0 button._

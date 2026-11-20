@@ -13,6 +13,7 @@ from enum import Enum
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
+from homeassistant.components.button import ButtonEntityDescription
 from homeassistant.components.light import LightEntityDescription
 from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.select import SelectEntityDescription
@@ -55,6 +56,20 @@ class GridRole(Enum):
         raise ValueError(f"leg_power is only defined for IMPORT/EXPORT, not {self}")
 
 
+@dataclass(frozen=True)
+class ChildDevice:
+    """A logical part of a device (extra battery, module, circuit).
+
+    Entities that set ``child_device`` are attached to a Home Assistant child
+    device of the main device instead of the main device itself. ``key`` must be
+    unique within the device and stable: it becomes part of the child device's
+    identifier (``{sn}_{key}``), so changing it creates a new child device.
+    """
+
+    key: str
+    name: str
+
+
 @dataclass(frozen=True, kw_only=True)
 class _EcoFlowDescription:
     """Fields shared by every EcoFlow entity description."""
@@ -78,6 +93,8 @@ class _EcoFlowDescription:
     # Computes a dynamic icon from the full quota map (e.g. a charging battery);
     # returns None to fall back to the static/automatic device-class icon.
     icon_fn: Callable[[Mapping[str, Any]], str | None] | None = None
+    # Attach the entity to a child device of the main device (see ChildDevice).
+    child_device: ChildDevice | None = None
     # Computes additional state attributes from the full quota map.
     attributes_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]] | None = None
 
@@ -151,6 +168,18 @@ class EcoFlowLightEntityDescription(_EcoFlowDescription, LightEntityDescription)
     command_fn: CommandFn
 
 
+@dataclass(frozen=True, kw_only=True)
+class EcoFlowButtonEntityDescription(_EcoFlowDescription, ButtonEntityDescription):
+    """Describes a one-shot action (e.g. start de-icing, beep).
+
+    Buttons have no state, so ``mqtt_key`` is normally empty. ``command_fn`` is
+    called with ``None`` as the value and the current quota, and returns the
+    set-command ``params``.
+    """
+
+    command_fn: CommandFn
+
+
 class EcoFlowDevice:
     """Base class for a supported EcoFlow device family."""
 
@@ -200,6 +229,7 @@ class EcoFlowDevice:
         return any(
             desc.http_only
             for platform in (
+                Platform.BUTTON,
                 Platform.SENSOR,
                 Platform.BINARY_SENSOR,
                 Platform.SWITCH,

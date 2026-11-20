@@ -9,13 +9,14 @@ Covers the modular off-grid Power Kits system consisting of:
   - DC distribution panel (LD_DC, up to 12 circuits)
   - Wireless module
 
-Quota keys follow the flat namespace reported by MQTT and the HTTP
-``GetAllQuotaResponse`` endpoint. Multi-module fields (e.g. ``bbcin``,
-``bbcout``, ``iclow``, ``bp2000``, ``ldac``, ``lddc``, ``kitscc``) arrive
-nested under the module's serial number; in the flattened quota map used
-here they are accessed as bare field names (the coordinator is expected to
-flatten one representative module per type, or expose the first module's
-values).
+Quota layout: the HTTP ``GetAllQuotaResponse`` nests every field under its
+module type and then the module's serial, e.g.
+``{"bbcin": {"M1093-DCIN-CA7C3": {"batWatts": 4, ...}}}``. Several modules
+share field names (``batWatts``, ``batVol``, ``hs1Temp``, ``dayEnergy``,
+``inWatts`` …), so each entity reads its field from *its own* module's view
+(see ``_module_view``); descriptions below use bare field names and are
+scoped to a module in ``PowerKitsDevice.entity_descriptions``. When a type
+has several modules (e.g. two battery packs) the first serial is used.
 
 Command style: ``build_legacy_command(moduleType, operateType, params)``.
 BP5000/BP2000 commands use ``moduleType=0`` (broadcast to all battery
@@ -24,6 +25,7 @@ packs). BBC_IN uses ``moduleType=15362``. IC_LOW uses ``moduleType=15365``.
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Mapping
 from typing import Any
 
@@ -34,7 +36,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
     Platform,
     UnitOfElectricCurrent,
@@ -42,12 +43,15 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
 
 from ..base import (
+    ChildDevice,
     EcoFlowBinarySensorEntityDescription,
+    EcoFlowButtonEntityDescription,
     EcoFlowDevice,
     EcoFlowNumberEntityDescription,
     EcoFlowSensorEntityDescription,
@@ -57,6 +61,7 @@ from ..base import (
 from ..commands import build_legacy_command
 from ..energy import battery_charge_discharge, solar_energy
 from ..helpers import (
+    quota_get,
     battery_charging_icon,
     deci as _scale_01a,
     milli as _scale_milli,
@@ -71,6 +76,22 @@ _MT_BBC_OUT: int = 15363
 _MT_IC_LOW: int = 15365
 _MT_BP: int = 0        # BP5000 / BP2000 – broadcast, moduleSn = "0000000000000000"
 _MT_WIRELESS: int = 15370
+
+
+# ---------------------------------------------------------------------------
+# Child devices (one per physical module; shown under the main device)
+# ---------------------------------------------------------------------------
+# The quota map exposes one representative module per type (see module
+# docstring), so there is a single battery-pack child rather than one per pack.
+# Whole-system values (bmsTotal aggregates, system SoC, energy sensors, the
+# broadcast buttons) stay on the main device.
+_CHILD_BP = ChildDevice("battery_pack", "Battery pack")
+_CHILD_BBC_IN = ChildDevice("bbc_in", "Power Hub DC input")
+_CHILD_BBC_OUT = ChildDevice("bbc_out", "Power Hub DC output")
+_CHILD_INVERTER = ChildDevice("inverter", "Inverter/charger")
+_CHILD_KITSCC = ChildDevice("kitscc", "Solar charge controller")
+_CHILD_LDAC = ChildDevice("ldac", "AC distribution panel")
+_CHILD_LDDC = ChildDevice("lddc", "DC distribution panel")
 
 
 # ---------------------------------------------------------------------------
@@ -91,10 +112,11 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_soc",
         mqtt_key="soc",
-        name="Battery state of charge",
+        name="State of charge",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         # Stepped charging icon while charging, else automatic battery icon.
         icon_fn=lambda q: battery_charging_icon(q.get("soc"), float(q.get("inWatts") or 0) > 0),
     ),
@@ -104,13 +126,14 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery total SOC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_registry_enabled_default=False,
     ),
     EcoFlowSensorEntityDescription(
         key="bp_vol",
         mqtt_key="vol",
-        name="Battery voltage",
+        name="Voltage",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -120,7 +143,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_amp",
         mqtt_key="amp",
-        name="Battery current",
+        name="Current",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -130,7 +154,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_temp",
         mqtt_key="temp",
-        name="Battery temperature",
+        name="Temperature",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -138,7 +163,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_max_cell_temp",
         mqtt_key="maxCellTemp",
-        name="Battery max cell temperature",
+        name="Max cell temperature",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -148,7 +174,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_min_cell_temp",
         mqtt_key="minCellTemp",
-        name="Battery min cell temperature",
+        name="Min cell temperature",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -158,7 +185,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_max_cell_vol",
         mqtt_key="maxCellVol",
-        name="Battery max cell voltage",
+        name="Max cell voltage",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -169,7 +197,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_min_cell_vol",
         mqtt_key="minCellVol",
-        name="Battery min cell voltage",
+        name="Min cell voltage",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -180,7 +209,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_in_watts",
         mqtt_key="inWatts",
-        name="Battery input power",
+        name="Input power",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -188,7 +218,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_out_watts",
         mqtt_key="outWatts",
-        name="Battery output power",
+        name="Output power",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -196,7 +227,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_remain_time",
         mqtt_key="remainTime",
-        name="Battery remaining time",
+        name="Remaining time",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -204,7 +236,8 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_full_cap",
         mqtt_key="fullCap",
-        name="Battery full capacity",
+        name="Full capacity",
+        child_device=_CHILD_BP,
         device_class=SensorDeviceClass.ENERGY_STORAGE,
         state_class=SensorStateClass.MEASUREMENT,
         # fullCap is in mAh; no direct Wh conversion without voltage,
@@ -215,29 +248,33 @@ _BP_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bp_remain_cap",
         mqtt_key="remainCap",
-        name="Battery remaining capacity",
+        name="Remaining capacity",
+        child_device=_CHILD_BP,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
     EcoFlowSensorEntityDescription(
         key="bp_design_cap",
         mqtt_key="designCap",
-        name="Battery design capacity",
+        name="Design capacity",
+        child_device=_CHILD_BP,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
     EcoFlowSensorEntityDescription(
         key="bp_chg_set_soc",
         mqtt_key="chgSetSoc",
-        name="Battery charge upper limit",
-        native_unit_of_measurement=PERCENTAGE,
+        name="Charge upper limit",
+        child_device=_CHILD_BP,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
         key="bp_dsg_set_soc",
         mqtt_key="dsgSetSoc",
-        name="Battery discharge lower limit",
-        native_unit_of_measurement=PERCENTAGE,
+        name="Discharge lower limit",
+        child_device=_CHILD_BP,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
@@ -292,7 +329,7 @@ _BMS_TOTAL_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         key="oil_start_downline",
         mqtt_key="oilStartDownline",
         name="Generator start SOC lower limit",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -300,7 +337,7 @@ _BMS_TOTAL_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         key="oil_stop_upline",
         mqtt_key="oilStopUpline",
         name="Generator stop SOC upper limit",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -308,7 +345,7 @@ _BMS_TOTAL_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         key="bms_chg_upline",
         mqtt_key="bmsChgUpline",
         name="BMS UPS charge upper limit",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -316,7 +353,7 @@ _BMS_TOTAL_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         key="bms_dsg_downline",
         mqtt_key="bmsDsgDownline",
         name="BMS UPS discharge lower limit",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -330,7 +367,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_dc_in_watts",
         mqtt_key="dcInWatts",
-        name="DC input power",
+        name="Power",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -338,7 +376,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_dc_in_vol",
         mqtt_key="dcInVol",
-        name="DC input voltage",
+        name="Voltage",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -348,7 +387,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_dc_in_curr",
         mqtt_key="dcInCurr",
-        name="DC input current",
+        name="Current",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -358,7 +398,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_bat_watts",
         mqtt_key="batWatts",
-        name="BBC IN battery power",
+        name="Battery power",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -367,7 +408,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_bat_vol",
         mqtt_key="batVol",
-        name="BBC IN battery voltage",
+        name="Battery voltage",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -378,7 +420,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_hs1_temp",
         mqtt_key="hs1Temp",
-        name="BBC IN radiator 1 temperature",
+        name="Radiator 1 temperature",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -388,7 +431,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_hs2_temp",
         mqtt_key="hs2Temp",
-        name="BBC IN radiator 2 temperature",
+        name="Radiator 2 temperature",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -398,7 +442,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_day_energy",
         mqtt_key="dayEnergy",
-        name="DC input daily energy",
+        name="Daily energy",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -407,7 +452,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_dsg_energy",
         mqtt_key="dsgEnergy",
-        name="DC input total energy",
+        name="Total energy",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -416,7 +462,8 @@ _BBCIN_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcin_chg_max_curr",
         mqtt_key="chgMaxCurr",
-        name="DC input max charge current",
+        name="Max charge current",
+        child_device=_CHILD_BBC_IN,
         device_class=SensorDeviceClass.CURRENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -433,7 +480,8 @@ _BBCOUT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcout_ld_out_watts",
         mqtt_key="ldOutWatts",
-        name="DC hub output power",
+        name="Power",
+        child_device=_CHILD_BBC_OUT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -441,7 +489,8 @@ _BBCOUT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcout_ld_out_vol",
         mqtt_key="ldOutVol",
-        name="DC hub output voltage",
+        name="Voltage",
+        child_device=_CHILD_BBC_OUT,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -451,7 +500,8 @@ _BBCOUT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcout_ld_out_curr",
         mqtt_key="ldOutCurr",
-        name="DC hub output current",
+        name="Current",
+        child_device=_CHILD_BBC_OUT,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -461,7 +511,8 @@ _BBCOUT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcout_bat_watts",
         mqtt_key="batWatts",
-        name="BBC OUT battery power",
+        name="Battery power",
+        child_device=_CHILD_BBC_OUT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -470,7 +521,8 @@ _BBCOUT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcout_bat_vol",
         mqtt_key="batVol",
-        name="BBC OUT battery voltage",
+        name="Battery voltage",
+        child_device=_CHILD_BBC_OUT,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -481,7 +533,8 @@ _BBCOUT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcout_hs1_temp",
         mqtt_key="hs1Temp",
-        name="BBC OUT radiator 1 temperature",
+        name="Radiator 1 temperature",
+        child_device=_CHILD_BBC_OUT,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -491,7 +544,8 @@ _BBCOUT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcout_day_energy",
         mqtt_key="dayEnergy",
-        name="DC output daily energy",
+        name="Daily energy",
+        child_device=_CHILD_BBC_OUT,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -500,7 +554,8 @@ _BBCOUT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="bbcout_dsg_energy",
         mqtt_key="dsgEnergy",
-        name="DC output total energy",
+        name="Total energy",
+        child_device=_CHILD_BBC_OUT,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -516,16 +571,18 @@ _ICLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="iclow_real_soc",
         mqtt_key="realSoc",
-        name="Inverter battery SOC",
+        name="Battery SOC",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_registry_enabled_default=False,
     ),
     EcoFlowSensorEntityDescription(
         key="iclow_bat_vol",
         mqtt_key="chgBatVol",
-        name="Inverter charging voltage",
+        name="Charging voltage",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -536,7 +593,8 @@ _ICLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="iclow_bus_vol",
         mqtt_key="busVol",
-        name="Inverter bus voltage",
+        name="Bus voltage",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -547,7 +605,8 @@ _ICLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="iclow_dc_temp",
         mqtt_key="dcTemp",
-        name="Inverter DC temperature",
+        name="DC temperature",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -557,7 +616,8 @@ _ICLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="iclow_fan_level",
         mqtt_key="fanLevel",
-        name="Inverter fan level",
+        name="Fan level",
+        child_device=_CHILD_INVERTER,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
@@ -566,6 +626,7 @@ _ICLOW_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         key="iclow_bms_chg_curr",
         mqtt_key="bmsChgCurr",
         name="BMS chargeable current",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -583,7 +644,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_in_watts",
         mqtt_key="inWatts",
-        name="Inverter input power",
+        name="Input power",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -591,7 +653,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_out_watts",
         mqtt_key="outWatts",
-        name="Inverter output power",
+        name="Output power",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -599,7 +662,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_in_vol",
         mqtt_key="inVol",
-        name="Inverter input voltage",
+        name="Input voltage",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -609,7 +673,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_out_vol",
         mqtt_key="outVol",
-        name="Inverter output voltage",
+        name="Output voltage",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -619,7 +684,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_in_curr",
         mqtt_key="inCurr",
-        name="Inverter input current",
+        name="Input current",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -630,7 +696,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_out_curr",
         mqtt_key="outCurr",
-        name="Inverter output current",
+        name="Output current",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -641,7 +708,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_in_freq",
         mqtt_key="inFreq",
-        name="Inverter input frequency",
+        name="Input frequency",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfFrequency.HERTZ,
@@ -651,7 +719,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_out_freq",
         mqtt_key="outFreq",
-        name="Inverter output frequency",
+        name="Output frequency",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfFrequency.HERTZ,
@@ -661,7 +730,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_ac_temp",
         mqtt_key="acTemp",
-        name="Inverter AC temperature",
+        name="AC temperature",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -671,7 +741,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_input_wh_day",
         mqtt_key="inputWhInDay",
-        name="Inverter daily input energy",
+        name="Daily input energy",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -680,7 +751,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_output_wh_day",
         mqtt_key="outputWhInDay",
-        name="Inverter daily output energy",
+        name="Daily output energy",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -689,7 +761,8 @@ _ICHIGH_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ichigh_ac_max_curr",
         mqtt_key="acMaxCurrSer",
-        name="Inverter max AC input current",
+        name="Max AC input current",
+        child_device=_CHILD_INVERTER,
         device_class=SensorDeviceClass.CURRENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -705,7 +778,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_pv1_in_watts",
         mqtt_key="pv1InWatts",
-        name="Solar 1 input power",
+        name="PV1 input power",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -713,7 +787,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_pv2_in_watts",
         mqtt_key="pv2InWatts",
-        name="Solar 2 input power",
+        name="PV2 input power",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -721,7 +796,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_pv1_in_vol",
         mqtt_key="pv1InVol",
-        name="Solar 1 input voltage",
+        name="PV1 input voltage",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -731,7 +807,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_pv2_in_vol",
         mqtt_key="pv2InVol",
-        name="Solar 2 input voltage",
+        name="PV2 input voltage",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -741,7 +818,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_pv1_in_curr",
         mqtt_key="pv1InCurr",
-        name="Solar 1 input current",
+        name="PV1 input current",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -752,7 +830,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_pv2_in_curr",
         mqtt_key="pv2InCurr",
-        name="Solar 2 input current",
+        name="PV2 input current",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -763,7 +842,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_bat_watts",
         mqtt_key="batWatts",
-        name="Solar controller battery power",
+        name="Battery power",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -772,7 +852,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_bat_vol",
         mqtt_key="batVol",
-        name="Solar controller battery voltage",
+        name="Battery voltage",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -783,7 +864,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_bat_curr",
         mqtt_key="batCurr",
-        name="Solar controller battery current",
+        name="Battery current",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -794,7 +876,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_chg_energy",
         mqtt_key="chgEnergy",
-        name="Solar total charged energy",
+        name="Total charged energy",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -802,7 +885,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_day_energy",
         mqtt_key="dayEnergy",
-        name="Solar daily energy",
+        name="Daily energy",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
@@ -811,7 +895,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_hs1_temp",
         mqtt_key="hs1Temp",
-        name="Solar controller radiator 1 temperature",
+        name="Radiator 1 temperature",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -821,7 +906,8 @@ _KITSCC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="kitscc_hs2_temp",
         mqtt_key="hs2Temp",
-        name="Solar controller radiator 2 temperature",
+        name="Radiator 2 temperature",
+        child_device=_CHILD_KITSCC,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -838,7 +924,8 @@ _LDAC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ldac_total_watts",
         mqtt_key="acTotalWatts",
-        name="AC panel total power",
+        name="Total power",
+        child_device=_CHILD_LDAC,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -846,7 +933,8 @@ _LDAC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ldac_in_vol",
         mqtt_key="acInVol",
-        name="AC panel input voltage",
+        name="Input voltage",
+        child_device=_CHILD_LDAC,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -856,7 +944,8 @@ _LDAC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ldac_temp1",
         mqtt_key="acTemp1",
-        name="AC panel PCB temperature 1",
+        name="PCB temperature 1",
+        child_device=_CHILD_LDAC,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -866,7 +955,8 @@ _LDAC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="ldac_temp2",
         mqtt_key="acTemp2",
-        name="AC panel PCB temperature 2",
+        name="PCB temperature 2",
+        child_device=_CHILD_LDAC,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -884,7 +974,8 @@ def _ldac_channel_sensors(count: int = 6) -> tuple[EcoFlowSensorEntityDescriptio
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ldac_ch{ch}_watts",
-                name=f"AC circuit {ch} power",
+                name=f"Circuit {ch} power",
+                child_device=_CHILD_LDAC,
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfPower.WATT,
@@ -901,7 +992,8 @@ def _ldac_channel_sensors(count: int = 6) -> tuple[EcoFlowSensorEntityDescriptio
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ldac_ch{ch}_curr",
-                name=f"AC circuit {ch} current",
+                name=f"Circuit {ch} current",
+                child_device=_CHILD_LDAC,
                 device_class=SensorDeviceClass.CURRENT,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -928,7 +1020,8 @@ _LDDC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="lddc_total_watts",
         mqtt_key="dcTotalWatts",
-        name="DC panel total power",
+        name="Total power",
+        child_device=_CHILD_LDDC,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -936,7 +1029,8 @@ _LDDC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="lddc_in_vol",
         mqtt_key="dcInVol",
-        name="DC panel input voltage",
+        name="Input voltage",
+        child_device=_CHILD_LDDC,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -946,7 +1040,8 @@ _LDDC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="lddc_temp1",
         mqtt_key="dcTemp1",
-        name="DC panel PCB temperature 1",
+        name="PCB temperature 1",
+        child_device=_CHILD_LDDC,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -956,7 +1051,8 @@ _LDDC_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
     EcoFlowSensorEntityDescription(
         key="lddc_temp2",
         mqtt_key="dcTemp2",
-        name="DC panel PCB temperature 2",
+        name="PCB temperature 2",
+        child_device=_CHILD_LDDC,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -974,7 +1070,8 @@ def _lddc_channel_sensors(count: int = 12) -> tuple[EcoFlowSensorEntityDescripti
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"lddc_ch{ch}_watts",
-                name=f"DC circuit {ch} power",
+                name=f"Circuit {ch} power",
+                child_device=_CHILD_LDDC,
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfPower.WATT,
@@ -992,7 +1089,8 @@ def _lddc_channel_sensors(count: int = 12) -> tuple[EcoFlowSensorEntityDescripti
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"lddc_ch{ch}_curr",
-                name=f"DC circuit {ch} current",
+                name=f"Circuit {ch} current",
+                child_device=_CHILD_LDDC,
                 device_class=SensorDeviceClass.CURRENT,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -1019,7 +1117,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="battery_charging",
         mqtt_key="inWatts",
-        name="Battery charging",
+        name="Charging",
+        child_device=_CHILD_BP,
         device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
         value_fn=lambda v: float(v) > 0,
         available_fn=lambda q: "inWatts" in q,
@@ -1028,7 +1127,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="bbcin_dc_in_state",
         mqtt_key="dcInState",
-        name="DC input connected",
+        name="Connected",
+        child_device=_CHILD_BBC_IN,
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_bool_int,
@@ -1036,7 +1136,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="bbcin_chg_pause",
         mqtt_key="chgPause",
-        name="DC input charging paused",
+        name="Charging paused",
+        child_device=_CHILD_BBC_IN,
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_bool_int,
@@ -1045,7 +1146,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="iclow_lspl_flag",
         mqtt_key="lsplFlag",
-        name="Inverter low power mode",
+        name="Low power mode",
+        child_device=_CHILD_INVERTER,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         value_fn=_bool_int,
@@ -1054,7 +1156,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="ichigh_inv_sw_sta",
         mqtt_key="invSwSta",
-        name="Inverter enabled",
+        name="Enabled",
+        child_device=_CHILD_INVERTER,
         device_class=BinarySensorDeviceClass.POWER,
         value_fn=_bool_int,
     ),
@@ -1062,7 +1165,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="kitscc_pv1_input_flag",
         mqtt_key="pv1InputFlag",
-        name="Solar 1 input active",
+        name="PV1 input active",
+        child_device=_CHILD_KITSCC,
         device_class=BinarySensorDeviceClass.POWER,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_bool_int,
@@ -1070,7 +1174,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="kitscc_pv2_input_flag",
         mqtt_key="pv2InputFlag",
-        name="Solar 2 input active",
+        name="PV2 input active",
+        child_device=_CHILD_KITSCC,
         device_class=BinarySensorDeviceClass.POWER,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_bool_int,
@@ -1079,7 +1184,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="bp_ptc_heating_flag",
         mqtt_key="ptcHeatingFlag",
-        name="Battery PTC heating",
+        name="PTC heating",
+        child_device=_CHILD_BP,
         device_class=BinarySensorDeviceClass.HEAT,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
@@ -1088,7 +1194,8 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
     EcoFlowBinarySensorEntityDescription(
         key="bp_ups_flag",
         mqtt_key="upsFlag",
-        name="Battery UPS mode",
+        name="UPS mode",
+        child_device=_CHILD_BP,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         value_fn=_bool_int,
@@ -1097,11 +1204,63 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         key="bp_bms_fault",
         mqtt_key="bmsFault",
         name="BMS permanent fault",
+        child_device=_CHILD_BP,
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_bool_int,
     ),
 )
+
+# ---------------------------------------------------------------------------
+# Buttons (one-shot actions)
+# ---------------------------------------------------------------------------
+
+# Every Power Kits command in the spec carries a ``moduleSn``: all zeros for the
+# battery-pack broadcast (moduleType 0), otherwise the target module's serial.
+_BP_BROADCAST_SN = "0000000000000000"
+# Placeholder replaced with the device's own serial in ``build_command``.
+_SELF_SN = "__self__"
+
+
+def _kit_command(
+    module_type: int, operate_type: str, params: dict[str, Any], module_sn: str
+) -> dict[str, Any]:
+    return {**build_legacy_command(module_type, operate_type, params), "moduleSn": module_sn}
+
+
+_BUTTONS: tuple[EcoFlowButtonEntityDescription, ...] = (
+    # Spec: "Triggering comprehensive data report" (moduleSn = main device SN).
+    EcoFlowButtonEntityDescription(
+        key="full_data_push",
+        name="Refresh data",
+        icon="mdi:refresh",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        command_fn=lambda _v, _q: _kit_command(
+            _MT_WIRELESS, "fullIotDataPush", {"times": 1}, _SELF_SN
+        ),
+    ),
+    # Spec: "Clearing charging errors" (enable 1), broadcast to all battery packs.
+    EcoFlowButtonEntityDescription(
+        key="clear_charging_errors",
+        name="Clear charging errors",
+        icon="mdi:alert-remove",
+        command_fn=lambda _v, _q: _kit_command(
+            _MT_BP, "clearError", {"enable": 1}, _BP_BROADCAST_SN
+        ),
+    ),
+    # Spec: "BP off" (enable 1), broadcast to all battery packs. Cuts power to
+    # the whole kit, so it is disabled by default.
+    EcoFlowButtonEntityDescription(
+        key="battery_packs_off",
+        name="Turn off battery packs",
+        icon="mdi:battery-off",
+        entity_registry_enabled_default=False,
+        command_fn=lambda _v, _q: _kit_command(
+            _MT_BP, "powerOff", {"enable": 1}, _BP_BROADCAST_SN
+        ),
+    ),
+)
+
 
 # ---------------------------------------------------------------------------
 # Switches
@@ -1112,7 +1271,8 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     EcoFlowSwitchEntityDescription(
         key="bbcout_dc_out",
         mqtt_key="dcOutSta",
-        name="DC output",
+        name="Enabled",
+        child_device=_CHILD_BBC_OUT,
         value_fn=_bool_int,
         command_fn=lambda value, _q: build_legacy_command(
             _MT_BBC_IN, "dischgParaSet", {"swSta": 1 if value else 0}
@@ -1122,7 +1282,8 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     EcoFlowSwitchEntityDescription(
         key="iclow_power_on",
         mqtt_key="powerOn",
-        name="AC inverter output",
+        name="AC output",
+        child_device=_CHILD_INVERTER,
         value_fn=_bool_int,
         command_fn=lambda value, _q: build_legacy_command(
             _MT_IC_LOW,
@@ -1141,6 +1302,7 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
         key="iclow_pass_by_mode",
         mqtt_key="passByModeEn",
         name="Grid power priority (passthrough)",
+        child_device=_CHILD_INVERTER,
         value_fn=lambda v: int(v) == 1,
         command_fn=lambda value, _q: build_legacy_command(
             _MT_IC_LOW,
@@ -1157,7 +1319,8 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     EcoFlowSwitchEntityDescription(
         key="bbcin_chg_pause_ctrl",
         mqtt_key="chgPause",
-        name="Pause DC charging",
+        name="Pause charging",
+        child_device=_CHILD_BBC_IN,
         value_fn=_bool_int,
         command_fn=lambda value, _q: build_legacy_command(
             _MT_BBC_IN,
@@ -1177,7 +1340,8 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
     EcoFlowSwitchEntityDescription(
         key="bp_ptc_dsg_heat",
         mqtt_key="ptcAllowFlag",
-        name="Battery heating (by discharging)",
+        name="Heating (by discharging)",
+        child_device=_CHILD_BP,
         value_fn=_bool_int,
         command_fn=lambda value, _q: build_legacy_command(
             _MT_BP, "ptcDsgCale", {"enable": 1 if value else 0}
@@ -1194,9 +1358,10 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
     EcoFlowNumberEntityDescription(
         key="bp_max_chg_soc",
         mqtt_key="chgSetSoc",
-        name="Battery charge upper limit",
+        name="Charge upper limit",
+        child_device=_CHILD_BP,
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=50,
         native_max_value=100,
         native_step=1,
@@ -1209,9 +1374,10 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
     EcoFlowNumberEntityDescription(
         key="bp_min_dsg_soc",
         mqtt_key="dsgSetSoc",
-        name="Battery discharge lower limit",
+        name="Discharge lower limit",
+        child_device=_CHILD_BP,
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=50,
         native_step=1,
@@ -1240,7 +1406,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         key="gen_start_soc",
         mqtt_key="oilStartDownline",
         name="Generator start SOC",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=100,
         native_step=1,
@@ -1255,7 +1421,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         key="gen_stop_soc",
         mqtt_key="oilStopUpline",
         name="Generator stop SOC",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=100,
         native_step=1,
@@ -1285,6 +1451,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         key="iclow_ac_curr_max",
         mqtt_key="acMaxCurrSer",
         name="AC input current limit",
+        child_device=_CHILD_INVERTER,
         device_class=NumberDeviceClass.CURRENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         native_min_value=1,
@@ -1323,6 +1490,107 @@ _ENERGY_SENSORS = (
 )
 
 
+# ---------------------------------------------------------------------------
+# Module scoping
+# ---------------------------------------------------------------------------
+
+# Quota module keys per child device (see the spec's GetAllQuotaResponse).
+_MODULES_BY_CHILD: dict[str, tuple[str, ...]] = {
+    "battery_pack": ("bp2000", "bp5000"),
+    "bbc_in": ("bbcin",),
+    "bbc_out": ("bbcout",),
+    "kitscc": ("kitscc",),
+    "ldac": ("ldac",),
+    "lddc": ("lddc",),
+}
+# Entities whose module isn't implied by their child device. The inverter child
+# holds both IC_LOW and ichigh; the spec lists acMaxCurrSer / passByModeEn /
+# powerOn under ichigh even though those entities carry an ``iclow_`` key.
+_MODULES_BY_KEY: dict[str, tuple[str, ...]] = {
+    "iclow_ac_curr_max": ("ichigh",),
+    "iclow_pass_by_mode": ("ichigh",),
+    "iclow_power_on": ("ichigh",),
+    "bbcin_vol_tag": ("bbcout",),  # cfgVolTag is reported by bbcout
+    "bp_lcd_standby": ("bp2000", "bp5000"),
+    "solar_energy": ("kitscc",),
+}
+_BMS_TOTAL = ("bmsTotal",)
+
+
+def _modules_for(desc: _EcoFlowDescription) -> tuple[str, ...] | None:
+    """Return the quota module(s) an entity reads from, or None (whole quota)."""
+    if desc.key in _MODULES_BY_KEY:
+        return _MODULES_BY_KEY[desc.key]
+    child = desc.child_device
+    if child is not None:
+        if child.key == "inverter":
+            return ("ichigh",) if desc.key.startswith("ichigh_") else ("iclow",)
+        return _MODULES_BY_CHILD.get(child.key)
+    if isinstance(desc, EcoFlowButtonEntityDescription):
+        return None
+    # Remaining main-device entities are system totals from bmsTotal.
+    return _BMS_TOTAL
+
+
+def _module_view(quota: Mapping[str, Any], modules: tuple[str, ...]) -> Mapping[str, Any]:
+    """Return the field map of the first present module of the given types.
+
+    Handles ``{type: {moduleSn: {...}}}`` (HTTP), ``{type: {...}}`` and
+    flattened dotted keys (``"type.moduleSn.field"`` / ``"type.field"``). If no
+    module data is found at all, the whole quota is returned so a flat layout
+    (bare field names) still resolves as before.
+    """
+    for module in modules:
+        node = quota.get(module)
+        if isinstance(node, Mapping) and node:
+            per_sn = [node[k] for k in sorted(node) if isinstance(node[k], Mapping)]
+            if per_sn and len(per_sn) == len(node):
+                return per_sn[0]
+            return node
+        prefix = f"{module}."
+        flat = {k[len(prefix):]: v for k, v in quota.items() if k.startswith(prefix)}
+        if flat:
+            sns = sorted({k.split(".", 1)[0] for k in flat if "." in k})
+            if sns and all("." in k for k in flat):
+                lead = f"{sns[0]}."
+                return {k[len(lead):]: v for k, v in flat.items() if k.startswith(lead)}
+            return flat
+    return quota
+
+
+def _scoped(desc: _EcoFlowDescription) -> _EcoFlowDescription:
+    """Bind every quota-reading callable of ``desc`` to its module's view."""
+    modules = _modules_for(desc)
+    if modules is None:
+        return desc
+
+    def view(q: Mapping[str, Any]) -> Mapping[str, Any]:
+        return _module_view(q, modules)
+
+    changes: dict[str, Any] = {}
+    if desc.quota_value_fn is not None:
+        inner_q = desc.quota_value_fn
+        changes["quota_value_fn"] = lambda q: inner_q(view(q))
+    elif desc.mqtt_key:
+        field, value_fn = desc.mqtt_key, desc.value_fn
+
+        def _read(q: Mapping[str, Any]) -> Any:
+            value = quota_get(view(q), field)
+            if value is None or value_fn is None:
+                return value
+            return value_fn(value)
+
+        changes["quota_value_fn"] = _read
+    for name in ("available_fn", "icon_fn", "attributes_fn", "power_fn"):
+        fn = getattr(desc, name, None)
+        if fn is not None:
+            changes[name] = lambda q, _fn=fn: _fn(view(q))
+    command_fn = getattr(desc, "command_fn", None)
+    if command_fn is not None:
+        changes["command_fn"] = lambda v, q, _fn=command_fn: _fn(v, view(q))
+    return dataclasses.replace(desc, **changes)
+
+
 class PowerKitsDevice(EcoFlowDevice):
     """EcoFlow Power Kits modular off-grid power system."""
 
@@ -1334,9 +1602,18 @@ class PowerKitsDevice(EcoFlowDevice):
         if any(sn.startswith(p) for p in cls.sn_prefixes):
             return True
         # Also recognise by a distinctive quota field
-        return bool(quota) and _POWER_KITS_MARKER in quota
+        if not quota:
+            return False
+        bms_total = quota.get("bmsTotal")
+        return _POWER_KITS_MARKER in quota or (
+            isinstance(bms_total, Mapping) and _POWER_KITS_MARKER in bms_total
+        )
 
-    def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:  # noqa: C901
+    def entity_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:
+        """Return the platform's descriptions, each scoped to its quota module."""
+        return [_scoped(d) for d in self._unscoped_descriptions(platform)]
+
+    def _unscoped_descriptions(self, platform: Platform) -> list[_EcoFlowDescription]:  # noqa: C901
         if platform == Platform.SENSOR:
             return [
                 # Battery packs (bmsTotal + individual BP)
@@ -1366,4 +1643,12 @@ class PowerKitsDevice(EcoFlowDevice):
             return list(_SWITCHES)
         if platform == Platform.NUMBER:
             return list(_NUMBERS)
+        if platform == Platform.BUTTON:
+            return list(_BUTTONS)
         return []
+
+    def build_command(self, command: dict[str, Any]) -> dict[str, Any]:
+        """Fill a ``moduleSn`` placeholder with this device's serial."""
+        if command.get("moduleSn") == _SELF_SN:
+            return {**command, "moduleSn": self.sn}
+        return command

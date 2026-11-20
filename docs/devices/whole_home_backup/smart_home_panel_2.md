@@ -11,101 +11,101 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ## Sensors
 
-| Entity | Device class | Unit | Quota key | Flags |
-|---|---|---|---|---|
-| Grid power | power | W | `wattInfo.gridWatt` |  |
-| Home power | power | W | `wattInfo.allHallWatt` |  |
-| Backup battery | battery | % | `backupIncreInfo.backupBatPer` |  |
-| Backup time remaining | duration | min | `backupInfo.backupDischargeTime` | 🔧 |
-| Backup charge time remaining | duration | min | `backupInfo.backupChargeTime` | 🔧 |
-| Home max current | current | A | `masterCur` | 🔧 |
-| Generator max output | power | W | `oilMaxOutputWatt` | 🔧 |
-| Charging power | power | W | `chargeWattPower` | 🔧 |
-| Charging limit | battery | % | `foceChargeHight` | 🔧 |
-| Backup reserve | battery | % | `backupReserveSoc` | 🔧 |
-| AC1 power | power | W | _computed_ |  |
-| AC1 battery | battery | % | `backupIncreInfo.Energy1Info.batteryPercentage` |  |
-| AC2 power | power | W | _computed_ |  |
-| AC2 battery | battery | % | `backupIncreInfo.Energy2Info.batteryPercentage` |  |
-| AC3 power | power | W | _computed_ |  |
-| AC3 battery | battery | % | `backupIncreInfo.Energy3Info.batteryPercentage` |  |
-| Circuit 1 power | power | W | _computed_ |  |
-| Circuit 1 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch1Info.setAmp` | 🔧 💤 |
-| Circuit 2 power | power | W | _computed_ |  |
-| Circuit 2 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch2Info.setAmp` | 🔧 💤 |
-| Circuit 3 power | power | W | _computed_ |  |
-| Circuit 3 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch3Info.setAmp` | 🔧 💤 |
-| Circuit 4 power | power | W | _computed_ |  |
-| Circuit 4 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch4Info.setAmp` | 🔧 💤 |
-| Circuit 5 power | power | W | _computed_ |  |
-| Circuit 5 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch5Info.setAmp` | 🔧 💤 |
-| Circuit 6 power | power | W | _computed_ |  |
-| Circuit 6 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch6Info.setAmp` | 🔧 💤 |
-| Circuit 7 power | power | W | _computed_ |  |
-| Circuit 7 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch7Info.setAmp` | 🔧 💤 |
-| Circuit 8 power | power | W | _computed_ |  |
-| Circuit 8 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch8Info.setAmp` | 🔧 💤 |
-| Circuit 9 power | power | W | _computed_ |  |
-| Circuit 9 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch9Info.setAmp` | 🔧 💤 |
-| Circuit 10 power | power | W | _computed_ |  |
-| Circuit 10 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch10Info.setAmp` | 🔧 💤 |
-| Circuit 11 power | power | W | _computed_ |  |
-| Circuit 11 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch11Info.setAmp` | 🔧 💤 |
-| Circuit 12 power | power | W | _computed_ |  |
-| Circuit 12 max current | current | A | `loadIncreInfo.hall1IncreInfo.ch12Info.setAmp` | 🔧 💤 |
-| Grid import energy | energy | Wh | _integrated_ |  |
-| Grid export energy | energy | Wh | _integrated_ |  |
-| Home energy | energy | Wh | _integrated_ |  |
+| Entity | Device | Device class | Unit | Quota key | Flags |
+|---|---|---|---|---|---|
+| Grid power | main | power | W | `wattInfo.gridWatt` |  |
+| Home power | main | power | W | `wattInfo.allHallWatt` |  |
+| Backup battery | main | battery | % | `backupIncreInfo.backupBatPer` |  |
+| Backup time remaining | main | duration | min | `backupInfo.backupDischargeTime` | 🔧 |
+| Backup charge time remaining | main | duration | min | `backupInfo.backupChargeTime` | 🔧 |
+| Home max current | main | current | A | `masterCur` | 🔧 |
+| Generator max output | main | power | W | `oilMaxOutputWatt` | 🔧 |
+| Charging power | main | power | W | `chargeWattPower` | 🔧 |
+| Charging limit | main | battery | % | `foceChargeHight` | 🔧 |
+| Backup reserve | main | battery | % | `backupReserveSoc` | 🔧 |
+| Power | Energy storage 1 | power | W | _computed_ |  |
+| Battery | Energy storage 1 | battery | % | `backupIncreInfo.Energy1Info.batteryPercentage` |  |
+| Power | Energy storage 2 | power | W | _computed_ |  |
+| Battery | Energy storage 2 | battery | % | `backupIncreInfo.Energy2Info.batteryPercentage` |  |
+| Power | Energy storage 3 | power | W | _computed_ |  |
+| Battery | Energy storage 3 | battery | % | `backupIncreInfo.Energy3Info.batteryPercentage` |  |
+| Power | Circuit 1 | power | W | _computed_ |  |
+| Max current | Circuit 1 | current | A | `loadIncreInfo.hall1IncreInfo.ch1Info.setAmp` | 🔧 💤 |
+| Power | Circuit 2 | power | W | _computed_ |  |
+| Max current | Circuit 2 | current | A | `loadIncreInfo.hall1IncreInfo.ch2Info.setAmp` | 🔧 💤 |
+| Power | Circuit 3 | power | W | _computed_ |  |
+| Max current | Circuit 3 | current | A | `loadIncreInfo.hall1IncreInfo.ch3Info.setAmp` | 🔧 💤 |
+| Power | Circuit 4 | power | W | _computed_ |  |
+| Max current | Circuit 4 | current | A | `loadIncreInfo.hall1IncreInfo.ch4Info.setAmp` | 🔧 💤 |
+| Power | Circuit 5 | power | W | _computed_ |  |
+| Max current | Circuit 5 | current | A | `loadIncreInfo.hall1IncreInfo.ch5Info.setAmp` | 🔧 💤 |
+| Power | Circuit 6 | power | W | _computed_ |  |
+| Max current | Circuit 6 | current | A | `loadIncreInfo.hall1IncreInfo.ch6Info.setAmp` | 🔧 💤 |
+| Power | Circuit 7 | power | W | _computed_ |  |
+| Max current | Circuit 7 | current | A | `loadIncreInfo.hall1IncreInfo.ch7Info.setAmp` | 🔧 💤 |
+| Power | Circuit 8 | power | W | _computed_ |  |
+| Max current | Circuit 8 | current | A | `loadIncreInfo.hall1IncreInfo.ch8Info.setAmp` | 🔧 💤 |
+| Power | Circuit 9 | power | W | _computed_ |  |
+| Max current | Circuit 9 | current | A | `loadIncreInfo.hall1IncreInfo.ch9Info.setAmp` | 🔧 💤 |
+| Power | Circuit 10 | power | W | _computed_ |  |
+| Max current | Circuit 10 | current | A | `loadIncreInfo.hall1IncreInfo.ch10Info.setAmp` | 🔧 💤 |
+| Power | Circuit 11 | power | W | _computed_ |  |
+| Max current | Circuit 11 | current | A | `loadIncreInfo.hall1IncreInfo.ch11Info.setAmp` | 🔧 💤 |
+| Power | Circuit 12 | power | W | _computed_ |  |
+| Max current | Circuit 12 | current | A | `loadIncreInfo.hall1IncreInfo.ch12Info.setAmp` | 🔧 💤 |
+| Grid import energy | main | energy | Wh | _integrated_ |  |
+| Grid export energy | main | energy | Wh | _integrated_ |  |
+| Home energy | main | energy | Wh | _integrated_ |  |
 
 ## Binary sensors
 
-| Entity | Device class | Quota key | Flags |
-|---|---|---|---|
-| Battery charging | battery_charging | `chargeWattPower` |  |
-| Storm warning | safety | `stormIsEnable` |  |
-| EPS mode | power | `epsModeInfo` | 🔧 |
+| Entity | Device | Device class | Quota key | Flags |
+|---|---|---|---|---|
+| Battery charging | main | battery_charging | `chargeWattPower` |  |
+| Storm warning | main | safety | `stormIsEnable` |  |
+| EPS mode | main | power | `epsModeInfo` | 🔧 |
 
 ## Switches
 
-| Entity | Quota key | Flags |
-|---|---|---|
-| Storm warning | `stormIsEnable` |  |
-| EPS mode | `epsModeInfo` |  |
-| AC1 channel | `ch1EnableSet` |  |
-| AC2 channel | `ch2EnableSet` |  |
-| AC3 channel | `ch3EnableSet` |  |
-| AC1 force charge | `ch1ForceCharge` |  |
-| AC2 force charge | `ch2ForceCharge` |  |
-| AC3 force charge | `ch3ForceCharge` |  |
+| Entity | Device | Quota key | Flags |
+|---|---|---|---|
+| Storm warning | main | `stormIsEnable` |  |
+| EPS mode | main | `epsModeInfo` |  |
+| Enabled | Energy storage 1 | `ch1EnableSet` |  |
+| Enabled | Energy storage 2 | `ch2EnableSet` |  |
+| Enabled | Energy storage 3 | `ch3EnableSet` |  |
+| Force charge | Energy storage 1 | `ch1ForceCharge` |  |
+| Force charge | Energy storage 2 | `ch2ForceCharge` |  |
+| Force charge | Energy storage 3 | `ch3ForceCharge` |  |
 
 ## Numbers
 
-| Entity | Unit | Range | Quota key | Flags |
-|---|---|---|---|---|
-| Backup reserve level | % | 0–100 (step 1) | `backupReserveSoc` |  |
-| Charging power | W | 500–7200 (step 100) | `chargeWattPower` |  |
-| Charging limit | % | 80–100 (step 1) | `foceChargeHight` |  |
-| Generator max output | W | 3000–12000 (step 1000) | `oilMaxOutputWatt` |  |
-| Home max current | A | 6–10 (step 0.1) | `masterCur` |  |
-| Circuit 1 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch1Info.setAmp` | 💤 |
-| Circuit 2 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch2Info.setAmp` | 💤 |
-| Circuit 3 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch3Info.setAmp` | 💤 |
-| Circuit 4 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch4Info.setAmp` | 💤 |
-| Circuit 5 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch5Info.setAmp` | 💤 |
-| Circuit 6 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch6Info.setAmp` | 💤 |
-| Circuit 7 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch7Info.setAmp` | 💤 |
-| Circuit 8 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch8Info.setAmp` | 💤 |
-| Circuit 9 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch9Info.setAmp` | 💤 |
-| Circuit 10 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch10Info.setAmp` | 💤 |
-| Circuit 11 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch11Info.setAmp` | 💤 |
-| Circuit 12 max current | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch12Info.setAmp` | 💤 |
+| Entity | Device | Unit | Range | Quota key | Flags |
+|---|---|---|---|---|---|
+| Backup reserve level | main | % | 0–100 (step 1) | `backupReserveSoc` |  |
+| Charging power | main | W | 500–7200 (step 100) | `chargeWattPower` |  |
+| Charging limit | main | % | 80–100 (step 1) | `foceChargeHight` |  |
+| Generator max output | main | W | 3000–12000 (step 1000) | `oilMaxOutputWatt` |  |
+| Home max current | main | A | 6–10 (step 0.1) | `masterCur` |  |
+| Max current | Circuit 1 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch1Info.setAmp` | 💤 |
+| Max current | Circuit 2 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch2Info.setAmp` | 💤 |
+| Max current | Circuit 3 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch3Info.setAmp` | 💤 |
+| Max current | Circuit 4 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch4Info.setAmp` | 💤 |
+| Max current | Circuit 5 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch5Info.setAmp` | 💤 |
+| Max current | Circuit 6 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch6Info.setAmp` | 💤 |
+| Max current | Circuit 7 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch7Info.setAmp` | 💤 |
+| Max current | Circuit 8 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch8Info.setAmp` | 💤 |
+| Max current | Circuit 9 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch9Info.setAmp` | 💤 |
+| Max current | Circuit 10 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch10Info.setAmp` | 💤 |
+| Max current | Circuit 11 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch11Info.setAmp` | 💤 |
+| Max current | Circuit 12 | A | 10–60 (step 5) | `loadIncreInfo.hall1IncreInfo.ch12Info.setAmp` | 💤 |
 
 ## Selects
 
-| Entity | Options | Quota key | Flags |
-|---|---|---|---|
-| smart_backup_mode | disabled, tou, self_service, timed | _derived_ |  |
+| Entity | Device | Options | Quota key | Flags |
+|---|---|---|---|---|
+| smart_backup_mode | main | disabled, tou, self_service, timed | _derived_ |  |
 
 ---
 
-_Entity totals: 72 — 43 sensor, 3 binary_sensor, 8 switch, 17 number, 1 select, 0 light._
+_Entity totals: 72 — 43 sensor, 3 binary_sensor, 8 switch, 17 number, 1 select, 0 light, 0 button._

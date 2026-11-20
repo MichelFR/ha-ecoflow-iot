@@ -20,16 +20,17 @@ from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.number import NumberDeviceClass, NumberMode
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
     Platform,
     UnitOfEnergy,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
 
 from ..base import (
+    ChildDevice,
     EcoFlowBinarySensorEntityDescription,
     EcoFlowDevice,
     EcoFlowNumberEntityDescription,
@@ -96,7 +97,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         value_fn=round2,
         icon_fn=lambda q: battery_charging_icon(
             q.get("bmsMaster.soc"), float(q.get("bmsMaster.inputWatts") or 0) > 0
@@ -162,14 +163,14 @@ _EMS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         key="ems_max_charge_soc",
         mqtt_key="ems.maxChargeSoc",
         name="Charge limit",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
         key="ems_min_dsg_soc",
         mqtt_key="ems.minDsgSoc",
         name="Discharge limit",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
@@ -312,12 +313,13 @@ def _extra_battery_sensors(quota: Mapping[str, Any]) -> list[EcoFlowSensorEntity
             EcoFlowSensorEntityDescription(
                 key=f"kit_pack{i + 1}_soc",
                 mqtt_key="kit.productInfoDetails",
-                name=f"Extra battery {i + 1}",
+                name="Battery",
                 device_class=SensorDeviceClass.BATTERY,
                 state_class=SensorStateClass.MEASUREMENT,
-                native_unit_of_measurement=PERCENTAGE,
+                native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
                 quota_value_fn=_kit_soc(i),
                 available_fn=lambda q, _i=i: _kit_pack(q, _i) is not None,
+                child_device=ChildDevice(f"extra_battery_{i + 1}", f"Extra battery {i + 1}"),
             )
         )
     return descs
@@ -382,7 +384,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="ems.maxChargeSoc",
         name="Charge limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=50,
         native_max_value=100,
         native_step=1,
@@ -394,7 +396,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="ems.minDsgSoc",
         name="Discharge limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=30,
         native_step=1,

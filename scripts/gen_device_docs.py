@@ -23,7 +23,7 @@ REPO = Path(__file__).resolve().parents[1]
 CC = REPO / "custom_components"
 DOCS = REPO / "docs" / "devices"
 
-PLATFORMS = ["SENSOR", "BINARY_SENSOR", "SWITCH", "NUMBER", "SELECT", "LIGHT"]
+PLATFORMS = ["SENSOR", "BINARY_SENSOR", "SWITCH", "NUMBER", "SELECT", "LIGHT", "BUTTON"]
 CATEGORY_TITLES = {
     "power_stations": "Power Stations",
     "solar_systems": "Solar Systems",
@@ -109,7 +109,7 @@ def install_stub():
     sys.modules["homeassistant"] = ha
     comps = types.ModuleType("homeassistant.components"); comps.__path__ = []
     sys.modules["homeassistant.components"] = comps
-    for c in ("sensor", "binary_sensor", "switch", "number", "select", "light"):
+    for c in ("sensor", "binary_sensor", "switch", "number", "select", "light", "button"):
         sys.modules[f"homeassistant.components.{c}"] = _component(
             f"homeassistant.components.{c}"
         )
@@ -212,6 +212,18 @@ def render_device(cls, category) -> str:
     has_undocumented = any(
         getattr(d, "undocumented", False) for p in PLATFORMS for d in descs(p)
     )
+    # Devices with HA child devices (extra batteries, modules, circuits) get a
+    # "Device" column naming the child each entity is attached to.
+    has_children = any(
+        getattr(d, "child_device", None) for p in PLATFORMS for d in descs(p)
+    )
+
+    def ctable(rows, ds, header) -> str:
+        if not has_children:
+            return table(rows, header)
+        rows = [[*r[:1], (d.child_device.name if getattr(d, "child_device", None)
+                          else "main"), *r[1:]] for r, d in zip(rows, ds)]
+        return table(rows, [header[0], "Device", *header[1:]])
 
     img = image_key(name)
     img_base = f"../../../custom_components/ecoflow_iot/www/devices/{img}"
@@ -252,7 +264,7 @@ def render_device(cls, category) -> str:
         rows = [[d.name or d.key, device_class(d), unit(d), quota_key(d), flags(d)]
                 for d in sensors]
         lines += ["## Sensors", "",
-                  table(rows, ["Entity", "Device class", "Unit", "Quota key", "Flags"]),
+                  ctable(rows, sensors, ["Entity", "Device class", "Unit", "Quota key", "Flags"]),
                   ""]
 
     binaries = descs("BINARY_SENSOR")
@@ -260,20 +272,20 @@ def render_device(cls, category) -> str:
         rows = [[d.name or d.key, device_class(d), quota_key(d), flags(d)]
                 for d in binaries]
         lines += ["## Binary sensors", "",
-                  table(rows, ["Entity", "Device class", "Quota key", "Flags"]), ""]
+                  ctable(rows, binaries, ["Entity", "Device class", "Quota key", "Flags"]), ""]
 
     switches = descs("SWITCH")
     if switches:
         rows = [[d.name or d.key, quota_key(d), flags(d)] for d in switches]
         lines += ["## Switches", "",
-                  table(rows, ["Entity", "Quota key", "Flags"]), ""]
+                  ctable(rows, switches, ["Entity", "Quota key", "Flags"]), ""]
 
     numbers = descs("NUMBER")
     if numbers:
         rows = [[d.name or d.key, unit(d), num_range(d), quota_key(d), flags(d)]
                 for d in numbers]
         lines += ["## Numbers", "",
-                  table(rows, ["Entity", "Unit", "Range", "Quota key", "Flags"]), ""]
+                  ctable(rows, numbers, ["Entity", "Unit", "Range", "Quota key", "Flags"]), ""]
 
     selects = descs("SELECT")
     if selects:
@@ -282,13 +294,19 @@ def render_device(cls, category) -> str:
             opts = ", ".join(d.options) if d.options else "—"
             rows.append([d.name or d.key, opts, quota_key(d), flags(d)])
         lines += ["## Selects", "",
-                  table(rows, ["Entity", "Options", "Quota key", "Flags"]), ""]
+                  ctable(rows, selects, ["Entity", "Options", "Quota key", "Flags"]), ""]
 
     lights = descs("LIGHT")
     if lights:
         rows = [[d.name or d.key, quota_key(d), flags(d)] for d in lights]
         lines += ["## Lights", "",
-                  table(rows, ["Entity", "Quota key (brightness %)", "Flags"]), ""]
+                  ctable(rows, lights, ["Entity", "Quota key (brightness %)", "Flags"]), ""]
+
+    buttons = descs("BUTTON")
+    if buttons:
+        rows = [[d.name or d.key, flags(d)] for d in buttons]
+        lines += ["## Buttons", "",
+                  ctable(rows, buttons, ["Entity", "Flags"]), ""]
 
     counts = {p: len(descs(p)) for p in PLATFORMS}
     total = sum(counts.values())

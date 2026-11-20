@@ -15,6 +15,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 |---|---|---|---|---|
 | Ambient temperature | temperature | °C | `pd.envTemp` |  |
 | Air outlet temperature | temperature | °C | `pd.coolTemp` |  |
+| Air outlet temperature (sensor) | temperature | °C | `pd.coolEnv` | 🔧 💤 |
 | Condensation temperature | temperature | °C | `pd.condTemp` | 🔧 |
 | Condensation zone return air temperature | temperature | °C | `pd.heatEnv` | 🔧 |
 | Evaporation temperature | temperature | °C | `pd.evapTemp` | 🔧 |
@@ -22,10 +23,16 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Exhaust temperature | temperature | °C | `pd.motorOutTemp` | 🔧 |
 | Set temperature (Celsius) | temperature | °C | `pd.setTempCel` | 🔧 |
 | NTC temperature | temperature | °C | `pd.tempNtc` | 🔧 💤 |
+| Power module max temperature | temperature | °C | `power.tempMax` | 🔧 💤 |
 | AC input power | power | W | `pd.acPwrIn` |  |
 | System power | power | W | `pd.sysPowerWatts` |  |
 | PV input power | power | W | `pd.mpptPwr` |  |
 | Battery output power | power | W | `pd.batPwrOut` |  |
+| Battery power | power | W | `pd.batPower` |  |
+| Power supply power | power | W | `pd.psdrPower` | 🔧 |
+| PV input voltage | voltage | V | `pd.mpptVol` | 🔧 |
+| PV input current | current | A | `pd.mpptCur` | 🔧 |
+| DC input mode | enum | — | `pd.mpptWork` |  |
 | AC input voltage | voltage | V | `power.acVoltRms` | 🔧 |
 | AC input current | current | A | `power.acCurrRms` | 🔧 |
 | AC input frequency | frequency | Hz | `pd.acFreq` | 🔧 |
@@ -34,10 +41,19 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery voltage | voltage | V | `pd.batVolt` | 🔧 |
 | BMS voltage | voltage | V | `bms.bmsVol` | 🔧 💤 |
 | BMS current | current | A | `bms.bmsCur` | 🔧 |
+| Battery current | current | A | `pd.batCurr` | 🔧 |
+| Battery state | enum | — | `bms.bmsChgDsgSts` |  |
+| Discharge limit | — | % | `bms.bmsMinDsgSoc` | 🔧 |
+| Charge limit | — | % | `bms.bmsMaxChgSoc` | 🔧 |
+| Battery remaining capacity | — | mAh | `bms.remainCap` | 🔧 💤 |
 | Battery time to full | duration | min | `pd.batChgRemain` | 🔧 |
 | Battery time to empty | duration | min | `pd.batDsgRemain` | 🔧 |
 | Timer remaining | duration | min | `pd.timeRemain` |  |
 | Water level | — | — | `pd.waterValue` |  |
+| Fan level | — | — | `pd.fanSts` |  |
+| Compressor speed | — | REVOLUTIONS_PER_MINUTE | `motor.compressorRpm` | 🔧 💤 |
+| Condenser fan speed | — | REVOLUTIONS_PER_MINUTE | `motor.condeFanRpm` | 🔧 💤 |
+| Evaporator fan speed | — | REVOLUTIONS_PER_MINUTE | `motor.evapFanRpm` | 🔧 💤 |
 | Solar energy | energy | Wh | _integrated_ |  |
 | Energy consumption | energy | Wh | _integrated_ |  |
 
@@ -51,6 +67,10 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery undervoltage | problem | `pd.bmsUnderVoltage` | 🔧 |
 | High pressure protection | safety | `motor.hpProtFlg` | 🔧 |
 | Energy-saving shutdown | — | `motor.ecoStopFlag` | 🔧 |
+| Powered by AC | power | `pd.powerSrc` |  |
+| Powered by solar/car input | power | `pd.powerSrc` |  |
+| Powered by main battery | power | `pd.powerSrc` |  |
+| Powered by extra battery | power | `pd.powerSrc` | 💤 |
 
 ## Switches
 
@@ -78,7 +98,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Light strip | follow_screen, always_on, always_off | `pd.rgbState` |  |
 | Automatic drainage | manual_on, no_drain_on, manual_off, no_drain_off | `pd.wteFthEn` |  |
 | Temperature display | ambient, outlet | `pd.tempDisplay` |  |
+| Temperature unit | celsius, fahrenheit | `pd.tempSys` |  |
 
 ---
 
-_Entity totals: 45 — 27 sensor, 6 binary_sensor, 3 switch, 3 number, 6 select, 0 light._
+_Entity totals: 66 — 43 sensor, 10 binary_sensor, 3 switch, 3 number, 7 select, 0 light, 0 button._

@@ -18,7 +18,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
     Platform,
     UnitOfElectricCurrent,
@@ -26,6 +25,7 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
@@ -46,12 +46,48 @@ from ..helpers import (
     deci as _scale_10,
     milli as _scale_1000,
     round2 as _round2,
+    to_bool,
+    to_int,
 )
 
 
 # ---------------------------------------------------------------------------
 # Value helpers
 # ---------------------------------------------------------------------------
+
+# inv.fanState: 0 disabled, 1–3 fan level.
+_FAN_STATE = {0: "off", 1: "level 1", 2: "level 2", 3: "level 3"}
+# inv.acDipSwitch: 0 unknown (→ None), 1 fast, 2 slow charging.
+_AC_DIP_SWITCH = {1: "fast", 2: "slow"}
+# mppt.chgState / mppt.pv2ChgState: 0 disabled, 1 charging,
+# 2 standby (DC charging stopped during AC charging).
+_PV_CHG_STATE = {0: "off", 1: "charging", 2: "standby"}
+# inv.cfgAcOutFreq uses the acOutCfg out_freq encoding: 1 = 50 Hz, 2 = 60 Hz.
+_AC_OUT_FREQ = {1: 50, 2: 60}
+
+
+def _enum(mapping: Mapping[int, str]):
+    """Return a value_fn mapping an integer code to its enum option."""
+
+    def _fn(value: Any) -> str | None:
+        try:
+            code = to_int(value)
+        except (TypeError, ValueError):
+            return None
+        return None if code is None else mapping.get(code)
+
+    return _fn
+
+
+def _cfg_ac_out_freq(value: Any) -> int | None:
+    """Decode inv.cfgAcOutFreq (1/2 code, or a raw 50/60 Hz value) to Hz."""
+    try:
+        code = to_int(value)
+    except (TypeError, ValueError):
+        return None
+    if code in (50, 60):
+        return code
+    return None if code is None else _AC_OUT_FREQ.get(code)
 
 # ---------------------------------------------------------------------------
 # Sensors — PD (moduleType 1, prefix pd.)
@@ -64,7 +100,7 @@ _PD_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         value_fn=_round2,
         # Stepped charging icon while charging, else automatic battery icon.
         icon_fn=lambda q: battery_charging_icon(q.get("pd.soc"), float(q.get("bms_bmsStatus.inputWatts") or 0) > 0),
@@ -298,7 +334,7 @@ _PD_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="pd.bpPowerSoc",
         name="Backup reserve",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
@@ -456,6 +492,51 @@ _INV_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
+    EcoFlowSensorEntityDescription(
+        key="inv_fan_state",
+        mqtt_key="inv.fanState",
+        name="Inverter fan",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(_FAN_STATE.values()),
+        value_fn=_enum(_FAN_STATE),
+    ),
+    EcoFlowSensorEntityDescription(
+        key="inv_cfg_ac_out_vol",
+        mqtt_key="inv.cfgAcOutVol",
+        name="Configured AC output voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        # Spec says V, but the sample quota reports 230000 (mV).
+        value_fn=_scale_1000,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="inv_cfg_ac_out_freq",
+        mqtt_key="inv.cfgAcOutFreq",
+        name="Configured AC output frequency",
+        device_class=SensorDeviceClass.FREQUENCY,
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_cfg_ac_out_freq,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="inv_ac_dip_switch",
+        mqtt_key="inv.acDipSwitch",
+        name="AC charging speed switch",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(_AC_DIP_SWITCH.values()),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_enum(_AC_DIP_SWITCH),
+    ),
+    EcoFlowSensorEntityDescription(
+        key="inv_ac_chg_rated_power",
+        mqtt_key="inv.acChgRatedPower",
+        name="AC charging rated power",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
 )
 
 # ---------------------------------------------------------------------------
@@ -503,6 +584,15 @@ _MPPT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
+    EcoFlowSensorEntityDescription(
+        key="mppt_pv1_chg_state",
+        mqtt_key="mppt.chgState",
+        name="PV1 charging status",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(_PV_CHG_STATE.values()),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_enum(_PV_CHG_STATE),
+    ),
     # PV2
     EcoFlowSensorEntityDescription(
         key="mppt_pv2_in_watts",
@@ -549,6 +639,15 @@ _MPPT_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
         # Firmware reports actual voltage x10 (misleading field name in spec)
         value_fn=_scale_10,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="mppt_pv2_chg_state",
+        mqtt_key="mppt.pv2ChgState",
+        name="PV2 charging status",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(_PV_CHG_STATE.values()),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_enum(_PV_CHG_STATE),
     ),
     # Car / 12V DC output
     EcoFlowSensorEntityDescription(
@@ -646,7 +745,7 @@ _BMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery SOC (BMS)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_registry_enabled_default=False,
         value_fn=_round2,
     ),
@@ -686,7 +785,7 @@ _BMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="bms_bmsStatus.soh",
         name="Battery health",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_round2,
     ),
@@ -779,6 +878,17 @@ _BMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
     ),
     EcoFlowSensorEntityDescription(
+        key="bms_max_vol_diff",
+        mqtt_key="bms_bmsStatus.maxVolDiff",
+        name="Cell voltage difference",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        # Same mV scale as maxCellVol / minCellVol (spec sample 4–5 vs cells ~3334).
+        native_unit_of_measurement=UnitOfElectricPotential.MILLIVOLT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
         key="bms_remain_time",
         mqtt_key="bms_bmsStatus.remainTime",
         name="Battery remaining time",
@@ -821,7 +931,7 @@ _EMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.maxChargeSoc",
         name="Charge limit",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
@@ -829,7 +939,7 @@ _EMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.minDsgSoc",
         name="Discharge limit",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
@@ -853,7 +963,7 @@ _EMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.minOpenOilEb",
         name="Generator on SOC",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -862,7 +972,7 @@ _EMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.maxCloseOilEb",
         name="Generator off SOC",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -871,7 +981,7 @@ _EMS_STATUS_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.lcdShowSoc",
         name="LCD displayed SOC",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -956,6 +1066,21 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         value_fn=bool,
+    ),
+    # No set command is documented for these two, so they stay read-only.
+    EcoFlowBinarySensorEntityDescription(
+        key="inv_ac_passby_auto_en",
+        mqtt_key="inv.acPassbyAutoEn",
+        name="AC bypass auto start",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=to_bool,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="pd_pv_charge_prio_set",
+        mqtt_key="pd.pvChargePrioSet",
+        name="Solar charging priority",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=to_bool,
     ),
 )
 
@@ -1050,7 +1175,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.maxChargeSoc",
         name="Charge limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=50,
         native_max_value=100,
         native_step=1,
@@ -1064,7 +1189,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.minDsgSoc",
         name="Discharge limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=30,
         native_step=1,
@@ -1078,7 +1203,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="pd.bpPowerSoc",
         name="Backup reserve level",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=100,
         native_step=1,
@@ -1181,7 +1306,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.minOpenOilEb",
         name="Generator on SOC",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=30,
         native_step=1,
@@ -1195,7 +1320,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="bms_emsStatus.maxCloseOilEb",
         name="Generator off SOC",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=50,
         native_max_value=100,
         native_step=1,

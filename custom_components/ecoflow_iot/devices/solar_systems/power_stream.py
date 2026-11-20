@@ -21,13 +21,13 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
     Platform,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
@@ -90,7 +90,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         value_fn=_round0,
         # Stepped charging icon while charging (batInputWatts > 0), else auto.
         icon_fn=lambda q: battery_charging_icon(
@@ -524,7 +524,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key=f"{_P}lowerLimit",
         name="Discharge limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=1,
         native_max_value=30,
         native_step=1,
@@ -539,7 +539,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key=f"{_P}upperLimit",
         name="Charge limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=70,
         native_max_value=100,
         native_step=1,

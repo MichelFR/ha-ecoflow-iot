@@ -18,18 +18,19 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
     Platform,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
 
 from ..base import (
     EcoFlowBinarySensorEntityDescription,
+    EcoFlowButtonEntityDescription,
     EcoFlowDevice,
     EcoFlowNumberEntityDescription,
     EcoFlowSelectEntityDescription,
@@ -200,6 +201,31 @@ def _set_tmp_unit(option: str, _quota: Mapping[str, Any]) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Warning bitfield (pd.warnInfo)
+# BIT0 over-temperature, BIT1 under-temperature, BIT2 overload,
+# BIT3 charging error, BIT4 fan error, BIT5 BLDC communication error.
+# ---------------------------------------------------------------------------
+
+_WARN_BITS = (
+    "over_temperature",
+    "under_temperature",
+    "overload",
+    "charging_error",
+    "fan_error",
+    "bldc_communication_error",
+)
+
+
+def _warn_attributes(quota: Mapping[str, Any]) -> dict[str, Any]:
+    raw = quota.get("pd.warnInfo")
+    try:
+        bits = int(raw)
+    except (TypeError, ValueError):
+        return {}
+    return {name: bool(bits >> i & 1) for i, name in enumerate(_WARN_BITS)}
+
+
+# ---------------------------------------------------------------------------
 # Sensors
 # ---------------------------------------------------------------------------
 
@@ -211,7 +237,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         value_fn=_round2,
         # Stepped charging icon while charging, else automatic battery icon.
         icon_fn=lambda q: battery_charging_icon(
@@ -224,7 +250,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery (integer)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_registry_enabled_default=False,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -234,7 +260,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery (PD)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_registry_enabled_default=False,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -289,7 +315,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="bms_bmsStatus.soh",
         name="Battery health",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -433,7 +459,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="pd.icePercent",
         name="Ice making progress",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
     ),
     EcoFlowSensorEntityDescription(
         key="ice_tm",
@@ -601,9 +627,115 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="LCD SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bms_min_mos_tmp",
+        mqtt_key="bms_bmsStatus.minMosTmp",
+        name="Battery min MOS temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bms_max_mos_tmp",
+        mqtt_key="bms_bmsStatus.maxMosTmp",
+        name="Battery max MOS temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    # --- Battery capacity (mAh) ---
+    EcoFlowSensorEntityDescription(
+        key="bms_remain_cap",
+        mqtt_key="bms_bmsStatus.remainCap",
+        name="Battery remaining capacity",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="mAh",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bms_full_cap",
+        mqtt_key="bms_bmsStatus.fullCap",
+        name="Battery full capacity",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="mAh",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bms_design_cap",
+        mqtt_key="bms_bmsStatus.designCap",
+        name="Battery design capacity",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="mAh",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    # Spec only says "Time remaining"; minutes per the other EcoFlow BMS
+    # remainTime fields (and pd.batTime on this device).
+    EcoFlowSensorEntityDescription(
+        key="bms_remain_time",
+        mqtt_key="bms_bmsStatus.remainTime",
+        name="Battery remaining time",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    # --- EMS limits ---
+    EcoFlowSensorEntityDescription(
+        key="ems_min_dsg_soc",
+        mqtt_key="bms_emsStatus.minDsgSoc",
+        name="Discharge lower limit",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="ems_max_chg_soc",
+        mqtt_key="bms_emsStatus.maxChgSoc",
+        name="Charge upper limit",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="ems_open_oil_soc",
+        mqtt_key="bms_emsStatus.openOilEbSocMin",
+        name="Smart Generator on SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="ems_close_oil_soc",
+        mqtt_key="bms_emsStatus.closeOilEbSocMax",
+        name="Smart Generator off SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    # Spec gives no unit; scaled as mV like bms_bmsStatus.vol.
+    EcoFlowSensorEntityDescription(
+        key="ems_chg_vol",
+        mqtt_key="bms_emsStatus.chgVol",
+        name="EMS charging voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_scale_1000,
     ),
     EcoFlowSensorEntityDescription(
         key="bl_time",
@@ -741,6 +873,23 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         value_fn=bool,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    EcoFlowBinarySensorEntityDescription(
+        key="warn_info",
+        mqtt_key="pd.warnInfo",
+        name="Warning",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        value_fn=lambda v: int(v) != 0,
+        attributes_fn=_warn_attributes,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    # pd.fsmState 4 = detaching ice (5 = detaching completed).
+    EcoFlowBinarySensorEntityDescription(
+        key="de_icing",
+        mqtt_key="pd.fsmState",
+        name="Detaching ice",
+        icon="mdi:snowflake-melt",
+        value_fn=lambda v: int(v) == 4,
+    ),
 )
 
 # ---------------------------------------------------------------------------
@@ -790,6 +939,33 @@ _SWITCHES: tuple[EcoFlowSwitchEntityDescription, ...] = (
         ),
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+    ),
+)
+
+# ---------------------------------------------------------------------------
+# Buttons (one-shot actions)
+# ---------------------------------------------------------------------------
+
+_BUTTONS: tuple[EcoFlowButtonEntityDescription, ...] = (
+    # Spec: deIce enable 1 = detach ice (0 is "Invalid", so there is no stop);
+    # progress shows on the "Detaching ice" binary sensor via pd.fsmState.
+    EcoFlowButtonEntityDescription(
+        key="de_ice",
+        name="Detach ice",
+        icon="mdi:snowflake-melt",
+        command_fn=lambda _v, _q: build_legacy_command(
+            _MODULE_TYPE, "deIce", {"enable": 1}
+        ),
+    ),
+    # Spec: beep flag 1/2/3 = beep once/twice/three times, 0 = beep continuously
+    # (no documented way to stop it, so it is not exposed).
+    EcoFlowButtonEntityDescription(
+        key="beep",
+        name="Beep",
+        icon="mdi:bullhorn",
+        command_fn=lambda _v, _q: build_legacy_command(
+            _MODULE_TYPE, "beep", {"flag": 1}
+        ),
     ),
 )
 
@@ -925,4 +1101,6 @@ class GlacierDevice(EcoFlowDevice):
             return list(_NUMBERS)
         if platform == Platform.SELECT:
             return list(_SELECTS)
+        if platform == Platform.BUTTON:
+            return list(_BUTTONS)
         return []

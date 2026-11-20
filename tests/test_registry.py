@@ -49,7 +49,7 @@ def install_ha_stub():
     sys.modules["homeassistant"] = ha
     comps = types.ModuleType("homeassistant.components"); comps.__path__ = []
     sys.modules["homeassistant.components"] = comps
-    for c in ("sensor", "binary_sensor", "switch", "number", "select", "light"):
+    for c in ("sensor", "binary_sensor", "switch", "number", "select", "light", "button"):
         sys.modules[f"homeassistant.components.{c}"] = _make_component(
             f"homeassistant.components.{c}"
         )
@@ -85,7 +85,8 @@ assert not is_silenced("R621ZEB1XE8S0029"), "R62 (River 2 Pro) must not be silen
 assert not is_silenced("HW52ZDH1RF3J0033"), "HW52 must not be silenced"
 
 PLATFORMS = [Auto("Platform.SENSOR"), Auto("Platform.BINARY_SENSOR"),
-             Auto("Platform.SWITCH"), Auto("Platform.NUMBER"), Auto("Platform.SELECT")]
+             Auto("Platform.SWITCH"), Auto("Platform.NUMBER"), Auto("Platform.SELECT"),
+             Auto("Platform.BUTTON")]
 
 print(f"Registry has {len(DEVICE_REGISTRY)} device classes\n")
 

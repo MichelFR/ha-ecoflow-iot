@@ -57,14 +57,21 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | AC fast charging limit | power | W | `inv.FastChgWatts` | 🔧 |
 | AC slow charging limit | power | W | `inv.SlowChgWatts` | 🔧 |
 | AC standby time | duration | min | `inv.standbyMin` | 🔧 💤 |
+| Inverter fan | enum | — | `inv.fanState` |  |
+| Configured AC output voltage | voltage | V | `inv.cfgAcOutVol` | 🔧 |
+| Configured AC output frequency | frequency | Hz | `inv.cfgAcOutFreq` | 🔧 |
+| AC charging speed switch | enum | — | `inv.acDipSwitch` | 🔧 |
+| AC charging rated power | power | W | `inv.acChgRatedPower` | 🔧 💤 |
 | PV1 input power | power | W | `mppt.inWatts` |  |
 | PV1 input voltage | voltage | V | `mppt.inVol` | 🔧 💤 |
 | PV1 input current | current | A | `mppt.inAmp` | 🔧 💤 |
 | PV1 MPPT temperature | temperature | °C | `mppt.mpptTemp` | 🔧 💤 |
+| PV1 charging status | enum | — | `mppt.chgState` | 🔧 |
 | PV2 input power | power | W | `mppt.pv2InWatts` |  |
 | PV2 input voltage | voltage | V | `mppt.pv2InVol` | 🔧 💤 |
 | PV2 input current | current | A | `mppt.pv2InAmp` | 🔧 💤 |
 | PV2 MPPT temperature | temperature | °C | `mppt.pv2MpptTemp` | 🔧 💤 |
+| PV2 charging status | enum | — | `mppt.pv2ChgState` | 🔧 |
 | Car output power | power | W | `mppt.carOutWatts` |  |
 | Car output voltage | voltage | V | `mppt.carOutVol` | 🔧 💤 |
 | Car output current | current | A | `mppt.carOutAmp` | 🔧 💤 |
@@ -87,6 +94,7 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Min cell voltage | voltage | mV | `bms_bmsStatus.minCellVol` | 🔧 💤 |
 | Max cell temperature | temperature | °C | `bms_bmsStatus.maxCellTemp` | 🔧 💤 |
 | Min cell temperature | temperature | °C | `bms_bmsStatus.minCellTemp` | 🔧 💤 |
+| Cell voltage difference | voltage | mV | `bms_bmsStatus.maxVolDiff` | 🔧 💤 |
 | Battery remaining time | duration | min | `bms_bmsStatus.remainTime` | 🔧 💤 |
 | EMS charging voltage | voltage | V | `bms_emsStatus.chgVol` | 🔧 💤 |
 | EMS charging current | current | A | `bms_emsStatus.chgAmp` | 🔧 💤 |
@@ -115,6 +123,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | AC charging paused | — | `inv.chgPauseFlag` | 🔧 |
 | PV1 charging paused | — | `mppt.chgPauseFlag` | 🔧 💤 |
 | PV2 charging paused | — | `mppt.pv2ChgPauseFlag` | 🔧 💤 |
+| AC bypass auto start | — | `inv.acPassbyAutoEn` | 🔧 |
+| Solar charging priority | — | `pd.pvChargePrioSet` | 🔧 |
 
 ## Switches
 
@@ -144,4 +154,4 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 
 ---
 
-_Entity totals: 113 — 87 sensor, 10 binary_sensor, 6 switch, 10 number, 0 select, 0 light._
+_Entity totals: 123 — 95 sensor, 12 binary_sensor, 6 switch, 10 number, 0 select, 0 light, 0 button._

@@ -17,7 +17,7 @@ custom_components/ecoflow_iot/
 │   └── <category>/ power_stations, solar_systems, home_battery, smart_living, whole_home_backup
 ├── coordinator.py  MQTT-first + HTTP fallback, write dispatch, connection state
 ├── entity.py       shared entity base
-└── sensor.py / binary_sensor.py / switch.py / number.py / select.py
+└── sensor.py / binary_sensor.py / switch.py / number.py / select.py / light.py / button.py
 docs/devices/       GENERATED per-device entity tables (do not hand-edit)
 scripts/gen_device_docs.py   regenerates docs/devices/
 tests/              test_auth, test_commands, test_helpers, test_registry
@@ -63,7 +63,7 @@ signed open platform: `/iot-open/sign/device/{list,quota,quota/all}` and
    - `matches(cls, sn, quota)` — SN-prefix first; quota keys only to disambiguate a
      shared prefix or an unknown serial.
    - `entity_descriptions(self, platform)` returning the typed descriptions per
-     platform (use `EcoFlow{Sensor,BinarySensor,Switch,Number,Select}EntityDescription`).
+     platform (use `EcoFlow{Sensor,BinarySensor,Switch,Number,Select,Light,Button}EntityDescription`; buttons are for one-shot actions with no readable state).
    - Read transforms via `value_fn=` from `devices/helpers.py` — do **not** redefine
      scalers locally.
    - Controls: `command_fn=lambda value, quota: <params>`; pick the device's command

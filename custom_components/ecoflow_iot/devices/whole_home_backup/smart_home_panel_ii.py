@@ -19,16 +19,17 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
     Platform,
     UnitOfElectricCurrent,
     UnitOfEnergy,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTime,
 )
 
 from ..base import (
+    ChildDevice,
     EcoFlowBinarySensorEntityDescription,
     EcoFlowDevice,
     EcoFlowNumberEntityDescription,
@@ -54,6 +55,21 @@ _CMD_CODE = "PD303_APP_SET"
 def _pd303_command(params: dict[str, Any]) -> dict[str, Any]:
     """Wrap params in the PD303 cmdCode envelope."""
     return {"cmdCode": _CMD_CODE, "params": params}
+
+
+# ---------------------------------------------------------------------------
+# Child devices
+# ---------------------------------------------------------------------------
+
+
+def _circuit_child(circuit: int) -> ChildDevice:
+    """Child device for circuit *circuit* (1-based); the name stays static."""
+    return ChildDevice(f"circuit_{circuit}", f"Circuit {circuit}")
+
+
+def _storage_child(channel: int) -> ChildDevice:
+    """Child device for AC energy-storage channel *channel* (1-based)."""
+    return ChildDevice(f"storage_{channel}", f"Energy storage {channel}")
 
 
 # ---------------------------------------------------------------------------
@@ -119,7 +135,7 @@ _SYSTEM_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Backup battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
     ),
     EcoFlowSensorEntityDescription(
         key="backup_discharge_time",
@@ -169,7 +185,7 @@ _SYSTEM_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="foceChargeHight",
         name="Charging limit",
         device_class=SensorDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
@@ -177,7 +193,7 @@ _SYSTEM_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="backupReserveSoc",
         name="Backup reserve",
         device_class=SensorDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
@@ -197,7 +213,8 @@ def _ac_channel_sensors(count: int = 3) -> tuple[EcoFlowSensorEntityDescription,
         descs.append(
             EcoFlowSensorEntityDescription(
                 key=f"ac{i}_watt",
-                name=f"AC{i} power",
+                name="Power",
+                child_device=_storage_child(i),
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfPower.WATT,
@@ -214,10 +231,11 @@ def _ac_channel_sensors(count: int = 3) -> tuple[EcoFlowSensorEntityDescription,
             EcoFlowSensorEntityDescription(
                 key=f"ac{i}_soc",
                 mqtt_key=f"backupIncreInfo.Energy{i}Info.batteryPercentage",
-                name=f"AC{i} battery",
+                name="Battery",
+                child_device=_storage_child(i),
                 device_class=SensorDeviceClass.BATTERY,
                 state_class=SensorStateClass.MEASUREMENT,
-                native_unit_of_measurement=PERCENTAGE,
+                native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
             )
         )
     return tuple(descs)
@@ -287,7 +305,8 @@ def _circuit_sensors(count: int = _CIRCUIT_COUNT) -> tuple[EcoFlowSensorEntityDe
             EcoFlowSensorEntityDescription(
                 key=f"circuit_{i}_watt",
                 attributes_fn=lambda q, _i=i: _circuit_metadata(q, _i),
-                name=f"Circuit {i} power",
+                name="Power",
+                child_device=_circuit_child(i),
                 device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement=UnitOfPower.WATT,
@@ -306,7 +325,8 @@ def _circuit_sensors(count: int = _CIRCUIT_COUNT) -> tuple[EcoFlowSensorEntityDe
                 key=f"circuit_{i}_set_amp",
                 attributes_fn=lambda q, _i=i: _circuit_metadata(q, _i),
                 mqtt_key=f"loadIncreInfo.hall1IncreInfo.ch{i}Info.setAmp",
-                name=f"Circuit {i} max current",
+                name="Max current",
+                child_device=_circuit_child(i),
                 device_class=SensorDeviceClass.CURRENT,
                 native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
                 entity_category=EntityCategory.DIAGNOSTIC,
@@ -360,7 +380,8 @@ def _ac_channel_switches(count: int = 3) -> tuple[EcoFlowSwitchEntityDescription
             EcoFlowSwitchEntityDescription(
                 key=f"ac{i}_enable",
                 mqtt_key=quota_key,
-                name=f"AC{i} channel",
+                name="Enabled",
+                child_device=_storage_child(i),
                 value_fn=lambda v: int(v) == 1,
                 command_fn=lambda value, _q, _k=quota_key: {_k: 1 if value else 2},
             )
@@ -381,7 +402,8 @@ def _ac_force_charge_switches(count: int = 3) -> tuple[EcoFlowSwitchEntityDescri
             EcoFlowSwitchEntityDescription(
                 key=f"ac{i}_force_charge",
                 mqtt_key=quota_key,
-                name=f"AC{i} force charge",
+                name="Force charge",
+                child_device=_storage_child(i),
                 value_fn=lambda v: v == "FORCE_CHARGE_ON",
                 command_fn=lambda value, _q, _k=quota_key: {
                     _k: "FORCE_CHARGE_ON" if value else "FORCE_CHARGE_OFF"
@@ -420,7 +442,7 @@ _SYSTEM_NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="backupReserveSoc",
         name="Backup reserve level",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=100,
         native_step=1,
@@ -444,7 +466,7 @@ _SYSTEM_NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="foceChargeHight",
         name="Charging limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=80,
         native_max_value=100,
         native_step=1,
@@ -493,7 +515,8 @@ def _circuit_amp_numbers(count: int = _CIRCUIT_COUNT) -> tuple[EcoFlowNumberEnti
                 key=f"circuit_{i}_max_amp",
                 attributes_fn=lambda q, _i=i: _circuit_metadata(q, _i),
                 mqtt_key=quota_key,
-                name=f"Circuit {i} max current",
+                name="Max current",
+                child_device=_circuit_child(i),
                 device_class=NumberDeviceClass.CURRENT,
                 native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
                 native_min_value=10,

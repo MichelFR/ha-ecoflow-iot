@@ -13,7 +13,7 @@ from typing import Any
 
 from homeassistant.components.number import NumberDeviceClass, NumberMode
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
-from homeassistant.const import PERCENTAGE, Platform, UnitOfEnergy, UnitOfPower
+from homeassistant.const import Platform, UnitOfEnergy, UnitOfPower, UnitOfRatio
 
 from ..base import (
     EcoFlowDevice,
@@ -100,7 +100,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         quota_value_fn=_getter(_REPORT, "bpSoc"),
         available_fn=_has(_REPORT, "bpSoc"),
         icon_fn=_battery_icon,
@@ -156,7 +156,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         translation_key="backup_reserve",
         name="Backup reserve level",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=100,
         native_step=1,

@@ -11,8 +11,8 @@ Temperature notes
   ``pd.airInTemp``, ``pd.motorOutTemp`` — magnified ×100 (i.e. deci-centi-°C);
   divide by 100 to get °C.
 * ``pd.tempNtc`` / ``power.tempNtc`` — ×10 (0.1 °C units); divide by 10.
-* ``pd.batVolt`` — unit 0.01 V; divide by 100.
-* ``power.batCurr`` / ``pd.batCurr`` / ``bms.bmsCur`` / ``bms.bmsReqCur`` — mA;
+* ``pd.batVolt`` / ``pd.mpptVol`` — unit 0.01 V; divide by 100.
+* ``power.batCurr`` / ``pd.batCurr`` / ``pd.mpptCur`` / ``bms.bmsCur`` / ``bms.bmsReqCur`` — mA;
   divide by 1000.
 * ``bms.bmsVol`` / ``bms.bmsReqVol`` — mV; divide by 1000.
 * ``power.acCurrRms`` — mA; divide by 1000.
@@ -31,13 +31,14 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
+    REVOLUTIONS_PER_MINUTE,
     EntityCategory,
     Platform,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
@@ -58,6 +59,7 @@ from ..helpers import (
     deci as _scale_10,
     milli as _scale_1000,
     round2 as _round2,
+    to_int as _to_int,
 )
 
 # All WAVE set commands use moduleType 1.
@@ -94,9 +96,45 @@ _DRAINAGE_MAP: dict[str, int] = {
     "no_drain_off": 3,
 }
 
+# pd.tempSys: 0=Celsius, 1=Fahrenheit (set via operateType "tempSys", {"mode": n})
+_TEMP_UNIT_OPTIONS = ["celsius", "fahrenheit"]
+
+# bms.bmsChgDsgSts: 0=idle, 1=charging, 2=discharging
+_CHG_DSG_OPTIONS = ["idle", "charging", "discharging"]
+
+# pd.mpptWork: 1=Car charging, 2=Solar charging
+_MPPT_WORK_OPTIONS = ["car", "solar"]
+_MPPT_WORK_CODES: dict[int, str] = {1: "car", 2: "solar"}
+
 # ---------------------------------------------------------------------------
 # Value-function helpers
 # ---------------------------------------------------------------------------
+
+
+def _chg_dsg_state(value: Any) -> str | None:
+    """bms.bmsChgDsgSts: 0 idle / 1 charging / 2 discharging."""
+    if value is None:
+        return None
+    idx = int(value)
+    return _CHG_DSG_OPTIONS[idx] if 0 <= idx < len(_CHG_DSG_OPTIONS) else None
+
+
+def _mppt_work(value: Any) -> str | None:
+    """pd.mpptWork: 1 car charging / 2 solar charging (others → unknown)."""
+    if value is None:
+        return None
+    return _MPPT_WORK_CODES.get(int(value))
+
+
+def _bit(n: int):
+    """Return a None-safe value_fn testing bit ``n`` of an integer bitfield."""
+
+    def _fn(value: Any) -> bool | None:
+        if value is None:
+            return None
+        return bool((int(value) >> n) & 1)
+
+    return _fn
 
 
 def _bat_volt(value: Any) -> float | None:
@@ -147,6 +185,13 @@ def _current_rgb_state(quota: Mapping[str, Any]) -> str | None:
     return _RGB_OPTIONS[int(val)] if 0 <= int(val) < len(_RGB_OPTIONS) else None
 
 
+def _current_temp_unit(quota: Mapping[str, Any]) -> str | None:
+    val = quota.get("pd.tempSys", quota.get("pd.pdTempSys"))
+    if val is None:
+        return None
+    return _TEMP_UNIT_OPTIONS[int(val)] if 0 <= int(val) < len(_TEMP_UNIT_OPTIONS) else None
+
+
 def _current_drainage(quota: Mapping[str, Any]) -> str | None:
     val = quota.get("pd.wteFthEn")
     if val is None:
@@ -186,6 +231,17 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         value_fn=_round2,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="cool_env",
+        mqtt_key="pd.coolEnv",
+        name="Air outlet temperature (sensor)",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_scale_100,
     ),
     EcoFlowSensorEntityDescription(
         key="cond_temp",
@@ -257,6 +313,16 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
         value_fn=_scale_10,
     ),
+    EcoFlowSensorEntityDescription(
+        key="power_temp_max",
+        mqtt_key="power.tempMax",
+        name="Power module max temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
     # --- power ---
     EcoFlowSensorEntityDescription(
         key="ac_pwr_in",
@@ -289,6 +355,52 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bat_power",
+        mqtt_key="pd.batPower",
+        name="Battery power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="psdr_power",
+        mqtt_key="pd.psdrPower",
+        name="Power supply power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    # --- PV / car input (MPPT) ---
+    EcoFlowSensorEntityDescription(
+        key="pv_volt",
+        mqtt_key="pd.mpptVol",
+        name="PV input voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_scale_100,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="pv_curr",
+        mqtt_key="pd.mpptCur",
+        name="PV input current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_scale_1000,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="mppt_work",
+        mqtt_key="pd.mpptWork",
+        name="DC input mode",
+        device_class=SensorDeviceClass.ENUM,
+        options=_MPPT_WORK_OPTIONS,
+        value_fn=_mppt_work,
     ),
     # --- AC input ---
     EcoFlowSensorEntityDescription(
@@ -327,7 +439,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
     ),
     EcoFlowSensorEntityDescription(
         key="bat_soc",
@@ -335,7 +447,7 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery (PD)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_registry_enabled_default=False,
     ),
     EcoFlowSensorEntityDescription(
@@ -370,6 +482,49 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         value_fn=_scale_1000,
     ),
     EcoFlowSensorEntityDescription(
+        key="bat_curr",
+        mqtt_key="pd.batCurr",
+        name="Battery current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_scale_1000,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bat_state",
+        mqtt_key="bms.bmsChgDsgSts",
+        name="Battery state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_CHG_DSG_OPTIONS,
+        value_fn=_chg_dsg_state,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bms_min_dsg_soc",
+        mqtt_key="bms.bmsMinDsgSoc",
+        name="Discharge limit",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bms_max_chg_soc",
+        mqtt_key="bms.bmsMaxChgSoc",
+        name="Charge limit",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bms_remain_cap",
+        mqtt_key="bms.remainCap",
+        name="Battery remaining capacity",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="mAh",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
         key="bat_chg_remain",
         mqtt_key="pd.batChgRemain",
         name="Battery time to full",
@@ -399,6 +554,41 @@ _SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         mqtt_key="pd.waterValue",
         name="Water level",
         state_class=SensorStateClass.MEASUREMENT,
+    ),
+    # --- fans / compressor ---
+    EcoFlowSensorEntityDescription(
+        key="fan_level",
+        mqtt_key="pd.fanSts",
+        name="Fan level",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=_to_int,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="compressor_rpm",
+        mqtt_key="motor.compressorRpm",
+        name="Compressor speed",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="conde_fan_rpm",
+        mqtt_key="motor.condeFanRpm",
+        name="Condenser fan speed",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="evap_fan_rpm",
+        mqtt_key="motor.evapFanRpm",
+        name="Evaporator fan speed",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
 )
 
@@ -447,6 +637,37 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         mqtt_key="motor.ecoStopFlag",
         name="Energy-saving shutdown",
         entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    # pd.powerSrc input-source bitfield: bit0 AC, bit1 MPPT, bit2 main battery,
+    # bit3 extra (slave) battery.
+    EcoFlowBinarySensorEntityDescription(
+        key="src_ac",
+        mqtt_key="pd.powerSrc",
+        name="Powered by AC",
+        device_class=BinarySensorDeviceClass.POWER,
+        value_fn=_bit(0),
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="src_mppt",
+        mqtt_key="pd.powerSrc",
+        name="Powered by solar/car input",
+        device_class=BinarySensorDeviceClass.POWER,
+        value_fn=_bit(1),
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="src_main_battery",
+        mqtt_key="pd.powerSrc",
+        name="Powered by main battery",
+        device_class=BinarySensorDeviceClass.POWER,
+        value_fn=_bit(2),
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="src_extra_battery",
+        mqtt_key="pd.powerSrc",
+        name="Powered by extra battery",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_registry_enabled_default=False,
+        value_fn=_bit(3),
     ),
 )
 
@@ -602,6 +823,16 @@ _SELECTS: tuple[EcoFlowSelectEntityDescription, ...] = (
         ),
         command_fn=lambda option, _q: _cmd(
             "tempDisplay", {"tempDisplay": 1 if option == "outlet" else 0}
+        ),
+    ),
+    EcoFlowSelectEntityDescription(
+        key="temp_unit",
+        mqtt_key="pd.tempSys",
+        name="Temperature unit",
+        options=_TEMP_UNIT_OPTIONS,
+        current_option_fn=_current_temp_unit,
+        command_fn=lambda option, _q: _cmd(
+            "tempSys", {"mode": _TEMP_UNIT_OPTIONS.index(option)}
         ),
     ),
 )

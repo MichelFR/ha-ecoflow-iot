@@ -56,6 +56,17 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery min cell temperature | temperature | °C | `bms_bmsStatus.minCellTmp` | 🔧 💤 |
 | Battery max cell temperature | temperature | °C | `bms_bmsStatus.maxCellTmp` | 🔧 💤 |
 | LCD SoC | battery | % | `bms_emsStatus.lcdSoc` | 🔧 💤 |
+| Battery min MOS temperature | temperature | °C | `bms_bmsStatus.minMosTmp` | 🔧 💤 |
+| Battery max MOS temperature | temperature | °C | `bms_bmsStatus.maxMosTmp` | 🔧 💤 |
+| Battery remaining capacity | — | mAh | `bms_bmsStatus.remainCap` | 🔧 |
+| Battery full capacity | — | mAh | `bms_bmsStatus.fullCap` | 🔧 |
+| Battery design capacity | — | mAh | `bms_bmsStatus.designCap` | 🔧 💤 |
+| Battery remaining time | duration | min | `bms_bmsStatus.remainTime` | 🔧 💤 |
+| Discharge lower limit | battery | % | `bms_emsStatus.minDsgSoc` | 🔧 |
+| Charge upper limit | battery | % | `bms_emsStatus.maxChgSoc` | 🔧 |
+| Smart Generator on SoC | battery | % | `bms_emsStatus.openOilEbSocMin` | 🔧 |
+| Smart Generator off SoC | battery | % | `bms_emsStatus.closeOilEbSocMax` | 🔧 |
+| EMS charging voltage | voltage | V | `bms_emsStatus.chgVol` | 🔧 💤 |
 | Screen timeout | duration | s | `pd.blTime` | 🔧 💤 |
 | Battery charge energy | energy | Wh | _integrated_ |  |
 | Battery discharge energy | energy | Wh | _integrated_ |  |
@@ -79,6 +90,8 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Compressor allowed | running | `pd.bldcDntWork` | 🔧 💤 |
 | Ice making allowed | — | `pd.bldcDntIce` | 🔧 💤 |
 | Battery protection enabled | — | `pd.pwrPbEn` | 🔧 |
+| Warning | problem | `pd.warnInfo` | 🔧 |
+| Detaching ice | — | `pd.fsmState` |  |
 
 ## Switches
 
@@ -106,6 +119,13 @@ Legend: 🔧 = diagnostic entity · 💤 = disabled by default · 🌐 = HTTP-on
 | Battery protection level | low, medium, high | _derived_ |  |
 | Temperature unit | celsius, fahrenheit | _derived_ |  |
 
+## Buttons
+
+| Entity | Flags |
+|---|---|
+| Detach ice |  |
+| Beep |  |
+
 ---
 
-_Entity totals: 72 — 46 sensor, 15 binary_sensor, 4 switch, 4 number, 3 select, 0 light._
+_Entity totals: 87 — 57 sensor, 17 binary_sensor, 4 switch, 4 number, 3 select, 0 light, 2 button._

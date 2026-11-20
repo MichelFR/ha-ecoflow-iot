@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED, Platform
 from homeassistant.core import CoreState, HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import UpdateFailed
@@ -36,6 +37,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import EcoFlowCoordinator
+from .entity import main_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +45,7 @@ _STATIC_PATH_KEY = f"{DOMAIN}_card_static_registered"
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
     Platform.LIGHT,
     Platform.NUMBER,
     Platform.SELECT,
@@ -53,7 +56,7 @@ PLATFORMS: list[Platform] = [
 type EcoFlowConfigEntry = ConfigEntry[EcoFlowCoordinator]
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: EcoFlowConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: EcoFlowConfigEntry) -> None:
     """Set up EcoFlow IoT from a config entry."""
     await _async_register_card(hass)
 
@@ -87,22 +90,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: EcoFlowConfigEntry) -> b
         raise ConfigEntryNotReady(str(err)) from err
 
     entry.runtime_data = coordinator
+    # Register every main device first: child devices (extra batteries, modules,
+    # circuits) must reference an already-registered parent by its device id.
+    dev_reg = dr.async_get(hass)
+    for sn in coordinator.devices:
+        coordinator.parent_device_ids[sn] = dev_reg.async_get_or_create_from_info(
+            config_entry_id=entry.entry_id,
+            device_info=main_device_info(coordinator, sn),
+        ).id
+
+    # No update listener: the options flow (OptionsFlowWithReload) and the reauth
+    # flow (async_update_reload_and_abort) schedule their own reloads. HA rejects
+    # a listener combined with those from 2026.12.
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
-    return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: EcoFlowConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: EcoFlowConfigEntry) -> None:
     """Unload a config entry."""
-    unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unloaded:
-        await entry.runtime_data.async_shutdown()
-    return unloaded
-
-
-async def _async_reload_entry(hass: HomeAssistant, entry: EcoFlowConfigEntry) -> None:
-    """Reload the entry when options change."""
-    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.config_entries.async_unload_platforms_or_raise(entry, PLATFORMS)
+    await entry.runtime_data.async_shutdown()
 
 
 async def _async_register_card(hass: HomeAssistant) -> None:

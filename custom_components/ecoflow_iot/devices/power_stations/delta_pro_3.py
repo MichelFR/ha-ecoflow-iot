@@ -18,7 +18,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
     Platform,
     UnitOfElectricCurrent,
@@ -26,6 +25,7 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
@@ -44,12 +44,30 @@ from ..energy import solar_energy
 from ..helpers import (
     battery_charging_icon,
     round2 as _round2,
+    to_int,
 )
 
 
 # flowInfo* fields: 0 = off, 2 = on
 def _flow_is_on(value: Any) -> bool:
     return int(value) == 2 if value is not None else False
+
+
+# bmsChgDsgState: 0 = not charging/discharging, 1 = discharging, 2 = charging
+_CHG_DSG_STATES = {0: "idle", 1: "discharging", 2: "charging"}
+
+# fastChargeSwitch: 0 = fast charging, 1 = custom charging power
+_FAST_CHARGE_MODES = {0: "fast", 1: "custom"}
+
+
+def _enum_label(mapping: Mapping[int, str]) -> Any:
+    """Return a value_fn mapping a documented int code to its enum option."""
+
+    def _fn(value: Any) -> str | None:
+        raw = to_int(value)
+        return mapping.get(raw) if raw is not None else None
+
+    return _fn
 
 
 # ---------------------------------------------------------------------------
@@ -63,7 +81,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         value_fn=_round2,
         # Stepped charging icon while charging, else automatic battery icon.
         icon_fn=lambda q: battery_charging_icon(q.get("cmsBattSoc"), int(q.get("cmsChgDsgState") or 0) == 2),
@@ -74,7 +92,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Battery (BMS)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_registry_enabled_default=False,
         value_fn=_round2,
     ),
@@ -147,7 +165,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Charge limit",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
@@ -156,7 +174,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Discharge limit",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcoFlowSensorEntityDescription(
@@ -165,7 +183,7 @@ _BATTERY_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Backup reserve level",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
@@ -454,6 +472,56 @@ _INPUT_CONFIG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
+    EcoFlowSensorEntityDescription(
+        key="plug_in_info_ac_in_chg_hal_pow_max",
+        mqtt_key="plugInInfoAcInChgHalPowMax",
+        name="AC max charge power (hardware limit)",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="plug_in_info_5p8_chg_hal_pow_max",
+        mqtt_key="plugInInfo5p8ChgHalPowMax",
+        name="Power In/Out port max charge power (hardware limit)",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    # Operating status / charge type codes: the spec documents no value
+    # meanings for these, so the raw integer is exposed.
+    EcoFlowSensorEntityDescription(
+        key="plug_in_info_4p81_run_state",
+        mqtt_key="plugInInfo4p81RunState",
+        name="Extra battery port 1 operating status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="plug_in_info_4p82_run_state",
+        mqtt_key="plugInInfo4p82RunState",
+        name="Extra battery port 2 operating status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="plug_in_info_5p8_run_state",
+        mqtt_key="plugInInfo5p8RunState",
+        name="Power In/Out port operating status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="plug_in_info_5p8_dsg_chg",
+        mqtt_key="plugInInfo5p8DsgChg",
+        name="Power In/Out port charge/discharge type",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
 )
 
 _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
@@ -508,7 +576,7 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Smart Generator auto-start SOC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -518,7 +586,7 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Smart Generator auto-stop SOC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -528,7 +596,7 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Generator/solar hybrid mode max SOC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -538,7 +606,7 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="AC always-on minimum SOC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -546,7 +614,7 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         key="lcd_light",
         mqtt_key="lcdLight",
         name="Screen brightness",
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
@@ -563,6 +631,26 @@ _DIAG_SENSORS: tuple[EcoFlowSensorEntityDescription, ...] = (
         name="Multi-battery charge/discharge mode",
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+    ),
+    EcoFlowSensorEntityDescription(
+        key="bms_chg_dsg_state",
+        mqtt_key="bmsChgDsgState",
+        name="Main battery charge/discharge state",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(_CHG_DSG_STATES.values()),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_enum_label(_CHG_DSG_STATES),
+    ),
+    EcoFlowSensorEntityDescription(
+        key="fast_charge_switch",
+        mqtt_key="fastChargeSwitch",
+        name="Charging power mode",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(_FAST_CHARGE_MODES.values()),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_enum_label(_FAST_CHARGE_MODES),
     ),
 )
 
@@ -769,6 +857,123 @@ _BINARY_SENSORS: tuple[EcoFlowBinarySensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
         value_fn=_flow_is_on,
     ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_pv_l",
+        mqtt_key="flowInfoPvL",
+        name="Low-voltage solar input active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_pv_h",
+        mqtt_key="flowInfoPvH",
+        name="High-voltage solar input active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_typec1",
+        mqtt_key="flowInfoTypec1",
+        name="USB-C port 1 output active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_typec2",
+        mqtt_key="flowInfoTypec2",
+        name="USB-C port 2 output active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_qcusb1",
+        mqtt_key="flowInfoQcusb1",
+        name="USB-A port 1 output active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_qcusb2",
+        mqtt_key="flowInfoQcusb2",
+        name="USB-A port 2 output active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_24v",
+        mqtt_key="flowInfo24v",
+        name="24V output active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_4p81_in",
+        mqtt_key="flowInfo4p81In",
+        name="Extra battery port 1 input active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_4p81_out",
+        mqtt_key="flowInfo4p81Out",
+        name="Extra battery port 1 output active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_4p82_in",
+        mqtt_key="flowInfo4p82In",
+        name="Extra battery port 2 input active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_4p82_out",
+        mqtt_key="flowInfo4p82Out",
+        name="Extra battery port 2 output active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_5p8_in",
+        mqtt_key="flowInfo5p8In",
+        name="Power In/Out port input active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
+    EcoFlowBinarySensorEntityDescription(
+        key="flow_info_5p8_out",
+        mqtt_key="flowInfo5p8Out",
+        name="Power In/Out port output active",
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=_flow_is_on,
+    ),
 )
 
 # ---------------------------------------------------------------------------
@@ -844,7 +1049,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="cmsMaxChgSoc",
         name="Charge limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=50,
         native_max_value=100,
         native_step=1,
@@ -856,7 +1061,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="cmsMinDsgSoc",
         name="Discharge limit",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=30,
         native_step=1,
@@ -868,7 +1073,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="energyBackupStartSoc",
         name="Backup reserve level",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=5,
         native_max_value=100,
         native_step=1,
@@ -933,7 +1138,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="cmsOilOnSoc",
         name="Smart Generator auto-start SOC",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=0,
         native_max_value=30,
         native_step=1,
@@ -945,7 +1150,7 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         mqtt_key="cmsOilOffSoc",
         name="Smart Generator auto-stop SOC",
         device_class=NumberDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         native_min_value=50,
         native_max_value=100,
         native_step=1,
@@ -999,6 +1204,19 @@ _NUMBERS: tuple[EcoFlowNumberEntityDescription, ...] = (
         native_step=30,
         mode=NumberMode.BOX,
         command_fn=lambda value, _q: {"cfgDevStandbyTime": int(value)},
+    ),
+    EcoFlowNumberEntityDescription(
+        key="ble_standby_time",
+        mqtt_key="bleStandbyTime",
+        name="Bluetooth timeout",
+        device_class=NumberDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        # Spec: 0 = never time out; no upper bound documented (example: 200).
+        native_min_value=0,
+        native_max_value=720,
+        native_step=1,
+        mode=NumberMode.BOX,
+        command_fn=lambda value, _q: {"cfgBleStandbyTime": int(value)},
     ),
 )
 

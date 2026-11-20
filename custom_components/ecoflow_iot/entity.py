@@ -6,7 +6,7 @@ import math
 from typing import Any
 
 from homeassistant.core import callback
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import ChildDeviceInfo, DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
@@ -34,6 +34,18 @@ def finite_or_none(value: Any) -> Any:
     return value
 
 
+def main_device_info(coordinator: EcoFlowCoordinator, sn: str) -> DeviceInfo:
+    """Return the device info of the main (parent) device for ``sn``."""
+    device = coordinator.devices[sn]
+    return DeviceInfo(
+        identifiers={(DOMAIN, sn)},
+        manufacturer=MANUFACTURER,
+        model=device.model_name,
+        name=device.model_name,
+        serial_number=sn,
+    )
+
+
 class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
     """Common base for all EcoFlow entities."""
 
@@ -54,14 +66,16 @@ class EcoFlowEntity(CoordinatorEntity[EcoFlowCoordinator]):
             self._attr_translation_placeholders = dict(
                 description.translation_placeholders
             )
-        device = coordinator.devices[sn]
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, sn)},
-            manufacturer=MANUFACTURER,
-            model=device.model_name,
-            name=device.model_name,
-            serial_number=sn,
-        )
+        child = description.child_device
+        parent_id = coordinator.parent_device_ids.get(sn)
+        if child is not None and parent_id is not None:
+            self._attr_device_info = ChildDeviceInfo(
+                identifiers={(DOMAIN, f"{sn}_{child.key}")},
+                name=child.name,
+                parent_device_id=parent_id,
+            )
+        else:
+            self._attr_device_info = main_device_info(coordinator, sn)
 
     @property
     def _state(self) -> DeviceState | None:

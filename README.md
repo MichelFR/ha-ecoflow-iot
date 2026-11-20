@@ -457,7 +457,7 @@ custom_components/ecoflow_iot/
 │   └── whole_home_backup/#   smart_home_panel, smart_home_panel_ii
 ├── coordinator.py        # MQTT push + HTTP fallback, write dispatch, connection state
 ├── entity.py             # shared entity base (device info, availability, value extraction)
-└── sensor.py / binary_sensor.py / switch.py / number.py / select.py
+└── sensor.py / binary_sensor.py / switch.py / number.py / select.py / light.py / button.py
 ```
 
 **Adding a device** = drop one `devices/<category>/<model>.py` with an `EcoFlowDevice`
