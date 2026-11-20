@@ -45,7 +45,7 @@ Dashboard field:
 | Derived sensor(s) | Devices |
 |---|---|
 | **Solar energy** (Solar production) | Delta 2 / 2 Max / 3 Max / 3 Max Plus / Pro / Pro 3 / Pro Ultra, River 2 Pro, PowerStream, PowerOcean, Power Kits, Wave |
-| **Battery charge / discharge energy** (Home battery in/out) | Delta 2 / 2 Max / Pro, Power Kits, Glacier *(separate in/out sensors)*; PowerOcean, PowerStream *(single signed sensor — see caveat)* |
+| **Battery charge / discharge energy** (Home battery in/out) | Delta 2 / 2 Max, Delta Max, Delta Pro, Power Kits, Glacier *(separate in/out sensors)*; PowerOcean, PowerStream *(single signed sensor — see caveat)* |
 | **Grid import / export energy** (Grid consumption / Return) | PowerOcean, Smart Home Panel II *(single signed sensor — see caveat)* |
 | **Energy** / **Energy consumption** (Individual devices) | Smart Plug, Wave |
 | **Home energy** (whole-home load) | Smart Home Panel II |

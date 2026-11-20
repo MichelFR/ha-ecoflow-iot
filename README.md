@@ -18,10 +18,10 @@ number. Adding another device later is a single new module.
 
 ## Supported devices
 
-Resolved automatically by serial-number prefix (with quota-based fallback). ~1,290
+Resolved automatically by serial-number prefix (with quota-based fallback). ~1,520
 entities are mapped across the fleet from the official quota schemas. Each link below
-lists every sensor / binary sensor / switch / number / select for that device
-(generated from the code — see [`docs/devices/`](docs/devices/README.md)).
+lists every sensor / binary sensor / switch / number / select / light / button for that
+device (generated from the code — see [`docs/devices/`](docs/devices/README.md)).
 
 | Category | Devices |
 |---|---|
@@ -74,7 +74,13 @@ documents it, it can be added; please open an issue then. The prefix details are
   showing `connected` / `connecting` / `disconnected`, plus the active data source and
   last MQTT update time.
 - **Full entity coverage** — sensors (battery, solar per-MPPT, grid/AC, inverter, power
-  flow, energy totals), binary sensors, switches, numbers and a mode select.
+  flow, energy totals), binary sensors, switches, numbers, selects and buttons for
+  one-shot actions (e.g. Glacier *Detach ice*, Power Kits *Refresh data*).
+- **Sub-devices for big systems** — parts of one product are grouped as Home Assistant
+  child devices under it: Power Kits modules (battery pack, Power Hub DC in/out,
+  inverter/charger, solar charge controller, AC/DC distribution panels), Smart Home
+  Panel circuits and battery/storage channels, and connected extra batteries on the
+  Delta Pro / Delta Max. System-wide values stay on the main device.
 - **Energy Dashboard ready** — devices expose cumulative `Wh` energy sensors (solar
   production, grid import/export, battery charge/discharge, per-device consumption),
   derived from live power where the API reports only watts, so they plug straight into
@@ -141,9 +147,13 @@ EcoFlow IoT is in the HACS default store, so no custom repository is needed.
 ### Using it
 
 - **Entities:** each device gets sensors (battery, solar, grid, power flow, energy
-  totals…), controls (switches/numbers/selects for the documented settings) and an
-  always-available **Connection** diagnostic sensor. See
+  totals…), controls (switches/numbers/selects/buttons for the documented settings and
+  actions) and an always-available **Connection** diagnostic sensor. See
   [Supported devices](#supported-devices) for the full per-device list.
+- **Sub-devices:** on Power Kits, the Smart Home Panels and Delta Pro / Delta Max with
+  extra batteries, module-, circuit- and battery-level entities appear on child devices
+  (e.g. *Circuit 3*, *Extra battery 1*) under the main device, with short names such as
+  *Power* or *Voltage*.
 - **Energy dashboard:** the cumulative `Wh`/`kWh` energy sensors carry the right
   `device_class`/`state_class`, so they can be added to Home Assistant's **Energy**
   dashboard. For the Stream, see the [Energy Dashboard setup guide](docs/energy_dashboard.md)
@@ -427,12 +437,13 @@ Every device exposes an always-available **Connection** diagnostic sensor
 (`connected` / `connecting` / `disconnected`, plus data source and last-update).
 
 The complete per-device entity tables (sensors, binary sensors, switches, numbers,
-selects — with device class, unit, underlying quota key and diagnostic/disabled
-flags) are generated from the device definitions and live under
+selects, lights, buttons — with device class, unit, underlying quota key and
+diagnostic/disabled flags) are generated from the device definitions and live under
 [`docs/devices/`](docs/devices/README.md). See the per-device links in
-[Supported devices](#supported-devices) above. On the Smart Home Panel 2, the
-per-circuit power, max-current sensor, and max-current number also expose the
-app's `circuit_name`, `circuit_number`, `split_phase`, `paired_circuit`,
+[Supported devices](#supported-devices) above. Devices with sub-devices get an extra
+**Device** column naming the child device (or `main`) each entity is attached to.
+On the Smart Home Panel 2, each circuit sub-device's power, max-current sensor, and
+max-current number also expose the app's `circuit_name`, `circuit_number`, `split_phase`, `paired_circuit`,
 and `circuit_numbers` as state attributes. Paired circuits prefer the first
 custom app name (lower circuit number first); per-leg entity IDs and history
 remain unchanged. Regenerate the tables with:
@@ -450,8 +461,8 @@ custom_components/ecoflow_iot/
 │   ├── base.py           #   EcoFlowDevice + entity-description dataclasses
 │   ├── commands.py       #   command builders (stream envelope / legacy / cmdSet)
 │   ├── __init__.py       #   DEVICE_REGISTRY + resolve_device(sn, quota)
-│   ├── power_stations/   #   delta_2, delta_2_max, delta_3_max(_plus), delta_pro(_3/_ultra), river_2_pro
-│   ├── solar_systems/    #   stream, power_stream
+│   ├── power_stations/   #   delta_2, delta_2_max, delta_3_max(_plus), delta_max, delta_pro(_3/_ultra), river_2_pro
+│   ├── solar_systems/    #   stream, stream_5000, power_stream
 │   ├── home_battery/     #   power_ocean
 │   ├── smart_living/     #   glacier, power_kits, smart_plug, wave
 │   └── whole_home_backup/#   smart_home_panel, smart_home_panel_ii
@@ -462,7 +473,8 @@ custom_components/ecoflow_iot/
 
 **Adding a device** = drop one `devices/<category>/<model>.py` with an `EcoFlowDevice`
 subclass (declaring its `model`, `sn_prefixes`, `matches()`, per-platform
-`entity_descriptions()`, and `command_fn`s) and register it in `devices/__init__.py`.
+`entity_descriptions()`, `command_fn`s and, for sub-parts, `child_device`s) and register
+it in `devices/__init__.py`.
 No platform code changes. Each device's command style is handled by its
 `command_fn`/`build_command`: the Stream/Delta-3 envelope (`cmdId/cmdFunc`), the legacy
 `moduleType`/`operateType` body, the `cmdSet`/`id` body, or `cmdCode` — all built via

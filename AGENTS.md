@@ -75,6 +75,13 @@ signed open platform: `/iot-open/sign/device/{list,quota,quota/all}` and
        Delta/River; `build_command` stays identity).
      - **cmdSet/id** — `build_cmd_set_command(cmdSet, id, params)` (original Delta Pro).
      - **cmdCode** — `command_fn` returns `{"cmdCode": "...", "params": {...}}` directly.
+   - Sub-parts (extra batteries, modules, circuits): set
+     `child_device=ChildDevice("<stable_key>", "<Name>")` from `devices/base.py`. The entity
+     then lives on an HA child device `{sn}_<stable_key>` under the main device; name it
+     relative to the child ("Power", not "Circuit 3 power"). Only use it for parts that
+     exist on every unit or are added dynamically when present (`dynamic_entity_descriptions`)
+     — a static child for an optional part shows up as an empty device for everyone.
+     Changing a child key creates a new device, so keep keys stable.
 3. Register the class in `devices/__init__.py` `DEVICE_REGISTRY`. Order matters only for
    shared SN prefixes (put the more-specific class first, e.g. Delta 3 Max Plus before
    Max; Stream Microinverter before Stream).
@@ -92,6 +99,11 @@ The platform files (`sensor.py`, …) are generic and need **no changes** for a 
 - `docs/devices/**` is generated — never hand-edit; change the device module then rerun
   the generator.
 - Device spec markdowns are **not committed** (licensing); fetch on demand.
+- **Never change an existing `key=`**: it is the entity's unique ID (`{sn}_{key}`), so
+  changing it orphans users' entities and history. Renaming `name=` is fine.
+- Multi-module devices whose quota is nested per module (Power Kits:
+  `{module: {moduleSn: {...}}}`) must read each field from its own module — see
+  `_module_view` / `_scoped` in `power_kits.py`; shared field names are common.
 
 ## Verify
 
