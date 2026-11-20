@@ -8,6 +8,7 @@ Auto-generated per-device entity tables. Regenerate with `python3 scripts/gen_de
 
 ## Power Stations
 
+- [EcoFlow DELTA Max](power_stations/delta_max.md)
 - [EcoFlow Delta 2](power_stations/delta_2.md)
 - [EcoFlow Delta 2 Max](power_stations/delta_2_max.md)
 - [EcoFlow Delta 3 Max](power_stations/delta_3_max.md)

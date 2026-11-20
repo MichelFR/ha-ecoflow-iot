@@ -4,6 +4,7 @@ from .delta_2 import Delta2Device
 from .delta_2_max import Delta2MaxDevice
 from .delta_3_max import Delta3MaxDevice
 from .delta_3_max_plus import Delta3MaxPlusDevice
+from .delta_max import DeltaMaxDevice
 from .delta_pro import DeltaProDevice
 from .delta_pro_3 import DeltaPro3Device
 from .delta_pro_ultra import DeltaProUltraDevice
@@ -14,6 +15,7 @@ __all__ = [
     "Delta2MaxDevice",
     "Delta3MaxDevice",
     "Delta3MaxPlusDevice",
+    "DeltaMaxDevice",
     "DeltaPro3Device",
     "DeltaProDevice",
     "DeltaProUltraDevice",

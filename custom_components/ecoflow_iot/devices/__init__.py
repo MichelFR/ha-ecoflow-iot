@@ -21,6 +21,7 @@ from .power_stations import (
     Delta2MaxDevice,
     Delta3MaxDevice,
     Delta3MaxPlusDevice,
+    DeltaMaxDevice,
     DeltaPro3Device,
     DeltaProDevice,
     DeltaProUltraDevice,
@@ -55,6 +56,7 @@ _LOGGER = logging.getLogger(__name__)
 DEVICE_REGISTRY: tuple[type[EcoFlowDevice], ...] = (
     # Power Stations
     Delta2Device,
+    DeltaMaxDevice,
     DeltaProDevice,
     Delta2MaxDevice,
     Delta3MaxPlusDevice,

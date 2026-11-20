@@ -110,6 +110,10 @@ cases = [
     ("R331ZEB4ZEAL0528", {}, "Delta2Device"),
     ("R351ZFB4HF6L0030", {}, "Delta2MaxDevice"),
     ("R621ZEB1XE8S0029", {}, "River2ProDevice"),
+    # Original DELTA Max (spec example serial). DACB must not fall into the
+    # Delta Pro (DCAB/DCEB) or Delta 2 Max bucket even with a bmsMaster quota.
+    ("DACBZ2ZD5190027", {}, "DeltaMaxDevice"),
+    ("DACBZ2ZD5190027", {"bmsMaster.soc": 18, "inv.cfgAcEnabled": 0}, "DeltaMaxDevice"),
     ("DCABZ12345678", {}, "DeltaProDevice"),
     ("DCABA12345678", {}, "DeltaProDevice"),
     ("DCEBZ12345678", {}, "DeltaProDevice"),
